@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.3.3
+// @version      1.3.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -46,6 +46,7 @@
 // @connect    gptkey.oss-cn-hangzhou.aliyuncs.com
 // @connect    luntianxia.uk
 // @connect    chat.51buygpt.com
+// @connect    chat.extkj.cn
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js
@@ -575,22 +576,23 @@
 
 
             return;
-        } else if (GPTMODE && GPTMODE == "AIAIZONE") {
-            console.log("当前模式AIAIZONE")
+        } else if (GPTMODE && GPTMODE == "EXTKJ") {
+            console.log("当前模式EXTKJ")
+            let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__").toString()
+            console.log("aes:"+pt)
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
-                url: "https://www.aiai.zone/api/chat-process",
+                url: "https://chat.extkj.cn/api/chat-stream",
                 headers: {
                     "Content-Type": "application/json",
                     // "Authorization": "Bearer null",
-                    "Referer": "https://www.aiai.zone/",
-                    "Host": "www.aiai.zone",
+                    "Referer": "https://chat.extkj.cn/",
                     "accept": "application/json, text/plain, */*"
                 },
                 data: JSON.stringify({
-                    prompt: your_qus,
+                    prompt: pt,
                     options: {},
-                    systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-03-31"
+                    systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-" + new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()
                 }),
                 onloadstart: (stream) => {
                     let result = "";
@@ -610,14 +612,15 @@
                             // console.log(normalArray)
                             let byteArray = new Uint8Array(chunk);
                             let decoder = new TextDecoder('utf-8');
-                            let nowResult = JSON.parse(decoder.decode(byteArray))
+                            console.log(decoder.decode(byteArray))
+                            let nowResult = decoder.decode(byteArray)
 
-                            if (!nowResult.text) {
+                            if (!nowResult) {
                                 //finalResult = nowResult.text
                                 //document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
                             } else {
-                                console.log(nowResult)
-                                finalResult = finalResult = nowResult.text
+                                let jsonLine = nowResult.split("\n");
+                                finalResult = JSON.parse(jsonLine[jsonLine.length-1]).text;
                                 document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
                                 for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
                                     document.getElementsByTagName("code")[i].setAttribute("class",
@@ -626,8 +629,8 @@
                                 }
                             }
 
-
                         } catch (e) {
+                            console.log(e)
                         }
 
                         return reader.read().then(processText);
@@ -687,7 +690,7 @@
                                 //document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
                             } else {
                                 console.log(nowResult)
-                                finalResult = finalResult = nowResult.text
+                                finalResult = nowResult.text
                                 document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
                                 for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
                                     document.getElementsByTagName("code")[i].setAttribute("class",
@@ -1110,7 +1113,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.3已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.4已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1155,7 +1158,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "AIAIZONE", "THEBAI", "YQCLOUD", "AIBOE", "LTXUK", "51GPT"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIBOE", "LTXUK", "51GPT"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
