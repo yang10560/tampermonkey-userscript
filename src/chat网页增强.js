@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      1.1
+// @version      1.2
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -37,6 +37,14 @@
         return await digestMessage(a);
     };
 //enc-end
+    var messageChain = []
+    function addMessageChain(element) {
+        if (messageChain.length >= 5) {
+            messageChain.shift();
+        }
+        messageChain.push(element);
+        console.log(messageChain)
+    }
 
 
     function kill(question) {
@@ -117,6 +125,7 @@
             m: your_qus || "",
             pkey: pk
         }).then(sign => {
+            messageChain.push({role: "user", content: your_qus})//连续话
             handleUserInput(3)
             console.log(sign)
             GM_xmlhttpRequest({
@@ -131,7 +140,7 @@
                 },
                 data: JSON.stringify({
 
-                    messages: [{role: "user", content: your_qus}],
+                    messages: messageChain,
                     time: now,
                     pass: null,
                     sign: sign,
@@ -146,6 +155,10 @@
                             try{
                                 console.log(finalResult)
                                 saveHistory(your_qus,finalResult)
+                                messageChain.push({
+                                    role: "assistant",
+                                    content: finalResult
+                                })//连续对话
                             }catch(e){
                                 //TODO handle the exception
                             }
