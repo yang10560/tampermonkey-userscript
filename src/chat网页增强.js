@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      1.2
+// @version      1.3
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -16,9 +16,11 @@
 
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
     console.log("AI增强")
+    var JSVer = "v1.3"
+
     //enc-start
     async function digestMessage(r) {
         const hash = CryptoJS.SHA256(r);
@@ -38,6 +40,7 @@
     };
 //enc-end
     var messageChain = []
+
     function addMessageChain(element) {
         if (messageChain.length >= 5) {
             messageChain.shift();
@@ -48,7 +51,8 @@
 
 
     function kill(question) {
-
+        let aikey = localStorage.getItem("myAIkey") ? localStorage.getItem("myAIkey") : "";
+        console.log("aikey:"+aikey)
         let your_qus = question;//你的问题
         let now = Date.now();
         const pk = "7CCjWG8L3h3v";//查看js的generateSignature函数中的key
@@ -76,7 +80,7 @@
                     time: now,
                     pass: null,
                     sign: sign,
-                    key: ""
+                    key: aikey
                 }),
                 onloadstart: (stream) => {
                     let result = [];
@@ -84,9 +88,9 @@
                     reader.read().then(function processText({done, value}) {
                         if (done) {
                             let finalResult = result.join("")
-                            try{
-                                saveHistory(your_qus,finalResult)
-                            }catch(e){
+                            try {
+                                saveHistory(your_qus, finalResult)
+                            } catch (e) {
                                 //TODO handle the exception
                             }
                             simulateBotResponse(finalResult)
@@ -125,7 +129,7 @@
             m: your_qus || "",
             pkey: pk
         }).then(sign => {
-            messageChain.push({role: "user", content: your_qus})//连续话
+            addMessageChain({role: "user", content: your_qus})//连续话
             handleUserInput(3)
             console.log(sign)
             GM_xmlhttpRequest({
@@ -152,14 +156,14 @@
                     reader.read().then(function processText({done, value}) {
                         if (done) {
                             let finalResult = result.join("")
-                            try{
+                            try {
                                 console.log(finalResult)
-                                saveHistory(your_qus,finalResult)
+                                saveHistory(your_qus, finalResult)
                                 messageChain.push({
                                     role: "assistant",
                                     content: finalResult
                                 })//连续对话
-                            }catch(e){
+                            } catch (e) {
                                 //TODO handle the exception
                             }
                             simulateBotResponse(finalResult)
@@ -187,29 +191,28 @@
     }
 
 
-
     //初始化
-    setTimeout(()=>{
+    setTimeout(() => {
         let chatBtn = document.createElement("button");
         chatBtn.innerText = "插件接口"
-        chatBtn.setAttribute("id","chatX")
-        chatBtn.addEventListener("click",()=>{
+        chatBtn.setAttribute("id", "chatX")
+        chatBtn.addEventListener("click", () => {
             showWait();
             kill(inputField.value.trim());
         });
 
         let chatBtn1 = document.createElement("button");
         chatBtn1.innerText = "插件接口1"
-        chatBtn1.setAttribute("id","ltxuk")
-        chatBtn1.addEventListener("click",()=>{
+        chatBtn1.setAttribute("id", "ltxuk")
+        chatBtn1.addEventListener("click", () => {
             showWait();
             ltxuk(inputField.value.trim());
         });
 
         document.getElementById("input-container").append(chatBtn);
         document.getElementById("input-container").append(chatBtn1);
-    },1500)
-
+        document.getElementById("chat-header").append(" -JS版本:" + JSVer)
+    }, 1500)
 
 
     // Your code here...
