@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.3.4
+// @version      1.3.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -47,6 +47,7 @@
 // @connect    luntianxia.uk
 // @connect    chat.51buygpt.com
 // @connect    chat.extkj.cn
+// @connect    api.tdchat0.com
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js
@@ -1005,6 +1006,59 @@
             })
             //end if
             return;
+        }else if (GPTMODE && GPTMODE == "TDCHAT") {
+            console.log("当前模式TDCHAT")
+            abortXml = GM_xmlhttpRequest({
+                method: "POST",
+                url: "https://api.tdchat0.com/",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    // "Authorization": "Bearer null",
+                    "Referer": "http://hzcy5.tdchat6.com/",
+                    //"Host":"www.aiai.zone",
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g,'‰')}&length=${your_qus.length}&stream=1`,
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            finalResult = result.join("")
+                            document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
+                            for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
+                                document.getElementsByTagName("code")[i].setAttribute("class",
+                                    "hljs");
+                                hljs.highlightAll()
+                            }
+                            return;
+                        }
+
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            let delta= JSON.parse(d.replace(/data: /,"")).choices[0].delta.content
+                            console.log(d)
+                            result.push(delta)
+                        }catch (e) {
+
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg) //Todo
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            })
+            //end if
+            return;
         }
 
 
@@ -1113,7 +1167,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.4已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.5已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1158,7 +1212,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIBOE", "LTXUK", "51GPT"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIBOE", "LTXUK", "51GPT","TDCHAT"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
