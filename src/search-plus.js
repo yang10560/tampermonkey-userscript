@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.3.5
+// @version      1.3.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -30,8 +30,8 @@
 // @run-at     document-end
 // @require    https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
 // @require    https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js
-// @require    https://cdn.jsdelivr.net/npm/marked@4.2.3/marked.min.js
-// @require    https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/marked/4.3.0/marked.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/markdown-it/13.0.1/markdown-it.min.js
 // @require    https://unpkg.com/axios/dist/axios.min.js
 // @connect    api.forchange.cn
 // @connect    wenxin110.top
@@ -50,8 +50,8 @@
 // @connect    api.tdchat0.com
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
-// @require    https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js
-// @require    https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 
 
@@ -68,10 +68,10 @@
 
     //(prefers-color-scheme: light)
     $("head").append($(
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.css" media="(prefers-color-scheme: light)">'
+        '<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: dark)">'
     ));
     $("head").append($(
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">'
+        '<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-dark.min.css">'
     ));
 
 
@@ -224,6 +224,24 @@
 
 
     //end
+
+    //显示答案并高亮代码函数
+    function showAnserAndHighlightCodeStr(codeStr){
+        document.getElementById('gptAnswer').innerHTML = `${mdConverter(codeStr.replace(/\\n+/g, "\n"))}`
+        for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
+            document.getElementsByTagName("code")[i].setAttribute("class",
+                "hljs");
+            hljs.highlightAll()
+        }
+    }
+    //高亮代码函数
+    function highlightCodeStr(){
+        for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
+            document.getElementsByTagName("code")[i].setAttribute("class",
+                "hljs");
+            hljs.highlightAll()
+        }
+    }
 
     //顶级配置
 
@@ -461,9 +479,10 @@
                 if (manualInput) {
                     let aikey = prompt("请输入您的openAIkey", "");
                     if (aikey) localStorage.setItem("openAIkey", aikey)
+                }else {
+                    return
                 }
 
-                return
             }
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
@@ -502,6 +521,7 @@
                     let charsReceived = 0;
                     reader.read().then(function processText({done, value}) {
                         if (done) {
+                            highlightCodeStr()
                             return;
                         }
 
@@ -544,15 +564,10 @@
 
                             if (nowResult != "DONE") {//not done
                                 finalResult = nowResult
-                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
+                                showAnserAndHighlightCodeStr(finalResult)
                             } else {
                                 console.log(nowResult)
-                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                                for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-                                    document.getElementsByTagName("code")[i].setAttribute("class",
-                                        "hljs");
-                                    hljs.highlightAll()
-                                }
+                                showAnserAndHighlightCodeStr(finalResult)
                             }
 
 
@@ -602,6 +617,7 @@
                     let charsReceived = 0;
                     reader.read().then(function processText({done, value}) {
                         if (done) {
+                            highlightCodeStr()
                             return;
                         }
 
@@ -622,12 +638,7 @@
                             } else {
                                 let jsonLine = nowResult.split("\n");
                                 finalResult = JSON.parse(jsonLine[jsonLine.length-1]).text;
-                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                                for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-                                    document.getElementsByTagName("code")[i].setAttribute("class",
-                                        "hljs");
-                                    hljs.highlightAll()
-                                }
+                                showAnserAndHighlightCodeStr(finalResult)
                             }
 
                         } catch (e) {
@@ -673,6 +684,7 @@
                     let charsReceived = 0;
                     reader.read().then(function processText({done, value}) {
                         if (done) {
+                            highlightCodeStr()
                             return;
                         }
 
@@ -692,12 +704,7 @@
                             } else {
                                 console.log(nowResult)
                                 finalResult = nowResult.text
-                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                                for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-                                    document.getElementsByTagName("code")[i].setAttribute("class",
-                                        "hljs");
-                                    hljs.highlightAll()
-                                }
+                                showAnserAndHighlightCodeStr(finalResult)
                             }
 
 
@@ -745,12 +752,7 @@
                     reader.read().then(function processText({done, value}) {
                         if (done) {
                             finalResult = result.join("")
-                            document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                            for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-                                document.getElementsByTagName("code")[i].setAttribute("class",
-                                    "hljs");
-                                hljs.highlightAll()
-                            }
+                            showAnserAndHighlightCodeStr(finalResult)
                             return;
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
@@ -808,6 +810,7 @@
                     let charsReceived = 0;
                     reader.read().then(function processText({done, value}) {
                         if (done) {
+                            highlightCodeStr()
                             return;
                         }
 
@@ -828,15 +831,10 @@
 
                             if (nowResult != "DONE") {//not done
                                 finalResult = nowResult
-                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
+                                showAnserAndHighlightCodeStr(finalResult)
                             } else {
                                 console.log(nowResult)
-                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                                for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-                                    document.getElementsByTagName("code")[i].setAttribute("class",
-                                        "hljs");
-                                    hljs.highlightAll()
-                                }
+                                showAnserAndHighlightCodeStr(finalResult)
                             }
 
 
@@ -907,12 +905,7 @@
                                 document.getElementById('gptAnswer').innerHTML = `${rest}`
                             }
 
-                            for (let i = 0; i <= document.getElementsByTagName("code").length -
-                            1; i++) {
-                                document.getElementsByTagName("code")[i].setAttribute("class",
-                                    "language-javascript hljs");
-                                hljs.highlightAll() //奇怪，为什么不行
-                            }
+                            highlightCodeStr()
                         } else {
                             console.log('失败')
                             console.log(res)
@@ -959,6 +952,7 @@
                     let charsReceived = 0;
                     reader.read().then(function processText({done, value}) {
                         if (done) {
+                            highlightCodeStr()
                             return;
                         }
 
@@ -977,13 +971,8 @@
                                 //document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
                             } else {
                                 console.log(nowResult)
-                                finalResult = finalResult = nowResult.raw_message
-                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                                for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-                                    document.getElementsByTagName("code")[i].setAttribute("class",
-                                        "hljs");
-                                    hljs.highlightAll()
-                                }
+                                finalResult = nowResult.raw_message
+                                showAnserAndHighlightCodeStr(finalResult)
                             }
 
 
@@ -1025,12 +1014,7 @@
                     reader.read().then(function processText({done, value}) {
                         if (done) {
                             finalResult = result.join("")
-                            document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                            for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-                                document.getElementsByTagName("code")[i].setAttribute("class",
-                                    "hljs");
-                                hljs.highlightAll()
-                            }
+                            showAnserAndHighlightCodeStr(finalResult)
                             return;
                         }
 
@@ -1114,12 +1098,7 @@
                             document.getElementById('gptAnswer').innerHTML = `${rest}`
                         }
 
-                        for (let i = 0; i <= document.getElementsByTagName("code").length -
-                        1; i++) {
-                            document.getElementsByTagName("code")[i].setAttribute("class",
-                                "hljs");
-                            hljs.highlightAll()
-                        }
+                        highlightCodeStr()
                     } else {
                         console.log('失败')
                         console.log(res)
@@ -1167,7 +1146,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.5已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.6已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
