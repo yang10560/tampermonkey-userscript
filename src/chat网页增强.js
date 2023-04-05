@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      1.6
+// @version      1.7
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -10,6 +10,7 @@
 // @connect    chatai.to
 // @connect    luntianxia.uk
 // @connect    api.tdchat0.com
+// @connect    chat6.xeasy.me
 // @connect    ai.ls
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
@@ -21,7 +22,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v1.6"
+    var JSVer = "v1.7"
 
     //enc-start
     async function digestMessage(r) {
@@ -44,6 +45,7 @@
     var messageChain0 = []
     var messageChain1 = []
     var messageChain2 = []
+    var messageChain3 = []
 
     function addMessageChain(messageChain,element) {
         if (messageChain.length >= 5) {
@@ -272,6 +274,8 @@
     }
 
     function TDCHAT(question){
+       let your_qus = question;//你的问题
+       handleUserInput(3)
        GM_xmlhttpRequest({
             method: "POST",
             url: "https://api.tdchat0.com/",
@@ -329,6 +333,80 @@
 
     }
 
+
+    function chat6Xeasy(question) {
+
+        let your_qus = question;//你的问题
+        let now = Date.now();
+        const pk = {}.pkey;//查看js的generateSignature函数中的key
+        let Baseurl = "https://chat6.xeasy.me/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: pk
+        }).then(sign => {
+            addMessageChain(messageChain3,{role: "user", content: your_qus})//连续话
+            handleUserInput(3)
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    //"Host":"www.aiai.zone",
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain3,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                saveHistory(your_qus, finalResult);
+                                addMessageChain(messageChain3,{
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                            } catch (e) {
+                                //TODO handle the exception
+                            }
+                            simulateBotResponse(finalResult)
+                            hideWait()
+                            return;
+                        }
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg) //Todo
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+
     //初始化
     setTimeout(() => {
         let chatBtn = document.createElement("button");
@@ -363,10 +441,19 @@
             TDCHAT(inputField.value.trim());
         });
 
+        let chatBtn4 = document.createElement("button");
+        chatBtn4.innerText = "插件接口4"
+        chatBtn4.setAttribute("id", "xeasy")
+        chatBtn4.addEventListener("click", () => {
+            showWait();
+            chat6Xeasy(inputField.value.trim());
+        });
+
         document.getElementById("input-container").append(chatBtn);
         document.getElementById("input-container").append(chatBtn1);
         document.getElementById("input-container").append(chatBtn2);
         document.getElementById("input-container").append(chatBtn3);
+        document.getElementById("input-container").append(chatBtn4);
         document.getElementById("chat-header").append(" -JS版本:" + JSVer)
     }, 1500)
 
