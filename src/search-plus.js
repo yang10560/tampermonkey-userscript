@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.3.7
+// @version      1.3.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -54,7 +54,7 @@
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
-
+// @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.min.js
 
 // ==/UserScript==
 
@@ -74,6 +74,10 @@
     $("head").append($(
         '<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-dark.min.css">'
     ));
+    $("head").append($(
+        '<link href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.css" rel="stylesheet">'
+    ));
+
 
    try {
        //禁用console 未转义警告
@@ -236,9 +240,23 @@
 
     //end
 
+    function katexTohtml(rawHtml){
+        console.log("========katexTohtml start=======")
+        let renderedHtml = rawHtml.replace(/<em>/g,"").replace(/<\/em>/g,"").replace(/\$\$(.*?)\$\$/g, (_, tex) => {
+            //debugger
+            return katex.renderToString(tex, { displayMode: false,throwOnError: false });
+        });
+        renderedHtml = renderedHtml.replace(/\$(.*?)\$/g, (_, tex) => {
+            //debugger
+            return katex.renderToString(tex, { displayMode: false,throwOnError: false });
+        });
+        console.log("========katexTohtml end=======")
+        return renderedHtml;
+    }
+
     //显示答案并高亮代码函数
     function showAnserAndHighlightCodeStr(codeStr){
-        document.getElementById('gptAnswer').innerHTML = `${mdConverter(codeStr.replace(/\\n+/g, "\n"))}`
+        document.getElementById('gptAnswer').innerHTML = `${katexTohtml(mdConverter(codeStr.replace(/\\n+/g, "\n")))}`
         for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
             document.getElementsByTagName("code")[i].setAttribute("class",
                 "hljs");
@@ -1232,7 +1250,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.7已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.8已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
