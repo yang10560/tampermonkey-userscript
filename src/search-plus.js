@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.3.6
+// @version      1.3.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -48,6 +48,7 @@
 // @connect    chat.51buygpt.com
 // @connect    chat.extkj.cn
 // @connect    api.tdchat0.com
+// @connect    chat6.xeasy.me
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -74,18 +75,28 @@
         '<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-dark.min.css">'
     ));
 
+   try {
+       //禁用console 未转义警告
+       hljs.configure({
+           ignoreUnescapedHTML:true
+       })
+       const menu_updateChat_id = GM_registerMenuCommand("更新Chat", function (event) {
+           GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
+       }, "updateChat");
+       const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
+           alert("交流群:710808464")
+       }, "groupNum");
 
-    const menu_updateChat_id = GM_registerMenuCommand("更新Chat", function (event) {
-        GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
-    }, "updateChat");
-    const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
-        alert("交流群:710808464")
-    }, "groupNum");
+       const menu_pubkey_id = GM_registerMenuCommand("更新公钥", function (event) {
+           alert("正在更新...")
+           setPubkey();
+       }, "PUBKEY");
+   }catch (e){
+       console.log(e)
+   }
 
-    const menu_pubkey_id = GM_registerMenuCommand("更新公钥", function (event) {
-        alert("正在更新...")
-        setPubkey();
-    }, "PUBKEY");
+
+
 
     //动态pubkey
     function setPubkey() {
@@ -757,6 +768,12 @@
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
+                       try {
+                           console.log(result.join(""))
+                           showAnserAndHighlightCodeStr(result.join(""))
+                       }catch (e) {
+                           console.log(e)
+                       }
                         return reader.read().then(processText);
                     });
                 },
@@ -897,11 +914,11 @@
                             //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
 
                             try {
-                                log(mdConverter(rest.replaceAll(/\\n+/g, "\n")))
-                                document.getElementById('gptAnswer').innerHTML =
-                                    `${mdConverter(rest.replaceAll(/\\n+/g, "\n"))}`
+                                log(rest)
+                                showAnserAndHighlightCodeStr(rest)
                             } catch (e) {
                                 //TODO handle the exception
+                                console.log(e)
                                 document.getElementById('gptAnswer').innerHTML = `${rest}`
                             }
 
@@ -977,6 +994,7 @@
 
 
                         } catch (e) {
+                            log(e)
                         }
 
                         return reader.read().then(processText);
@@ -1023,8 +1041,9 @@
                             let delta= JSON.parse(d.replace(/data: /,"")).choices[0].delta.content
                             console.log(d)
                             result.push(delta)
+                            showAnserAndHighlightCodeStr(result.join(""))
                         }catch (e) {
-
+                            console.log(e)
                         }
 
                         return reader.read().then(processText);
@@ -1043,9 +1062,78 @@
             })
             //end if
             return;
+        }else if (GPTMODE && GPTMODE == "XEASY") {
+            console.log("当前模式XEASY")
+            let now = Date.now()
+            const pk = {}.PUBLIC_SECRET_KEY;
+            generateSignatureWithPkey({
+                t: now,
+                m: your_qus || "",
+                pkey: pk
+            }).then(sign => {
+                console.log(sign)
+                abortXml = GM_xmlhttpRequest({
+                    method: "POST",
+                    url: "https://chat6.xeasy.me/api/generate",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Referer": `https://chat6.xeasy.me/`
+                    },
+                    data: JSON.stringify({
+                        messages: [{
+                            role: "user",
+                            content: your_qus
+                        }],
+                        time: now,
+                        pass: null,
+                        sign: sign
+                        //key: "",
+                        //usage: Math.floor(Math.random() * 8) + 1
+                    }),
+                    onloadstart: (stream) => {
+                        let result = [];
+                        const reader = stream.response.getReader();
+                        reader.read().then(function processText({done, value}) {
+                            if (done) {
+                                let finalResult = result.join("")
+                                console.log(finalResult)
+                                showAnserAndHighlightCodeStr(finalResult)
+                                return;
+                            }
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            try{
+                                showAnserAndHighlightCodeStr(result.join(""))
+                            }catch (e) {
+                                log(e)
+                            }
+
+                            return reader.read().then(processText);
+                        });
+                    },
+                    responseType: "stream",
+
+                    onprogress: function (msg) {
+                        //console.log(msg) //Todo
+                    },
+                    onerror: function (err) {
+                        document.getElementById('gptAnswer').innerHTML =
+                            `<div>some err happends,errinfo :<br>${err.messages}</div>`
+                    },
+                    ontimeout: function (err) {
+                        document.getElementById('gptAnswer').innerHTML =
+                            `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
+                    }
+                });
+            });
+
+
+            //end if
+            return;
         }
 
 
+        console.log("defualt:")
         const now = Date.now();
         console.log(now);
 
@@ -1090,9 +1178,7 @@
                         console.log(rest)
 
                         try {
-                            log(mdConverter(rest.replaceAll(/\\n+/g, "\n")))
-                            document.getElementById('gptAnswer').innerHTML =
-                                `${mdConverter(rest.replaceAll(/\\n+/g, "\n"))}`
+                           showAnserAndHighlightCodeStr(rest);
                         } catch (e) {
                             //TODO handle the exception
                             document.getElementById('gptAnswer').innerHTML = `${rest}`
@@ -1146,7 +1232,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.6已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.3.7已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1191,7 +1277,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIBOE", "LTXUK", "51GPT","TDCHAT"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIBOE", "LTXUK", "51GPT","TDCHAT","XEASY"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
