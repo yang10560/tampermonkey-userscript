@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      1.8
+// @version      1.9
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -23,7 +23,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v1.8"
+    var JSVer = "v1.9"
 
     //enc-start
     async function digestMessage(r) {
@@ -79,7 +79,7 @@
                     "Content-Type": "application/json",
                     // "Authorization": "Bearer null",
                     "Referer": Baseurl,
-                    //"Host":"www.aiai.zone",
+                    "X-Forwarded-For": generateRandomIP(),
                     "accept": "application/json, text/plain, */*"
                 },
                 data: JSON.stringify({
@@ -407,17 +407,18 @@
         });
     }
 
+    var generateRandomIP = () => {
+        const ip = [];
+        for (let i = 0; i < 4; i++) {
+            ip.push(Math.floor(Math.random() * 256));
+        }
+        console.log(ip.join('.'))
+        return ip.join('.');
+    }
 
     function getAIgcKey() {
         alert("此功能是更新接口2的key")
-        let generateRandomIP = () => {
-            const ip = [];
-            for (let i = 0; i < 4; i++) {
-                ip.push(Math.floor(Math.random() * 256));
-            }
-            console.log(ip.join('.'))
-            return ip.join('.');
-        }
+
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -446,7 +447,7 @@
     //初始化
     setTimeout(() => {
         let chatBtn = document.createElement("button");
-        chatBtn.innerText = "插件接口"
+        chatBtn.innerText = "插件接口0"
         chatBtn.setAttribute("id", "chatX")
         chatBtn.addEventListener("click", () => {
             showWait();
