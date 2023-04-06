@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.0
+// @version      1.4.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -50,6 +50,7 @@
 // @connect    api.tdchat0.com
 // @connect    chat6.xeasy.me
 // @connect   chat.wuguokai.cn
+// @connect   chat.aidutu.cn
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -137,12 +138,23 @@
             return
         }
 
+        //default:
+       let generateRandomIP = ()=>{
+           const ip = [];
+           for (let i = 0; i < 4; i++) {
+               ip.push(Math.floor(Math.random() * 256));
+           }
+           console.log(ip.join('.'))
+           return ip.join('.');
+       }
+
         GM_xmlhttpRequest({
             method: "GET",
             url: "https://api.aigcfun.com/fc/key",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": `https://aigcfun.com/`
+                "Referer": `https://aigcfun.com/`,
+                "X-Forwarded-For": generateRandomIP()
             },
             onload: function (response) {
                 let resp = response.responseText;
@@ -814,36 +826,21 @@
             })
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "AIBOE") {
-            console.log("当前模式AIBOE")
+        } else if (GPTMODE && GPTMODE == "AIDUTU") {
+            console.log("当前模式AIDUTU")
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
-                url: "https://ai.bo-e.com/backend-api/conversation",
+                url: "https://chat.aidutu.cn/api/chat-process",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer null",
-                    "Referer": "https://ai.bo-e.com",
-                    // "Host":"gpt008.com",
-                    "accept": "text/event-stream"
+                    "Referer": "https://chat.aidutu.cn/",
+                    "accept": "application/json, text/plain, */*"
                 },
-                data: JSON.stringify({//抓包conversation就可以看到这个结构
-                    action: "next",
-                    messages: [
-                        {
-                            id: uuid(),
-                            author: {role: "user"},
-                            role: "user",
-                            content: {
-                                content_type: "text",
-                                parts: [your_qus],
-                            },
-                        },
-                    ],
-                    model: "text-davinci-002-render",
-                    parent_message_id: uuid(),
+                data: JSON.stringify({
+                    prompt: your_qus,
+                    options: {},
+                    systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
                 }),
-                //    onprogress: function(msg){console.log(msg)},
-                //     onreadystatechange:function(msg){log(msg)},
                 onloadstart: (stream) => {
                     let result = "";
                     const reader = stream.response.getReader();
@@ -863,25 +860,17 @@
                             // console.log(normalArray)
                             let byteArray = new Uint8Array(chunk);
                             let decoder = new TextDecoder('utf-8');
-                            const matchResults = decoder.decode(byteArray).match(/"parts":\s*\["(.+?)"\]/g);
-                            let nowResult = matchResults[matchResults.length - 1];
-                            nowResult = /\[\"(.*?)\"\]/g.exec(nowResult)[1];
-
+                            let nowResult = JSON.parse(decoder.decode(byteArray))
                             console.log(nowResult)
-
-
-                            if (nowResult != "DONE") {//not done
-                                finalResult = nowResult
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } else {
+                            if (nowResult.text) {
                                 console.log(nowResult)
+                                finalResult = nowResult.text
                                 showAnserAndHighlightCodeStr(finalResult)
                             }
 
-
                         } catch (e) {
+                            console.log(e)
                         }
-
 
                         return reader.read().then(processText);
                     });
@@ -897,7 +886,6 @@
                     console.log(err)
                 }
             })
-
             //end if
             return;
         } else if (GPTMODE && GPTMODE == "LTXUK") {
@@ -1307,7 +1295,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.0已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.1已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1355,7 +1343,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIBOE", "LTXUK", "51GPT","TDCHAT","XEASY","WGK"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT","TDCHAT","XEASY","WGK"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
