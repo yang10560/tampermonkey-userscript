@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      1.7
+// @version      1.8
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -11,6 +11,7 @@
 // @connect    luntianxia.uk
 // @connect    api.tdchat0.com
 // @connect    chat6.xeasy.me
+// @connect    api.aigcfun.com
 // @connect    ai.ls
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
@@ -22,7 +23,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v1.7"
+    var JSVer = "v1.8"
 
     //enc-start
     async function digestMessage(r) {
@@ -47,7 +48,7 @@
     var messageChain2 = []
     var messageChain3 = []
 
-    function addMessageChain(messageChain,element) {
+    function addMessageChain(messageChain, element) {
         if (messageChain.length >= 5) {
             messageChain.shift();
         }
@@ -58,12 +59,12 @@
 
     function kill(question) {
         let aikey = localStorage.getItem("myAIkey") ? localStorage.getItem("myAIkey") : "";
-        console.log("aikey:"+aikey)
+        console.log("aikey:" + aikey)
         let your_qus = question;//你的问题
         let now = Date.now();
         const pk = "7CCjWG8L3h3v";//查看js的generateSignature函数中的key
         let Baseurl = "https://chatai.to/";
-        addMessageChain(messageChain0,{role: "user", content: your_qus})//连续话
+        addMessageChain(messageChain0, {role: "user", content: your_qus})//连续话
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
@@ -96,7 +97,7 @@
                             let finalResult = result.join("")
                             try {
                                 saveHistory(your_qus, finalResult)
-                                addMessageChain(messageChain0,{
+                                addMessageChain(messageChain0, {
                                     role: "assistant",
                                     content: finalResult
                                 })//连续对话
@@ -139,7 +140,7 @@
             m: your_qus || "",
             pkey: pk
         }).then(sign => {
-            addMessageChain(messageChain1,{role: "user", content: your_qus})//连续话
+            addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
             handleUserInput(3)
             console.log(sign)
             GM_xmlhttpRequest({
@@ -169,7 +170,7 @@
                             try {
                                 console.log(finalResult)
                                 saveHistory(your_qus, finalResult);
-                                addMessageChain(messageChain1,{
+                                addMessageChain(messageChain1, {
                                     role: "assistant",
                                     content: finalResult
                                 })//连续对话
@@ -212,7 +213,7 @@
             m: your_qus || "",
             pkey: pk
         }).then(sign => {
-            addMessageChain(messageChain2,{role: "user", content: your_qus})//连续话
+            addMessageChain(messageChain2, {role: "user", content: your_qus})//连续话
             handleUserInput(3)
             console.log(sign)
             GM_xmlhttpRequest({
@@ -242,7 +243,7 @@
                             try {
                                 console.log(finalResult)
                                 saveHistory(your_qus, finalResult);
-                                addMessageChain(messageChain2,{
+                                addMessageChain(messageChain2, {
                                     role: "assistant",
                                     content: finalResult
                                 })
@@ -273,10 +274,10 @@
         });
     }
 
-    function TDCHAT(question){
-       let your_qus = question;//你的问题
-       handleUserInput(3)
-       GM_xmlhttpRequest({
+    function TDCHAT(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(3)
+        GM_xmlhttpRequest({
             method: "POST",
             url: "https://api.tdchat0.com/",
             headers: {
@@ -286,7 +287,7 @@
                 //"Host":"www.aiai.zone",
                 "accept": "application/json, text/plain, */*"
             },
-            data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(question).replace(/%/g,'‰')}&length=${question.length}&stream=1`,
+            data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(question).replace(/%/g, '‰')}&length=${question.length}&stream=1`,
             onloadstart: (stream) => {
                 let result = [];
                 const reader = stream.response.getReader();
@@ -297,8 +298,8 @@
                             console.log(finalResult)
                             saveHistory(your_qus, finalResult);
                         } catch (e) {
-                           console.error(e)
-                        }finally {
+                            console.error(e)
+                        } finally {
                             simulateBotResponse(finalResult)
                             hideWait()
                         }
@@ -309,10 +310,10 @@
 
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        let delta= JSON.parse(d.replace(/data: /,"")).choices[0].delta.content
+                        let delta = JSON.parse(d.replace(/data: /, "")).choices[0].delta.content
                         console.log(d)
                         result.push(delta)
-                    }catch (e) {
+                    } catch (e) {
                         console.log(e)
                     }
 
@@ -345,7 +346,7 @@
             m: your_qus || "",
             pkey: pk
         }).then(sign => {
-            addMessageChain(messageChain3,{role: "user", content: your_qus})//连续话
+            addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
             handleUserInput(3)
             console.log(sign)
             GM_xmlhttpRequest({
@@ -375,7 +376,7 @@
                             try {
                                 console.log(finalResult)
                                 saveHistory(your_qus, finalResult);
-                                addMessageChain(messageChain3,{
+                                addMessageChain(messageChain3, {
                                     role: "assistant",
                                     content: finalResult
                                 })
@@ -406,6 +407,41 @@
         });
     }
 
+
+    function getAIgcKey() {
+        alert("此功能是更新接口2的key")
+        let generateRandomIP = () => {
+            const ip = [];
+            for (let i = 0; i < 4; i++) {
+                ip.push(Math.floor(Math.random() * 256));
+            }
+            console.log(ip.join('.'))
+            return ip.join('.');
+        }
+
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://api.aigcfun.com/fc/key",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": `https://aigcfun.com/`,
+                "X-Forwarded-For": generateRandomIP()
+            },
+            onload: function (response) {
+                let resp = response.responseText;
+                let gckey = JSON.parse(resp).data;
+                if (!gckey) {
+                    alert("更新失败")
+                    localStorage.removeItem("useKeyTime")
+                    return
+                }
+                console.log("gckey:" + gckey);
+                localStorage.setItem("useKeyTime", 0)
+                localStorage.setItem("aigcfunkey", gckey)
+                alert("更新成功：" + gckey)
+            }
+        });
+    }
 
     //初始化
     setTimeout(() => {
@@ -449,11 +485,20 @@
             chat6Xeasy(inputField.value.trim());
         });
 
+        let chatBtn5 = document.createElement("button");
+        chatBtn5.innerText = "更新key"
+        chatBtn5.setAttribute("id", "aigckey")
+        chatBtn5.addEventListener("click", () => {
+            getAIgcKey();
+        });
+
+
         document.getElementById("input-container").append(chatBtn);
         document.getElementById("input-container").append(chatBtn1);
         document.getElementById("input-container").append(chatBtn2);
         document.getElementById("input-container").append(chatBtn3);
         document.getElementById("input-container").append(chatBtn4);
+        document.getElementById("input-container").append(chatBtn5);
         document.getElementById("chat-header").append(" -JS版本:" + JSVer)
     }, 1500)
 
