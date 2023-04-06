@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.1
+// @version      1.4.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -1144,6 +1144,7 @@
             return;
         }else if (GPTMODE && GPTMODE == "WGK") {
             console.log("当前模式WGK")
+            wsResult = []
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
                 url: "https://chat.wuguokai.cn/api/v1/bots/chatgpt/mod/channel-web/messages?__ts="+ Date.now(),
@@ -1295,7 +1296,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.1已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.2已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1661,6 +1662,7 @@
         return result;
     }
 
+    var wsResult = []
 
     var initSocket = function () {
         // 创建WebSocket连接
@@ -1671,8 +1673,6 @@
             showAnserAndHighlightCodeStr("websocket已经连接")
         });
         let isFirst = false;
-        let result = [];
-        let preId = 0;
 
         // 监听接收消息事件
         socket.addEventListener('message', (event) => {
@@ -1702,14 +1702,9 @@
                 //收信
                 try {
                     let chunk =  JSON.parse(revData.replace(/42\/guest,/,"").trim())[1].data.payload.text;
-                    let curId =  JSON.parse(revData.replace(/42\/guest,/,"").trim())[1].data.conversationId;
-                    if(preId != curId){
-                        preId = curId;
-                        result = [];
-                    }
                     console.log(chunk)
-                    result.push(chunk)
-                    showAnserAndHighlightCodeStr(result.join(""))
+                    wsResult.push(chunk)
+                    showAnserAndHighlightCodeStr(wsResult.join(""))
 
                 }catch (e) {
                     console.log(e)
