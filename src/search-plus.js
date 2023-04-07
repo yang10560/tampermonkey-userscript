@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.2
+// @version      1.4.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -51,6 +51,9 @@
 // @connect    chat6.xeasy.me
 // @connect   chat.wuguokai.cn
 // @connect   chat.aidutu.cn
+// @connect   aichat.leiluan.cc
+// @connect   chat.gptservice.xyz
+// @connect   gpt66.cn
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -81,27 +84,25 @@
     ));
 
 
-   try {
-       //禁用console 未转义警告
-       hljs.configure({
-           ignoreUnescapedHTML:true
-       })
-       const menu_updateChat_id = GM_registerMenuCommand("更新Chat", function (event) {
-           GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
-       }, "updateChat");
-       const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
-           alert("交流群:177193765")
-       }, "groupNum");
+    try {
+        //禁用console 未转义警告
+        hljs.configure({
+            ignoreUnescapedHTML: true
+        })
+        const menu_updateChat_id = GM_registerMenuCommand("更新Chat", function (event) {
+            GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
+        }, "updateChat");
+        const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
+            alert("交流群:177193765")
+        }, "groupNum");
 
-       const menu_pubkey_id = GM_registerMenuCommand("更新公钥", function (event) {
-           alert("正在更新...")
-           setPubkey();
-       }, "PUBKEY");
-   }catch (e){
-       console.log(e)
-   }
-
-
+        const menu_pubkey_id = GM_registerMenuCommand("更新公钥", function (event) {
+            alert("正在更新...")
+            setPubkey();
+        }, "PUBKEY");
+    } catch (e) {
+        console.log(e)
+    }
 
 
     //动态pubkey
@@ -111,27 +112,33 @@
             //https://gptkey.oss-cn-hangzhou.aliyuncs.com/key.txt
             GM_xmlhttpRequest({
                 method: "GET",
-                url: "https://gptkey.oss-cn-hangzhou.aliyuncs.com/key.txt",
+                nocache:true,
+                url: "http://gpt66.cn/gongxkey.html",
                 headers: {
                     //"Content-Type": "application/json",
-                    //"Referer": `https://aigcfun.com/`
+                    "Referer": `http://gpt66.cn/`
                 },
                 onload: function (response) {
                     let resp = response.responseText;
-                    let pubkey = resp;
-                    if (!pubkey) {
+                    const regex = /data-key="([^"]+)"/g;
+                    const keys = [];
+                    let match;
+                    while (match = regex.exec(resp)){
+                        keys.push(match[1]);
+                    }
+
+                    if (keys.length == 0) {
                         localStorage.removeItem("openAIkey")
                         document.getElementById("gptAnswer").innerText = "openAI key获取失败"
                         return
                     }
                     //localStorage.setItem("openAIkey", pubkey)
-                    document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制然后刷新页面手动更新:" + pubkey
+                    document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
                     localStorage.removeItem("openAIkey")
                 },
                 onerror: (e) => {
                     localStorage.removeItem("openAIkey")
                     document.getElementById("gptAnswer").innerText = "openAI key获取失败"
-                    return
                 }
             });
 
@@ -139,14 +146,14 @@
         }
 
         //default:
-       let generateRandomIP = ()=>{
-           const ip = [];
-           for (let i = 0; i < 4; i++) {
-               ip.push(Math.floor(Math.random() * 256));
-           }
-           console.log(ip.join('.'))
-           return ip.join('.');
-       }
+        let generateRandomIP = () => {
+            const ip = [];
+            for (let i = 0; i < 4; i++) {
+                ip.push(Math.floor(Math.random() * 256));
+            }
+            console.log(ip.join('.'))
+            return ip.join('.');
+        }
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -253,25 +260,25 @@
 
     //end
 
-    function katexTohtml(rawHtml){
+    function katexTohtml(rawHtml) {
         console.log("========katexTohtml start=======")
-        let renderedHtml = rawHtml.replace(/<em>/g,"").replace(/<\/em>/g,"").replace(/\$\$(.*?)\$\$/g, (_, tex) => {
+        let renderedHtml = rawHtml.replace(/<em>/g, "").replace(/<\/em>/g, "").replace(/\$\$(.*?)\$\$/g, (_, tex) => {
             //debugger
-            return katex.renderToString(tex, { displayMode: false,throwOnError: false });
+            return katex.renderToString(tex, {displayMode: false, throwOnError: false});
         });
         renderedHtml = renderedHtml.replace(/\$(.*?)\$/g, (_, tex) => {
             //debugger
-            return katex.renderToString(tex, { displayMode: false,throwOnError: false });
+            return katex.renderToString(tex, {displayMode: false, throwOnError: false});
         });
         console.log("========katexTohtml end=======")
         return renderedHtml;
     }
 
     //显示答案并高亮代码函数
-    function showAnserAndHighlightCodeStr(codeStr){
+    function showAnserAndHighlightCodeStr(codeStr) {
         try {
             document.getElementById('gptAnswer').innerHTML = `${katexTohtml(mdConverter(codeStr.replace(/\\n+/g, "\n")))}`
-        }catch (e) {
+        } catch (e) {
             document.getElementById('gptAnswer').innerHTML = `${mdConverter(codeStr.replace(/\\n+/g, "\n"))}`
         }
         for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
@@ -280,8 +287,9 @@
             hljs.highlightAll()
         }
     }
+
     //高亮代码函数
-    function highlightCodeStr(){
+    function highlightCodeStr() {
         for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
             document.getElementsByTagName("code")[i].setAttribute("class",
                 "hljs");
@@ -526,7 +534,7 @@
                 if (manualInput) {
                     let aikey = prompt("请输入您的openAIkey", "");
                     if (aikey) localStorage.setItem("openAIkey", aikey)
-                }else {
+                } else {
                     return
                 }
 
@@ -642,7 +650,7 @@
         } else if (GPTMODE && GPTMODE == "EXTKJ") {
             console.log("当前模式EXTKJ")
             let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__").toString()
-            console.log("aes:"+pt)
+            console.log("aes:" + pt)
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
                 url: "https://chat.extkj.cn/api/chat-stream",
@@ -684,7 +692,7 @@
                                 //document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
                             } else {
                                 let jsonLine = nowResult.split("\n");
-                                finalResult = JSON.parse(jsonLine[jsonLine.length-1]).text;
+                                finalResult = JSON.parse(jsonLine[jsonLine.length - 1]).text;
                                 showAnserAndHighlightCodeStr(finalResult)
                             }
 
@@ -804,12 +812,12 @@
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
-                       try {
-                           console.log(result.join(""))
-                           showAnserAndHighlightCodeStr(result.join(""))
-                       }catch (e) {
-                           console.log(e)
-                       }
+                        try {
+                            console.log(result.join(""))
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
                         return reader.read().then(processText);
                     });
                 },
@@ -839,7 +847,7 @@
                 data: JSON.stringify({
                     prompt: your_qus,
                     options: {},
-                    systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
+                    systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
                 }),
                 onloadstart: (stream) => {
                     let result = "";
@@ -1025,7 +1033,7 @@
             })
             //end if
             return;
-        }else if (GPTMODE && GPTMODE == "TDCHAT") {
+        } else if (GPTMODE && GPTMODE == "TDCHAT") {
             console.log("当前模式TDCHAT")
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
@@ -1037,7 +1045,7 @@
                     //"Host":"www.aiai.zone",
                     "accept": "application/json, text/plain, */*"
                 },
-                data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g,'‰')}&length=${your_qus.length}&stream=1`,
+                data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g, '‰')}&length=${your_qus.length}&stream=1`,
                 onloadstart: (stream) => {
                     let result = [];
                     const reader = stream.response.getReader();
@@ -1050,11 +1058,11 @@
 
                         try {
                             let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            let delta= JSON.parse(d.replace(/data: /,"")).choices[0].delta.content
+                            let delta = JSON.parse(d.replace(/data: /, "")).choices[0].delta.content
                             console.log(d)
                             result.push(delta)
                             showAnserAndHighlightCodeStr(result.join(""))
-                        }catch (e) {
+                        } catch (e) {
                             console.log(e)
                         }
 
@@ -1074,7 +1082,7 @@
             })
             //end if
             return;
-        }else if (GPTMODE && GPTMODE == "XEASY") {
+        } else if (GPTMODE && GPTMODE == "XEASY") {
             console.log("当前模式XEASY")
             let now = Date.now()
             const pk = {}.PUBLIC_SECRET_KEY;
@@ -1114,9 +1122,9 @@
                             }
                             let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                             result.push(d)
-                            try{
+                            try {
                                 showAnserAndHighlightCodeStr(result.join(""))
-                            }catch (e) {
+                            } catch (e) {
                                 log(e)
                             }
 
@@ -1142,12 +1150,12 @@
 
             //end if
             return;
-        }else if (GPTMODE && GPTMODE == "WGK") {
+        } else if (GPTMODE && GPTMODE == "WGK") {
             console.log("当前模式WGK")
             wsResult = []
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
-                url: "https://chat.wuguokai.cn/api/v1/bots/chatgpt/mod/channel-web/messages?__ts="+ Date.now(),
+                url: "https://chat.wuguokai.cn/api/v1/bots/chatgpt/mod/channel-web/messages?__ts=" + Date.now(),
                 headers: {
                     "Content-Type": "application/json",
                     "Referer": `https://chat.wuguokai.cn/lite/chatgpt/?m=channel-web&v=Fullscreen&options={"hideWidget":true,"config":{"enableReset":false,"enableTranscriptDownload":true}}`
@@ -1191,9 +1199,15 @@
             });
 
 
-
             //end if
             return;
+        } else if (GPTMODE && GPTMODE == "LEILUAN") {
+
+            console.log("LEILUAN")
+            LEILUAN()
+
+            return;
+            //end if
         }
 
 
@@ -1242,7 +1256,7 @@
                         console.log(rest)
 
                         try {
-                           showAnserAndHighlightCodeStr(rest);
+                            showAnserAndHighlightCodeStr(rest);
                         } catch (e) {
                             //TODO handle the exception
                             document.getElementById('gptAnswer').innerHTML = `${rest}`
@@ -1296,7 +1310,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.2已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.3已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1327,7 +1341,7 @@
         }
         if (append_case === 0) {
             search_content = document.getElementsByClassName('b_searchbox')[0].value
-            if(!search_content){
+            if (!search_content) {
                 search_content = document.querySelector("textarea[class='b_searchbox']").value;
             }
         }
@@ -1344,7 +1358,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT","TDCHAT","XEASY","WGK"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
@@ -1616,12 +1630,12 @@
     function initCvID() {
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://chat.wuguokai.cn/api/v1/bots/chatgpt/mod/channel-web/conversations/new?__ts="+ Date.now(),
+            url: "https://chat.wuguokai.cn/api/v1/bots/chatgpt/mod/channel-web/conversations/new?__ts=" + Date.now(),
             headers: {
                 "Content-Type": "application/json",
                 "Referer": `https://chat.wuguokai.cn/lite/chatgpt/?m=channel-web&v=Fullscreen&options={"hideWidget":true,"config":{"enableReset":false,"enableTranscriptDownload":true}}`
             },
-            data: JSON.stringify({"webSessionId":webSessionId}),
+            data: JSON.stringify({"webSessionId": webSessionId}),
             onloadstart: (stream) => {
                 let result = [];
                 const reader = stream.response.getReader();
@@ -1630,7 +1644,7 @@
                         let finalResult = result.join("")
                         console.log(finalResult)
                         convoId = JSON.parse(finalResult).convoId
-                        console.log("convoId: ",convoId)
+                        console.log("convoId: ", convoId)
                         return;
                     }
                     let d = new TextDecoder("utf8").decode(new Uint8Array(value));
@@ -1678,35 +1692,35 @@
         socket.addEventListener('message', (event) => {
             console.log('接收到消息：', event.data);
             let revData = event.data;
-            if(!isFirst){
+            if (!isFirst) {
                 socket.send("40/guest,")
                 isFirst = true
-                setTimeout(()=>socket.send("3"),3000)
+                setTimeout(() => socket.send("3"), 3000)
             }
-            if(revData == "3"){
+            if (revData == "3") {
                 socket.send("2");
             }
-            if(revData == "2"){
+            if (revData == "2") {
                 socket.send("3");
             }
-            if(revData.match(/40\/guest/)){
+            if (revData.match(/40\/guest/)) {
                 try {
-                    webSessionId =  JSON.parse(revData.replace(/40\/guest,/,"").trim()).sid;
-                    console.log("webSessionId ",webSessionId)
+                    webSessionId = JSON.parse(revData.replace(/40\/guest,/, "").trim()).sid;
+                    console.log("webSessionId ", webSessionId)
                     initCvID();
-                }catch (e) {
+                } catch (e) {
                     console.log(e)
                 }
             }
-            if(revData.match(/42\/guest/)){
+            if (revData.match(/42\/guest/)) {
                 //收信
                 try {
-                    let chunk =  JSON.parse(revData.replace(/42\/guest,/,"").trim())[1].data.payload.text;
+                    let chunk = JSON.parse(revData.replace(/42\/guest,/, "").trim())[1].data.payload.text;
                     console.log(chunk)
                     wsResult.push(chunk)
                     showAnserAndHighlightCodeStr(wsResult.join(""))
 
-                }catch (e) {
+                } catch (e) {
                     console.log(e)
                 }
             }
@@ -1714,9 +1728,88 @@
         });
     }
 
-    setTimeout(()=>{
+    function LEILUAN() {
+
+        console.log(CryptoJS.MD5(your_qus).toString().toLowerCase())
+
+        //这里填你的cookie里面的token 地址：https://aichat.leiluan.cc/static/html/pc.html
+        let leiluanToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiJkNDFkOGNkOThmMDBiMjA0ZTk4MDA5OThlY2Y4NDI3ZSIsImlzcyI6ImFpY2hhdC5sZWlsdWFuLmNjIiwiYXVkIjoiYWljaGF0LmxlaWx1YW4uY2MiLCJpYXQiOjE2ODAyNDY1MTgsIm5iZiI6MTY4MDI0NjUxOCwiZXhwIjoxNjgyODM4NTE4LCJqdGkiOnsiaWQiOjg0LCJ0eXBlIjoiYXBpIn19.1Z3oNWp0mi-GJALHdonBwnm4-jiOHRfu3edj4hH6Evs";
+        GM_xmlhttpRequest({
+            url: "https://aichat.leiluan.cc/api/user/openchat",
+            headers: {
+                "accept": "*/*",
+                "authori-zation": `Bearer ${leiluanToken}`,
+                "referrer": "https://aichat.leiluan.cc/pages/lei_luan/content/talk?content=%E4%BD%A0%E6%98%AF%E4%BB%80%E4%B9%88%E5%9E%83%E5%9C%BE",
+                "content-type": "application/json"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                chatlogid: CryptoJS.MD5(your_qus).toString().toLowerCase()
+            }),
+            method: "POST",
+            onload: (resp) => {
+                let rs = resp.responseText;
+                let tk = JSON.parse(rs).data.token;
+                GM_xmlhttpRequest({
+                    url: "https://chat.gptservice.xyz/indext.php?token=" + tk,
+                    method: "GET",
+                    headers: {
+                        "accept": "text/event-stream",
+                        "content-type": "text/event-stream",
+                        "referrer": "https://aichat.leiluan.cc/"
+                    },
+                    onloadstart: (stream) => {
+                        const reader = stream.response.getReader();
+                        let chunks = [];
+                        reader.read().then(function processText({done, value}) {
+                            if (done) {
+                                // 数据已经被完全消耗
+                                const targetString = chunks.join("");
+                                const regExp = /"content":"(.+?)"/gi;
+                                const matchResult = targetString.match(regExp);
+                                let finalAns = []
+                                matchResult.forEach(item=>{
+                                   try {
+                                       console.log("===="+/"content":"(.+?)"/g.exec(item)[1]+"=====")
+                                       finalAns.push(/"content":"(.+?)"/g.exec(item)[1])
+                                   }catch (e) {
+                                       console.error(e,item)
+                                   }
+                                })
+
+                               // console.log(finalAns.join(""))
+                                showAnserAndHighlightCodeStr(finalAns.join(""))
+                                return;
+                            }
+                            try {
+                                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                                //console.log(d)
+                                chunks.push(d)
+                            }catch (e) {
+                                console.error(e)
+                            }
+
+                            return reader.read().then(processText);
+                        });
+
+
+                    },
+                    responseType: "stream",
+                    onerror: function (err) {
+                        console.log(err)
+                    }
+
+                })
+
+            }
+
+        })
+
+    }
+
+    setTimeout(() => {
         initSocket();
-    },1500)
+    }, 1500)
 
 
 })();
