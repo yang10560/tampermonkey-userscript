@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.3
+// @version      1.4.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -836,65 +836,93 @@
             return;
         } else if (GPTMODE && GPTMODE == "AIDUTU") {
             console.log("当前模式AIDUTU")
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                url: "https://chat.aidutu.cn/api/chat-process",
+
+            let _iam = generateRandomString(8)
+            GM_xmlhttpRequest({
+                url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.3",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Referer": "https://chat.aidutu.cn/",
-                    "accept": "application/json, text/plain, */*"
+                    "accept": "*/*",
+                    "referrer": "https://aichat.leiluan.cc/",
+                    "x-iam:": _iam,
+                    "content-type": "application/json"
                 },
                 data: JSON.stringify({
-                    prompt: your_qus,
-                    options: {},
-                    systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
+                    q: your_qus,
+                    iam:_iam
                 }),
-                onloadstart: (stream) => {
-                    let result = "";
-                    const reader = stream.response.getReader();
-                    //     console.log(reader.read)
-                    let charsReceived = 0;
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            highlightCodeStr()
-                            return;
+                method: "POST",
+                onload: (resp) => {
+                    let rs = resp.responseText;
+                    console.log(rs)
+                    let xtoken = JSON.parse(rs).data.token;
+                    console.log(xtoken)
+                    abortXml = GM_xmlhttpRequest({
+                        method: "POST",
+                        url: "https://chat.aidutu.cn/api/chat-process",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Referer": "https://chat.aidutu.cn/",
+                            "accept": "application/json, text/plain, */*",
+                            "x-token": xtoken
+                        },
+                        data: JSON.stringify({
+                            prompt: your_qus,
+                            temperature: 0.8,
+                            top_p: 1,
+                            options: {},
+                            systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
+                        }),
+                        onloadstart: (stream) => {
+                            let result = "";
+                            const reader = stream.response.getReader();
+                            //     console.log(reader.read)
+                            let charsReceived = 0;
+                            reader.read().then(function processText({done, value}) {
+                                if (done) {
+                                    highlightCodeStr()
+                                    return;
+                                }
+
+                                charsReceived += value.length;
+                                const chunk = value;
+                                result += chunk;
+                                normalArray = chunk
+                                try {
+                                    // console.log(normalArray)
+                                    let byteArray = new Uint8Array(chunk);
+                                    let decoder = new TextDecoder('utf-8');
+                                    let nowResult = JSON.parse(decoder.decode(byteArray))
+                                    console.log(nowResult)
+                                    if (nowResult.text) {
+                                        console.log(nowResult)
+                                        finalResult = nowResult.text
+                                        showAnserAndHighlightCodeStr(finalResult)
+                                    }
+
+                                } catch (e) {
+                                    console.log(e)
+                                }
+
+                                return reader.read().then(processText);
+                            });
+                        },
+                        responseType: "stream",
+                        onprogress: function (msg) {
+                            //console.log(msg) //Todo
+                        },
+                        onerror: function (err) {
+                            console.log(err)
+                        },
+                        ontimeout: function (err) {
+                            console.log(err)
                         }
+                    })
 
-                        charsReceived += value.length;
-                        const chunk = value;
-                        result += chunk;
-                        normalArray = chunk
-                        try {
-                            // console.log(normalArray)
-                            let byteArray = new Uint8Array(chunk);
-                            let decoder = new TextDecoder('utf-8');
-                            let nowResult = JSON.parse(decoder.decode(byteArray))
-                            console.log(nowResult)
-                            if (nowResult.text) {
-                                console.log(nowResult)
-                                finalResult = nowResult.text
-                                showAnserAndHighlightCodeStr(finalResult)
-                            }
+                }//end onload
 
-                        } catch (e) {
-                            console.log(e)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
             })
-            //end if
+
+             //end if
             return;
         } else if (GPTMODE && GPTMODE == "LTXUK") {
             console.log("当前模式LTXUK")
@@ -1310,7 +1338,7 @@
     <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.3已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.4已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
