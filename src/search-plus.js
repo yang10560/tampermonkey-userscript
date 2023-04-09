@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.4
+// @version      1.4.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -133,7 +133,12 @@
                         return
                     }
                     //localStorage.setItem("openAIkey", pubkey)
-                    document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
+                    let ht = ""
+                    keys.forEach(key=>{
+                        ht +=`<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
+                    })
+                    document.getElementById("gptAnswer").innerHTML = ht;
+                    //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
                     localStorage.removeItem("openAIkey")
                 },
                 onerror: (e) => {
@@ -167,7 +172,7 @@
                 let resp = response.responseText;
                 let pubkey = JSON.parse(resp).data;
                 if (!pubkey) {
-                    document.getElementById("gptAnswer").innerText = "pubkey失败"
+                    document.getElementById("gptAnswer").innerText = "获取pubkey失败"
                     return
                 }
                 console.log("pubkey:" + pubkey);
@@ -1335,10 +1340,10 @@
     <input id="gptInput" type=text><button class="s_btn" id="button_GPT" >chat一下</button>
     </div>
     <div id=gptCueBox>
-    <p id="gptStatus">&nbsp 本插件完全免费，请勿点击链接购买，后果自负。<a id="changMode" style="color: red;" href="javascript:void(0)">切换模式</a></p>
-	<p id="warn" style="color: green;"  >&nbsp &nbsp 提示上限、错误等，请点击这里手动更新。<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新秘钥</a></p>
+    <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
+	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.4已启动,部分需要魔法。当前模式: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.5已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
