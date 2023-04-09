@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.6
+// @version      1.4.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -55,6 +55,7 @@
 // @connect   chat.gptservice.xyz
 // @connect   gpt66.cn
 // @connect   ai.ls
+// @connect   chatgpt.letsearches.com
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -387,8 +388,7 @@
         s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
         s[8] = s[13] = s[18] = s[23] = "-";
 
-        var uuid = s.join("");
-        return uuid;
+        return s.join("");
     }
 
     function GM_add_box_style(case_web) {
@@ -1249,6 +1249,12 @@
 
             return;
             //end if
+        }else if(GPTMODE && GPTMODE == "LERSEARCH"){
+            console.log("LERSEARCH")
+            LERSEARCH()
+
+            return;
+            //end if
         }
 
 
@@ -1347,8 +1353,8 @@
     <div id=gptCueBox>
     <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #34c44c;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #0bbbac;" href="https://tongyi.aliyun.com/">通义</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.6已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #34c44c;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a></p>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1396,7 +1402,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN","AILS"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN","AILS","LERSEARCH"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
@@ -1554,63 +1560,6 @@
     }
 
 
-    function creatBox_and_addEventlis(append_case) {
-        var divE = document.createElement('div');
-        var divId = document.createAttribute("id"); //创建属性
-        divId.value = 'gptDiv'; //设置属性值
-        divE.setAttributeNode(divId); //给div添加属性
-        var pE = document.createElement('p');
-        var pClass = document.createAttribute('class');
-        pClass.value = 'textClass';
-        pE.setAttributeNode(pClass)
-        var pText = document.createTextNode("chatGPT tools Plus 已启动");
-        pE.appendChild(pText);
-        divE.appendChild(pE);
-        switch (append_case) {
-            case 0:
-                if (divE) {
-                    document.getElementById('b_context').prepend(divE)
-                }
-                break;
-            case 1:
-                if (document.getElementsByClassName('TQc1id ')[0]) {
-                    document.getElementsByClassName('TQc1id ')[0].prepend(divE);
-                } else {
-                    document.getElementById("rcnt").appendChild(divE);
-                }
-                break;
-            case 2:
-                if (document.getElementById('content_right')) {
-                    document.getElementById('content_right').prepend(divE)
-                }
-                break;
-            default:
-                if (divE) {
-                    document.getElementById('b_context').prepend(divE)
-                }
-        }
-        document.getElementById('gptDiv').innerHTML =
-            `<div id="gptInputBox"><input id="gptInput"type=text><button id="button_GPT">chat一下</button></div><div id=gptCueBox><p id="gptStatus">&nbsp openAI已就绪，请输入你的问题</p><div id="gptAnswer">chatGPT tools Plus 免费版已启动</div></div><p></p>`
-        var search_content
-        if (append_case === 2) {
-            search_content = document.getElementById('kw').value
-        }
-        if (append_case === 1) {
-            search_content = document.querySelector(
-                "#tsf > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input:nth-child(3)")
-                .value
-        }
-        if (append_case === 0) {
-            search_content = document.getElementsByClassName('b_searchbox')[0].value
-        }
-        document.getElementById("gptInput").value = search_content
-        document.getElementById('button_GPT').addEventListener('click', () => {
-            your_qus = document.getElementById("gptInput").value
-            do_it()
-
-        })
-    }
-
     function log(a) {
         console.log(a)
     }
@@ -1639,8 +1588,7 @@
         var converter = new showdown.Converter(); //增加拓展table
         converter.setOption('tables',
             true); //启用表格选项。从showdown 1.2.0版开始，表支持已作为可选功能移入核心拓展，showdown.table.min.js扩展已被弃用
-        var view = converter.makeHtml(rawData);
-        return view;
+        return converter.makeHtml(rawData);
     }
 
     //实时监控百度,360按钮消失
@@ -1851,6 +1799,7 @@
     }
 
     var messageChain2 = [];//AILS
+    var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
             role: "system",
@@ -1940,6 +1889,77 @@
     }
 
 
+    function LERSEARCH() {
+
+            let baseURL = "https://chatgpt.letsearches.com/";
+            addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: baseURL + "api/chat-stream",
+                headers: {
+                    "Content-Type": "application/json",
+                     "access-code": "",
+                     "path": "v1/chat/completions",
+                     "Referer": baseURL
+                },
+                data: JSON.stringify({
+                    messages: messageChain3,
+                    stream: true,
+                    model: "gpt-3.5-turbo",
+                    temperature: 1,
+                    max_tokens: 2000,
+                    presence_penalty: 0
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain2, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                showAnserAndHighlightCodeStr(finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+    }
+
+
+
+    if (localStorage.getItem("GPTMODE") && localStorage.getItem("GPTMODE") == "WGK") {
+        setTimeout(() => {
+            initSocket();
+        }, 500)
+    }
 
 
 
