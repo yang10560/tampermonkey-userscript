@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.5
+// @version      1.4.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -54,6 +54,7 @@
 // @connect   aichat.leiluan.cc
 // @connect   chat.gptservice.xyz
 // @connect   gpt66.cn
+// @connect   ai.ls
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -1241,7 +1242,15 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "AILS") {
+
+            console.log("AILS")
+            AILS()
+
+            return;
+            //end if
         }
+
 
 
         console.log("defualt:")
@@ -1253,6 +1262,7 @@
             m: your_qus || ""
         }).then(sign => {
             console.log(sign)
+            addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
             abortXml = GM_xmlhttpRequest({
                 method: "POST",
                 url: "https://api.aigcfun.com/api/v1/text?key=" + getPubkey(),
@@ -1262,16 +1272,7 @@
                     "Referer": `https://aigcfun.com/`
                 },
                 data: JSON.stringify({
-                    messages: [
-                        {
-                            role: "system",
-                            content: "请以markdown的形式返回答案"
-                        },
-                        {
-                            role: "user",
-                            content: your_qus
-                        }
-                    ],
+                    messages: messageChain1,
                     tokensLength: your_qus.length + 10,
                     model: "gpt-3.5-turbo"
 
@@ -1290,6 +1291,10 @@
 
                         try {
                             showAnserAndHighlightCodeStr(rest);
+                            addMessageChain(messageChain1, {
+                                role: "assistant",
+                                content: rest
+                            })
                         } catch (e) {
                             //TODO handle the exception
                             document.getElementById('gptAnswer').innerHTML = `${rest}`
@@ -1342,8 +1347,8 @@
     <div id=gptCueBox>
     <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<p id="website">&nbsp =========<a target="_blank" style="color: red;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=========</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.5已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "默认模式"}<div></article>
+	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #34c44c;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #0bbbac;" href="https://tongyi.aliyun.com/">通义</a></p>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.6已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1391,7 +1396,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN","AILS"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
@@ -1399,6 +1404,11 @@
                     if (chatList[i] == GPTMODE) {
                         idx = (i + 1 >= chatList.length) ? 0 : i + 1;
                     }
+                }
+                if(chatList[idx] == "WGK"){
+                    setTimeout(() => {
+                        initSocket();
+                    }, 500)
                 }
 
                 localStorage.setItem("GPTMODE", chatList[idx])
@@ -1840,9 +1850,97 @@
 
     }
 
-    setTimeout(() => {
-        initSocket();
-    }, 1500)
+    var messageChain2 = [];//AILS
+    var messageChain1 = [
+        {
+            role: "system",
+            content: "请以markdown的形式返回答案"
+        }
+    ];//default AIGCFUN
+
+    function addMessageChain(messageChain, element) {
+        if (messageChain.length >= 6) {
+            messageChain.shift();
+        }
+        messageChain.push(element);
+        console.log(messageChain)
+    }
+
+    function AILS() {
+
+        let now = Date.now();
+        const pk = `Na3dx_(?qx32l}ep?#:8:mo44;7W\\2W.:nxm:${your_qus.length}`;//查看js的generateSignature函数中的key
+        let Baseurl = "https://ai.ls/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: pk
+        }).then(sign => {
+            addMessageChain(messageChain2, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain2,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain2, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                showAnserAndHighlightCodeStr(finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+
+
 
 
 })();
