@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.0
+// @version      2.1
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -13,6 +13,7 @@
 // @connect    chat6.xeasy.me
 // @connect    api.aigcfun.com
 // @connect    ai5.wuguokai.top
+// @connect    chat.aidutu.cn
 // @connect    ai.ls
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
@@ -24,7 +25,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.0"
+    var JSVer = "v2.1"
 
     //enc-start
     async function digestMessage(r) {
@@ -468,6 +469,106 @@
 
     }
 
+    function generateRandomString(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
+    var parentID_aidutu;
+    function AIDUTU(question){
+        let your_qus = question;//你的问题
+        console.log(parentID_aidutu)
+        handleUserInput(null)
+        let _iam = generateRandomString(8)
+        let ops = {};
+        if(parentID_aidutu){
+            ops = {parentMessageId: parentID_aidutu};
+        }
+        console.log(ops)
+        GM_xmlhttpRequest({
+            url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.3",
+            headers: {
+                "accept": "*/*",
+                "referrer": "https://aichat.leiluan.cc/",
+                "x-iam:": _iam,
+                "content-type": "application/json"
+            },
+            data: JSON.stringify({
+                q: your_qus,
+                iam: _iam
+            }),
+            method: "POST",
+            onload: (resp) => {
+                let rs = resp.responseText;
+                console.log(rs)
+                let xtoken = JSON.parse(rs).data.token;
+                console.log(xtoken)
+                GM_xmlhttpRequest({
+                    method: "POST",
+                    url: "https://chat.aidutu.cn/api/chat-process",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Referer": "https://chat.aidutu.cn/",
+                        "accept": "application/json, text/plain, */*",
+                        "x-token": xtoken
+                    },
+                    data: JSON.stringify({
+                        prompt: your_qus,
+                        temperature: 0.8,
+                        top_p: 1,
+                        options: ops,
+                        systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
+                    }),
+                    onloadstart: (stream) => {
+                        let result = "";
+                        simulateBotResponse(("请稍后..."))
+                        const reader = stream.response.getReader();
+                        //     console.log(reader.read)
+                        let finalResult = "";
+                        reader.read().then(function processText({done, value}) {
+                            if (done) {
+                                saveHistory(your_qus, finalResult);
+                                return;
+                            }
+                            const chunk = value;
+                            result += chunk;
+                            try {
+                                let byteArray = new Uint8Array(chunk);
+                                let decoder = new TextDecoder('utf-8');
+                                let nowResult = JSON.parse(decoder.decode(byteArray))
+                                console.log(nowResult)
+                                if (nowResult.text) {
+                                    console.log(nowResult)
+                                    finalResult = nowResult.text
+                                    fillBotResponse(finalResult)
+                                }
+                                if(nowResult.id){
+                                    parentID_aidutu = nowResult.id;
+                                }
+
+                            } catch (e) {
+                                console.log(e)
+                            }
+
+                            return reader.read().then(processText);
+                        });
+                    },
+                    responseType: "stream",
+                    onerror: function (err) {
+                        console.log(err)
+                    }
+                })
+
+            }//end onload
+
+        })
+    }
+
 
     var generateRandomIP = () => {
         const ip = [];
@@ -562,6 +663,13 @@
             WGK(inputField.value.trim())
         });
 
+        let chatBtn7 = document.createElement("button");
+        chatBtn7.innerText = "插件接口6"
+        chatBtn7.setAttribute("id", "aidutu")
+        chatBtn7.addEventListener("click", () => {
+            AIDUTU(inputField.value.trim())
+        });
+
 
         document.getElementById("input-container").append(chatBtn);
         document.getElementById("input-container").append(chatBtn1);
@@ -570,6 +678,7 @@
         document.getElementById("input-container").append(chatBtn4);
         document.getElementById("input-container").append(chatBtn5);
         document.getElementById("input-container").append(chatBtn6);
+        document.getElementById("input-container").append(chatBtn7);
         document.getElementById("chat-header").append(" -JS版本:" + JSVer)
     }, 1500)
 
