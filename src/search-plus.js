@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.8
+// @version       1.4.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -96,10 +96,10 @@
             GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
         }, "updateChat");
         const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
-            alert("交流群:177193765")
+            alert("交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992")
         }, "groupNum");
 
-        const menu_pubkey_id = GM_registerMenuCommand("更新公钥", function (event) {
+        const menu_pubkey_id = GM_registerMenuCommand("更新key", function (event) {
             alert("正在更新...")
             setPubkey();
         }, "PUBKEY");
@@ -725,69 +725,8 @@
             return;
         } else if (GPTMODE && GPTMODE == "THEBAI") {
             console.log("当前模式THEBAI")
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                url: "https://chatbot.theb.ai/api/chat-process",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": "https://chatbot.theb.ai/",
-                    //"Host":"www.aiai.zone",
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
-                    prompt: your_qus,
-                    options: {}
-                }),
-                onloadstart: (stream) => {
-                    let result = "";
-                    const reader = stream.response.getReader();
-                    //     console.log(reader.read)
-                    let charsReceived = 0;
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            highlightCodeStr()
-                            return;
-                        }
-
-                        charsReceived += value.length;
-                        const chunk = value;
-                        result += chunk;
-                        normalArray = chunk
-                        try {
-                            // console.log(normalArray)
-                            let byteArray = new Uint8Array(chunk);
-                            let decoder = new TextDecoder('utf-8');
-                            let nowResult = JSON.parse(decoder.decode(byteArray))
-
-                            if (!nowResult.text) {
-                                //finalResult = nowResult.text
-                                //document.getElementById('gptAnswer').innerHTML = `${mdConverter(finalResult.replace(/\\n+/g, "\n"))}`
-                            } else {
-                                console.log(nowResult)
-                                finalResult = nowResult.text
-                                showAnserAndHighlightCodeStr(finalResult)
-                            }
-
-
-                        } catch (e) {
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            })
-            //end if
+            THEBAI()
+             //end if
             return;
         } else if (GPTMODE && GPTMODE == "YQCLOUD") {
             console.log("当前模式YQCLOUD")
@@ -797,164 +736,13 @@
         } else if (GPTMODE && GPTMODE == "AIDUTU") {
             console.log("当前模式AIDUTU")
 
-            let _iam = generateRandomString(8)
-            GM_xmlhttpRequest({
-                url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.3",
-                headers: {
-                    "accept": "*/*",
-                    "referrer": "https://aichat.leiluan.cc/",
-                    "x-iam:": _iam,
-                    "content-type": "application/json"
-                },
-                data: JSON.stringify({
-                    q: your_qus,
-                    iam: _iam
-                }),
-                method: "POST",
-                onload: (resp) => {
-                    let rs = resp.responseText;
-                    console.log(rs)
-                    let xtoken = JSON.parse(rs).data.token;
-                    console.log(xtoken)
-                    abortXml = GM_xmlhttpRequest({
-                        method: "POST",
-                        url: "https://chat.aidutu.cn/api/chat-process",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Referer": "https://chat.aidutu.cn/",
-                            "accept": "application/json, text/plain, */*",
-                            "x-token": xtoken
-                        },
-                        data: JSON.stringify({
-                            prompt: your_qus,
-                            temperature: 0.8,
-                            top_p: 1,
-                            options: {},
-                            systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
-                        }),
-                        onloadstart: (stream) => {
-                            let result = "";
-                            const reader = stream.response.getReader();
-                            //     console.log(reader.read)
-                            let charsReceived = 0;
-                            reader.read().then(function processText({done, value}) {
-                                if (done) {
-                                    highlightCodeStr()
-                                    return;
-                                }
-
-                                charsReceived += value.length;
-                                const chunk = value;
-                                result += chunk;
-                                normalArray = chunk
-                                try {
-                                    // console.log(normalArray)
-                                    let byteArray = new Uint8Array(chunk);
-                                    let decoder = new TextDecoder('utf-8');
-                                    let nowResult = JSON.parse(decoder.decode(byteArray))
-                                    console.log(nowResult)
-                                    if (nowResult.text) {
-                                        console.log(nowResult)
-                                        finalResult = nowResult.text
-                                        showAnserAndHighlightCodeStr(finalResult)
-                                    }
-
-                                } catch (e) {
-                                    console.log(e)
-                                }
-
-                                return reader.read().then(processText);
-                            });
-                        },
-                        responseType: "stream",
-                        onprogress: function (msg) {
-                            //console.log(msg) //Todo
-                        },
-                        onerror: function (err) {
-                            console.log(err)
-                        },
-                        ontimeout: function (err) {
-                            console.log(err)
-                        }
-                    })
-
-                }//end onload
-
-            })
+            AIDUTU();
 
             //end if
             return;
         } else if (GPTMODE && GPTMODE == "LTXUK") {
             console.log("当前模式LTXUK")
-            let now = Date.now()
-            const pk = {}.PUBLIC_SECRET_KEY;
-            generateSignatureWithPkey({
-                t: now,
-                m: your_qus || "",
-                pkey: pk
-            }).then(sign => {
-                console.log(sign)
-                abortXml = GM_xmlhttpRequest({
-                    method: "POST",
-                    url: "https://luntianxia.uk/api/generate",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Referer": `https://luntianxia.uk/`
-                    },
-                    data: JSON.stringify({
-                        messages: [{
-                            role: "user",
-                            content: your_qus
-                        }],
-                        time: now,
-                        pass: null,
-                        sign: sign
-                        //key: "",
-                        //usage: Math.floor(Math.random() * 8) + 1
-                    }),
-
-
-                    onload: function (res) {
-                        if (res.status === 200) {
-                            console.log('成功....')
-                            console.log(res.response)
-                            let rest = res.response
-                            //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
-
-                            try {
-                                log(rest)
-                                showAnserAndHighlightCodeStr(rest)
-                            } catch (e) {
-                                //TODO handle the exception
-                                console.log(e)
-                                document.getElementById('gptAnswer').innerHTML = `${rest}`
-                            }
-
-                            highlightCodeStr()
-                        } else {
-                            console.log('失败')
-                            console.log(res)
-                            document.getElementById('gptAnswer').innerHTML = '访问失败了'
-                        }
-                    },
-
-                    responseType: "application/json;charset=UTF-8",
-
-                    onprogress: function (msg) {
-                        //console.log(msg) //Todo
-                    },
-                    onerror: function (err) {
-                        document.getElementById('gptAnswer').innerHTML =
-                            `<div>some err happends,errinfo :<br>${err.messages}</div>`
-                    },
-                    ontimeout: function (err) {
-                        document.getElementById('gptAnswer').innerHTML =
-                            `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
-                    }
-                });
-            });
-
-
+            LTXUK();
             //end if
             return;
         } else if (GPTMODE && GPTMODE == "51GPT") {
@@ -1072,69 +860,7 @@
             return;
         } else if (GPTMODE && GPTMODE == "XEASY") {
             console.log("当前模式XEASY")
-            let now = Date.now()
-            const pk = {}.PUBLIC_SECRET_KEY;
-            generateSignatureWithPkey({
-                t: now,
-                m: your_qus || "",
-                pkey: pk
-            }).then(sign => {
-                console.log(sign)
-                abortXml = GM_xmlhttpRequest({
-                    method: "POST",
-                    url: "https://chat6.xeasy.me/api/generate",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Referer": `https://chat6.xeasy.me/`
-                    },
-                    data: JSON.stringify({
-                        messages: [{
-                            role: "user",
-                            content: your_qus
-                        }],
-                        time: now,
-                        pass: null,
-                        sign: sign
-                        //key: "",
-                        //usage: Math.floor(Math.random() * 8) + 1
-                    }),
-                    onloadstart: (stream) => {
-                        let result = [];
-                        const reader = stream.response.getReader();
-                        reader.read().then(function processText({done, value}) {
-                            if (done) {
-                                let finalResult = result.join("")
-                                console.log(finalResult)
-                                showAnserAndHighlightCodeStr(finalResult)
-                                return;
-                            }
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            try {
-                                showAnserAndHighlightCodeStr(result.join(""))
-                            } catch (e) {
-                                log(e)
-                            }
-
-                            return reader.read().then(processText);
-                        });
-                    },
-                    responseType: "stream",
-
-                    onprogress: function (msg) {
-                        //console.log(msg) //Todo
-                    },
-                    onerror: function (err) {
-                        document.getElementById('gptAnswer').innerHTML =
-                            `<div>some err happends,errinfo :<br>${err.messages}</div>`
-                    },
-                    ontimeout: function (err) {
-                        document.getElementById('gptAnswer').innerHTML =
-                            `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
-                    }
-                });
-            });
-
+            XEASY();
 
             //end if
             return;
@@ -1262,8 +988,8 @@
     <div id=gptCueBox>
     <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #34c44c;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a></p>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.4.9已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1613,6 +1339,8 @@
     }
 
     var messageChain2 = [];//AILS
+    var messageChain4 = [];//LTXUK
+    var messageChain5 = [];//XEASY
     var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
@@ -1732,7 +1460,7 @@
                         let finalResult = result.join("")
                         try {
                             console.log(finalResult)
-                            addMessageChain(messageChain2, {
+                            addMessageChain(messageChain3, {
                                 role: "assistant",
                                 content: finalResult
                             })
@@ -1870,5 +1598,300 @@
     }
 
 
+    var parentID_thebai;
+    function THEBAI() {
+        let ops = {};
+        if(parentID_thebai){
+            ops = {parentMessageId: parentID_thebai};
+        }
+        console.log(ops)
+        let finalResult = [];
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://chatbot.theb.ai/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://chatbot.theb.ai/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let charsReceived = 0;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
+                    }
+
+                    charsReceived += value.length;
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                        if(nowResult.id){
+                            parentID_thebai = nowResult.id;
+                        }
+
+                    } catch (e) {}
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onprogress: function (msg) {
+                //console.log(msg) //Todo
+            },
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        })
+
+    }
+
+    var parentID_aidutu;
+    function AIDUTU(){
+        let _iam = generateRandomString(8)
+        let ops = {};
+        if(parentID_aidutu){
+            ops = {parentMessageId: parentID_aidutu};
+        }
+        console.log(ops)
+        GM_xmlhttpRequest({
+            url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.3",
+            headers: {
+                "accept": "*/*",
+                "referrer": "https://aichat.leiluan.cc/",
+                "x-iam:": _iam,
+                "content-type": "application/json"
+            },
+            data: JSON.stringify({
+                q: your_qus,
+                iam: _iam
+            }),
+            method: "POST",
+            onload: (resp) => {
+                let rs = resp.responseText;
+                console.log(rs)
+                let xtoken = JSON.parse(rs).data.token;
+                console.log(xtoken)
+                abortXml = GM_xmlhttpRequest({
+                    method: "POST",
+                    url: "https://chat.aidutu.cn/api/chat-process",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Referer": "https://chat.aidutu.cn/",
+                        "accept": "application/json, text/plain, */*",
+                        "x-token": xtoken
+                    },
+                    data: JSON.stringify({
+                        prompt: your_qus,
+                        temperature: 0.8,
+                        top_p: 1,
+                        options: ops,
+                        systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
+                    }),
+                    onloadstart: (stream) => {
+                        let result = "";
+                        const reader = stream.response.getReader();
+                        //     console.log(reader.read)
+                        let finalResult = "";
+                        reader.read().then(function processText({done, value}) {
+                            if (done) {
+                                highlightCodeStr()
+                                return;
+                            }
+                            const chunk = value;
+                            result += chunk;
+                            try {
+                                let byteArray = new Uint8Array(chunk);
+                                let decoder = new TextDecoder('utf-8');
+                                let nowResult = JSON.parse(decoder.decode(byteArray))
+                                console.log(nowResult)
+                                if (nowResult.text) {
+                                    console.log(nowResult)
+                                    finalResult = nowResult.text
+                                    showAnserAndHighlightCodeStr(finalResult)
+                                }
+                                if(nowResult.id){
+                                    parentID_aidutu = nowResult.id;
+                                }
+
+
+                            } catch (e) {
+                                console.log(e)
+                            }
+
+                            return reader.read().then(processText);
+                        });
+                    },
+                    responseType: "stream",
+                    onerror: function (err) {
+                        console.log(err)
+                    }
+                })
+
+            }//end onload
+
+        })
+    }
+
+
+    function LTXUK() {
+        let now = Date.now()
+        const pk = {}.PUBLIC_SECRET_KEY;
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: pk
+        }).then(sign => {
+            console.log(sign)
+            addMessageChain(messageChain4, {role: "user", content: your_qus})//连续话
+            abortXml = GM_xmlhttpRequest({
+                method: "POST",
+                url: "https://luntianxia.uk/api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": `https://luntianxia.uk/`
+                },
+                data: JSON.stringify({
+                    messages: messageChain4,
+                    time: now,
+                    pass: null,
+                    sign: sign
+                    //key: "",
+                    //usage: Math.floor(Math.random() * 8) + 1
+                }),
+
+
+                onload: function (res) {
+                    if (res.status === 200) {
+                        console.log('成功....')
+                        console.log(res.response)
+                        let rest = res.response
+                        //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
+
+                        try {
+                            log(rest)
+                            showAnserAndHighlightCodeStr(rest)
+                            addMessageChain(messageChain4, {
+                                role: "assistant",
+                                content: rest
+                            })
+                        } catch (e) {
+                            //TODO handle the exception
+                            console.log(e)
+                            document.getElementById('gptAnswer').innerHTML = `${rest}`
+                        }
+
+                        highlightCodeStr()
+                    } else {
+                        console.log('失败')
+                        console.log(res)
+                        document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                    }
+                },
+
+                responseType: "application/json;charset=UTF-8",
+
+                onprogress: function (msg) {
+                    //console.log(msg) //Todo
+                },
+                onerror: function (err) {
+                    document.getElementById('gptAnswer').innerHTML =
+                        `<div>some err happends,errinfo :<br>${err.messages}</div>`
+                },
+                ontimeout: function (err) {
+                    document.getElementById('gptAnswer').innerHTML =
+                        `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
+                }
+            });
+        });
+    }
+
+    function XEASY(){
+        let now = Date.now()
+        const pk = {}.PUBLIC_SECRET_KEY;
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: pk
+        }).then(sign => {
+            console.log(sign)
+            addMessageChain(messageChain5, {role: "user", content: your_qus})//连续话
+            abortXml = GM_xmlhttpRequest({
+                method: "POST",
+                url: "https://chat6.xeasy.me/api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": `https://chat6.xeasy.me/`
+                },
+                data: JSON.stringify({
+                    messages: messageChain5,
+                    time: now,
+                    pass: null,
+                    sign: sign
+                    //key: "",
+                    //usage: Math.floor(Math.random() * 8) + 1
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            console.log(finalResult)
+                            showAnserAndHighlightCodeStr(finalResult)
+                            addMessageChain(messageChain5, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            return;
+                        }
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        try {
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        } catch (e) {
+                            log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+
+                onprogress: function (msg) {
+                    //console.log(msg) //Todo
+                },
+                onerror: function (err) {
+                    document.getElementById('gptAnswer').innerHTML =
+                        `<div>some err happends,errinfo :<br>${err.messages}</div>`
+                },
+                ontimeout: function (err) {
+                    document.getElementById('gptAnswer').innerHTML =
+                        `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
+                }
+            });
+        });
+
+    }
 
 })();
