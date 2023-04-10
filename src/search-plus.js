@@ -59,6 +59,7 @@
 // @connect   gpt66.cn
 // @connect   ai.ls
 // @connect   chatgpt.letsearches.com
+// @connect   gpt.wobcw.com
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -920,6 +921,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "WOBCW") {
+            console.log("WOBCW")
+            WOBCW();
+
+            return;
+            //end if
         }
 
 
@@ -1070,7 +1077,7 @@
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
             let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT",
-                "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH", "COOLAI","MYDOG"];
+                "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH", "COOLAI","MYDOG","WOBCW"];
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
@@ -2015,6 +2022,71 @@
         });
     }
 
+
+    var parentID_wobcw;
+    function WOBCW() {
+        let ops = {};
+        if (parentID_wobcw) {
+            ops = {parentMessageId: parentID_wobcw};
+        }
+        console.log(ops)
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://gpt.wobcw.com/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://gpt.wobcw.com/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                top_p: 1,
+                prompt: your_qus,
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                temperature: 0.8,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalResult;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_wobcw = nowResult.id;
+                        }
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:", err)
+            }
+        })
+
+    }
 
 
     var WebsocketCoolAI;
