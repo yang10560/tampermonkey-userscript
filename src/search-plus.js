@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      1.4.7
+// @version      1.4.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -50,6 +50,7 @@
 // @connect    api.tdchat0.com
 // @connect    chat6.xeasy.me
 // @connect   chat.wuguokai.cn
+// @connect   ai5.wuguokai.top
 // @connect   chat.aidutu.cn
 // @connect   aichat.leiluan.cc
 // @connect   chat.gptservice.xyz
@@ -114,7 +115,7 @@
             //https://gptkey.oss-cn-hangzhou.aliyuncs.com/key.txt
             GM_xmlhttpRequest({
                 method: "GET",
-                nocache:true,
+                nocache: true,
                 url: "http://gpt66.cn/gongxkey.html",
                 headers: {
                     //"Content-Type": "application/json",
@@ -125,7 +126,7 @@
                     const regex = /data-key="([^"]+)"/g;
                     const keys = [];
                     let match;
-                    while (match = regex.exec(resp)){
+                    while (match = regex.exec(resp)) {
                         keys.push(match[1]);
                     }
 
@@ -136,8 +137,8 @@
                     }
                     //localStorage.setItem("openAIkey", pubkey)
                     let ht = ""
-                    keys.forEach(key=>{
-                        ht +=`<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
+                    keys.forEach(key => {
+                        ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
                     })
                     document.getElementById("gptAnswer").innerHTML = ht;
                     //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
@@ -790,55 +791,8 @@
             return;
         } else if (GPTMODE && GPTMODE == "YQCLOUD") {
             console.log("当前模式YQCLOUD")
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                url: "https://cbjtestapi.binjie.site:7777/api/generateStream",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": "https://chat8.yqcloud.top/",
-                    //"Host":"www.aiai.zone",
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
-
-                    prompt: your_qus,
-                    userId: "#/chat/" + Date.now(),
-                    network: true
-
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            finalResult = result.join("")
-                            showAnserAndHighlightCodeStr(finalResult)
-                            return;
-                        }
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        try {
-                            console.log(result.join(""))
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            })
-            //end if
+            YQCLOUD()
+             //end if
             return;
         } else if (GPTMODE && GPTMODE == "AIDUTU") {
             console.log("当前模式AIDUTU")
@@ -854,7 +808,7 @@
                 },
                 data: JSON.stringify({
                     q: your_qus,
-                    iam:_iam
+                    iam: _iam
                 }),
                 method: "POST",
                 onload: (resp) => {
@@ -928,7 +882,7 @@
 
             })
 
-             //end if
+            //end if
             return;
         } else if (GPTMODE && GPTMODE == "LTXUK") {
             console.log("当前模式LTXUK")
@@ -1186,52 +1140,8 @@
             return;
         } else if (GPTMODE && GPTMODE == "WGK") {
             console.log("当前模式WGK")
-            wsResult = []
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                url: "https://chat.wuguokai.cn/api/v1/bots/chatgpt/mod/channel-web/messages?__ts=" + Date.now(),
-                headers: {
-                    "Content-Type": "application/json",
-                    "Referer": `https://chat.wuguokai.cn/lite/chatgpt/?m=channel-web&v=Fullscreen&options={"hideWidget":true,"config":{"enableReset":false,"enableTranscriptDownload":true}}`
-                },
-                data: JSON.stringify({
-                    "webSessionId": webSessionId,
-                    "conversationId": convoId,
-                    "payload": {
-                        "type": "text",
-                        "text": your_qus
-                    }
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            console.log(finalResult)
-                            showAnserAndHighlightCodeStr(finalResult)
-                            return;
-                        }
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
 
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>some err happends,errinfo :<br>${err.messages}</div>`
-                },
-                ontimeout: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
-                }
-            });
-
+            WGK()
 
             //end if
             return;
@@ -1242,21 +1152,20 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "AILS") {
+        } else if (GPTMODE && GPTMODE == "AILS") {
 
             console.log("AILS")
             AILS()
 
             return;
             //end if
-        }else if(GPTMODE && GPTMODE == "LERSEARCH"){
+        } else if (GPTMODE && GPTMODE == "LERSEARCH") {
             console.log("LERSEARCH")
             LERSEARCH()
 
             return;
             //end if
         }
-
 
 
         console.log("defualt:")
@@ -1354,7 +1263,7 @@
     <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #34c44c;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本:1.4.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1402,7 +1311,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN","AILS","LERSEARCH"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
@@ -1410,11 +1319,6 @@
                     if (chatList[i] == GPTMODE) {
                         idx = (i + 1 >= chatList.length) ? 0 : i + 1;
                     }
-                }
-                if(chatList[idx] == "WGK"){
-                    setTimeout(() => {
-                        initSocket();
-                    }, 500)
                 }
 
                 localStorage.setItem("GPTMODE", chatList[idx])
@@ -1618,45 +1522,6 @@
     }, 2000)
 
 
-    function initCvID() {
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://chat.wuguokai.cn/api/v1/bots/chatgpt/mod/channel-web/conversations/new?__ts=" + Date.now(),
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": `https://chat.wuguokai.cn/lite/chatgpt/?m=channel-web&v=Fullscreen&options={"hideWidget":true,"config":{"enableReset":false,"enableTranscriptDownload":true}}`
-            },
-            data: JSON.stringify({"webSessionId": webSessionId}),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        console.log(finalResult)
-                        convoId = JSON.parse(finalResult).convoId
-                        console.log("convoId: ", convoId)
-                        return;
-                    }
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    result.push(d)
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-
-            onprogress: function (msg) {
-                //console.log(msg) //Todo
-            },
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
-        });
-    }
-
     function generateRandomString(length) {
         var result = '';
         var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -1667,57 +1532,6 @@
         return result;
     }
 
-    var wsResult = []
-
-    var initSocket = function () {
-        // 创建WebSocket连接
-        const socket = new WebSocket(`wss://chat.wuguokai.cn/socket.io/?visitorId=${generateRandomString(24)}&EIO=4&transport=websocket`);
-        // 监听连接成功事件
-        socket.addEventListener('open', (event) => {
-            console.log('连接成功');
-            showAnserAndHighlightCodeStr("websocket已经连接")
-        });
-        let isFirst = false;
-
-        // 监听接收消息事件
-        socket.addEventListener('message', (event) => {
-            console.log('接收到消息：', event.data);
-            let revData = event.data;
-            if (!isFirst) {
-                socket.send("40/guest,")
-                isFirst = true
-                setTimeout(() => socket.send("3"), 3000)
-            }
-            if (revData == "3") {
-                socket.send("2");
-            }
-            if (revData == "2") {
-                socket.send("3");
-            }
-            if (revData.match(/40\/guest/)) {
-                try {
-                    webSessionId = JSON.parse(revData.replace(/40\/guest,/, "").trim()).sid;
-                    console.log("webSessionId ", webSessionId)
-                    initCvID();
-                } catch (e) {
-                    console.log(e)
-                }
-            }
-            if (revData.match(/42\/guest/)) {
-                //收信
-                try {
-                    let chunk = JSON.parse(revData.replace(/42\/guest,/, "").trim())[1].data.payload.text;
-                    console.log(chunk)
-                    wsResult.push(chunk)
-                    showAnserAndHighlightCodeStr(wsResult.join(""))
-
-                } catch (e) {
-                    console.log(e)
-                }
-            }
-
-        });
-    }
 
     function LEILUAN() {
 
@@ -1759,16 +1573,16 @@
                                 const regExp = /"content":"(.+?)"/gi;
                                 const matchResult = targetString.match(regExp);
                                 let finalAns = []
-                                matchResult.forEach(item=>{
-                                   try {
-                                       console.log("===="+/"content":"(.+?)"/g.exec(item)[1]+"=====")
-                                       finalAns.push(/"content":"(.+?)"/g.exec(item)[1])
-                                   }catch (e) {
-                                       console.error(e,item)
-                                   }
+                                matchResult.forEach(item => {
+                                    try {
+                                        console.log("====" + /"content":"(.+?)"/g.exec(item)[1] + "=====")
+                                        finalAns.push(/"content":"(.+?)"/g.exec(item)[1])
+                                    } catch (e) {
+                                        console.error(e, item)
+                                    }
                                 })
 
-                               // console.log(finalAns.join(""))
+                                // console.log(finalAns.join(""))
                                 showAnserAndHighlightCodeStr(finalAns.join(""))
                                 return;
                             }
@@ -1776,7 +1590,7 @@
                                 let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                                 //console.log(d)
                                 chunks.push(d)
-                            }catch (e) {
+                            } catch (e) {
                                 console.error(e)
                             }
 
@@ -1866,7 +1680,7 @@
                             let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                             result.push(d)
                             showAnserAndHighlightCodeStr(result.join(""))
-                        }catch (e) {
+                        } catch (e) {
                             console.log(e)
                         }
 
@@ -1891,74 +1705,168 @@
 
     function LERSEARCH() {
 
-            let baseURL = "https://chatgpt.letsearches.com/";
-            addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: baseURL + "api/chat-stream",
-                headers: {
-                    "Content-Type": "application/json",
-                     "access-code": "",
-                     "path": "v1/chat/completions",
-                     "Referer": baseURL
-                },
-                data: JSON.stringify({
-                    messages: messageChain3,
-                    stream: true,
-                    model: "gpt-3.5-turbo",
-                    temperature: 1,
-                    max_tokens: 2000,
-                    presence_penalty: 0
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain2, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
+        let baseURL = "https://chatgpt.letsearches.com/";
+        addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "access-code": "",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain3,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                max_tokens: 2000,
+                presence_penalty: 0
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
                         try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        }catch (e) {
+                            console.log(finalResult)
+                            addMessageChain(messageChain2, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
+                        } catch (e) {
                             console.log(e)
                         }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
 
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            });
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onprogress: function (msg) {
+                //console.log(msg)
+            },
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        });
 
     }
 
 
+    var userId_wgk = "#/chat/" + Date.now();
+    function WGK() {
+        console.log(userId_wgk)
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://ai5.wuguokai.top/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": "https://chat.wuguokai.cn/",
+                //"Host":"www.aiai.zone",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                userId: userId_wgk,
+                options: {}
+            }),
+            onloadstart: (stream) => {
+                let finalResult = []
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        showAnserAndHighlightCodeStr(finalResult.join(""))
+                        return;
+                    }
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = decoder.decode(byteArray)
 
-    if (localStorage.getItem("GPTMODE") && localStorage.getItem("GPTMODE") == "WGK") {
-        setTimeout(() => {
-            initSocket();
-        }, 500)
+                        finalResult.push(nowResult)
+                        showAnserAndHighlightCodeStr(finalResult.join(""))
+
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:",err)
+            }
+        })
+
+    }
+
+
+    var userId_yqcloud = "#/chat/" + Date.now();
+    function YQCLOUD(){
+        console.log(userId_yqcloud)
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://cbjtestapi.binjie.site:7777/api/generateStream",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://chat8.yqcloud.top/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                apikey: "",
+                system: "",
+                withoutContext: false,
+                userId: userId_yqcloud,
+                network: true
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        showAnserAndHighlightCodeStr(finalResult)
+                        return;
+                    }
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    result.push(d)
+                    try {
+                        console.log(result.join(""))
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("error:",err)
+            }
+        })
+
     }
 
 
