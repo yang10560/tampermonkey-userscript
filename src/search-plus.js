@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.5.0
+// @version       1.5.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -43,6 +43,7 @@
 // @connect    chatbot.theb.ai
 // @connect    cbjtestapi.binjie.site
 // @connect    ai.bo-e.com
+// @connect    a.mydog.buzz
 // @connect    freechatgpt.xgp.one
 // @connect    gptkey.oss-cn-hangzhou.aliyuncs.com
 // @connect    luntianxia.uk
@@ -913,6 +914,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "MYDOG") {
+            console.log("MYDOG")
+            MYDOG();
+
+            return;
+            //end if
         }
 
 
@@ -1011,7 +1018,7 @@
     <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.0已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.1已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1062,7 +1069,8 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH", "COOLAI"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT",
+                "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH", "COOLAI","MYDOG"];
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
@@ -1375,6 +1383,7 @@
     var messageChain2 = [];//AILS
     var messageChain4 = [];//LTXUK
     var messageChain5 = [];//XEASY
+    var messageChain6 = [];//MYDOG
     var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
@@ -1932,6 +1941,81 @@
         });
 
     }
+
+    function MYDOG() {
+
+        let now = Date.now();
+        const pk = {}.pkey;//查看js的generateSignature函数中的key
+        let Baseurl = "https://a.mydog.buzz/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: pk
+        }).then(sign => {
+            addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+                    messages: messageChain6,
+                    time: now,
+                    continuous: true,
+                    code: "",
+                    sign: sign,
+                    customKey: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain6, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                showAnserAndHighlightCodeStr(finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+
 
     var WebsocketCoolAI;
     var resultCoolAI = [];
