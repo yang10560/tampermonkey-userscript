@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.4.9
+// @version       1.5.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
 // @match        https://www.bing.com/*
 // @match      https://chat.openai.com/chat
 // @match      https://www.google.com/*
+// @match      https://duckduckgo.com/*
 // @match      https://www.so.com/s*
 // @match      http*://www.baidu.com/s*
 // @match      https://www.baidu.com*
@@ -378,6 +379,16 @@
         }, 3000)
     }
 
+    //duckduckgo.com
+    if (window.location.href.indexOf("duckduckgo.com\/\?q") > -1) {
+        GM_add_box_style(1)
+        addBothStyle()
+        keyEvent()
+        appendBox(7).then((res) => {
+            pivElemAddEventAndValue(7)
+        })
+    }
+
     //顶级函数
     function uuid() { //uuid 产生
         var s = [];
@@ -726,12 +737,12 @@
         } else if (GPTMODE && GPTMODE == "THEBAI") {
             console.log("当前模式THEBAI")
             THEBAI()
-             //end if
+            //end if
             return;
         } else if (GPTMODE && GPTMODE == "YQCLOUD") {
             console.log("当前模式YQCLOUD")
             YQCLOUD()
-             //end if
+            //end if
             return;
         } else if (GPTMODE && GPTMODE == "AIDUTU") {
             console.log("当前模式AIDUTU")
@@ -891,6 +902,17 @@
 
             return;
             //end if
+        } else if (GPTMODE && GPTMODE == "COOLAI") {
+            console.log("COOLAI")
+            try {
+                resultCoolAI = [];
+                WebsocketCoolAI.send(`42["ask",{"userId":"cool","content":"${your_qus}"}]`)
+            }catch (e) {
+                initSocket()
+            }
+
+            return;
+            //end if
         }
 
 
@@ -988,8 +1010,8 @@
     <div id=gptCueBox>
     <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.4.9已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.0已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -998,6 +1020,9 @@
     async function pivElemAddEventAndValue(append_case) {
         var search_content
 
+        if (append_case === 7) {
+            search_content = document.querySelector("#search_form input").value
+        }
         if (append_case === 5) {
             search_content = document.getElementById("search-input").value
         }
@@ -1037,7 +1062,7 @@
 
         document.getElementById('changMode').addEventListener('click', () => {
             document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH"]
+            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT", "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH", "COOLAI"]
             let GPTMODE = localStorage.getItem("GPTMODE")
             if (GPTMODE) {
                 let idx = 0;//Default
@@ -1045,6 +1070,10 @@
                     if (chatList[i] == GPTMODE) {
                         idx = (i + 1 >= chatList.length) ? 0 : i + 1;
                     }
+                }
+
+                if(chatList[idx]=="COOLAI"){
+                    initSocket();
                 }
 
                 localStorage.setItem("GPTMODE", chatList[idx])
@@ -1116,6 +1145,11 @@
                             setTimeout(() => {
                                 document.getElementById("button_GPT").click(); //自动点击
                             }, 1500)
+                        }
+                        break;
+                    case 7: //duckduckgo
+                        if (document.querySelector('.results--sidebar div')) {
+                            document.querySelector('.results--sidebar div').prepend(divE)
                         }
                         break;
                     default:
@@ -1497,6 +1531,7 @@
 
 
     var userId_wgk = "#/chat/" + Date.now();
+
     function WGK() {
         console.log(userId_wgk)
         abortXml = GM_xmlhttpRequest({
@@ -1542,7 +1577,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("erro:",err)
+                showAnserAndHighlightCodeStr("erro:", err)
             }
         })
 
@@ -1550,7 +1585,8 @@
 
 
     var userId_yqcloud = "#/chat/" + Date.now();
-    function YQCLOUD(){
+
+    function YQCLOUD() {
         console.log(userId_yqcloud)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
@@ -1591,7 +1627,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("error:",err)
+                showAnserAndHighlightCodeStr("error:", err)
             }
         })
 
@@ -1599,9 +1635,10 @@
 
 
     var parentID_thebai;
+
     function THEBAI() {
         let ops = {};
-        if(parentID_thebai){
+        if (parentID_thebai) {
             ops = {parentMessageId: parentID_thebai};
         }
         console.log(ops)
@@ -1643,11 +1680,12 @@
                             finalResult = nowResult.text
                             showAnserAndHighlightCodeStr(finalResult)
                         }
-                        if(nowResult.id){
+                        if (nowResult.id) {
                             parentID_thebai = nowResult.id;
                         }
 
-                    } catch (e) {}
+                    } catch (e) {
+                    }
 
                     return reader.read().then(processText);
                 });
@@ -1667,10 +1705,11 @@
     }
 
     var parentID_aidutu;
-    function AIDUTU(){
+
+    function AIDUTU() {
         let _iam = generateRandomString(8)
         let ops = {};
-        if(parentID_aidutu){
+        if (parentID_aidutu) {
             ops = {parentMessageId: parentID_aidutu};
         }
         console.log(ops)
@@ -1730,7 +1769,7 @@
                                     finalResult = nowResult.text
                                     showAnserAndHighlightCodeStr(finalResult)
                                 }
-                                if(nowResult.id){
+                                if (nowResult.id) {
                                     parentID_aidutu = nowResult.id;
                                 }
 
@@ -1826,7 +1865,7 @@
         });
     }
 
-    function XEASY(){
+    function XEASY() {
         let now = Date.now()
         const pk = {}.PUBLIC_SECRET_KEY;
         generateSignatureWithPkey({
@@ -1893,5 +1932,64 @@
         });
 
     }
+
+    var WebsocketCoolAI;
+    var resultCoolAI = [];
+    var initSocket = function () {
+        // 创建WebSocket连接
+        const socket = new WebSocket(`wss://sd-wx.cool-js.cloud/socket.io/?apiKey=905733647bb7431b81233e12be12cfaa&url=https%3A%2F%2Fcool-js.com%2Fai%2Fchat%2Findex.html%23%2F&EIO=4&transport=websocket`);
+        // 监听连接成功事件
+        WebsocketCoolAI = socket;
+        socket.addEventListener('open', (event) => {
+            console.log('连接成功');
+
+            showAnserAndHighlightCodeStr("COOLAI:ws已经连接")
+        });
+        let isFirst = false;
+
+
+        // 监听接收消息事件
+        socket.addEventListener('message', (event) => {
+            console.log('接收到消息：', event.data);
+            let revData = event.data;
+            if (!isFirst) {
+                socket.send("40")
+                isFirst = true
+                setTimeout(() => socket.send("3"), 3000)
+            }
+            if (revData == "3") {
+                socket.send("2");
+            }
+            if (revData == "2") {
+                socket.send("3");
+            }
+            if (revData.match(/40/)) {
+                try {
+                    webSessionId = JSON.parse(revData.replace(/40/, "").trim()).sid;
+                    console.log("webSessionId ", webSessionId)
+                } catch (e) {
+                    console.log(e)
+                }
+            }
+            if (revData.match(/42/)) {
+                //收信
+                try {
+                    //42["data",{"type":"text","data":"\u662f"}]
+                    let chunk = eval(revData.replace(/42/, "").trim())[1].data;
+                    console.log(chunk)
+                    resultCoolAI.push(chunk)
+                    showAnserAndHighlightCodeStr(resultCoolAI.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+            }
+
+        });
+    }
+    if (localStorage.getItem("GPTMODE")== "COOLAI") {
+        setTimeout(initSocket, 1500);
+    }
+
 
 })();
