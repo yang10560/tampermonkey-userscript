@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.1
+// @version      2.2
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -14,6 +14,7 @@
 // @connect    api.aigcfun.com
 // @connect    ai5.wuguokai.top
 // @connect    chat.aidutu.cn
+// @connect    gpt.wobcw.com
 // @connect    ai.ls
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
@@ -25,7 +26,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.1"
+    var JSVer = "v2.2"
 
     //enc-start
     async function digestMessage(r) {
@@ -569,6 +570,75 @@
         })
     }
 
+    var parentID_wobcw;
+    function WOBCW(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let ops = {};
+        if (parentID_wobcw) {
+            ops = {parentMessageId: parentID_wobcw};
+        }
+        console.log(ops)
+         GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://gpt.wobcw.com/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://gpt.wobcw.com/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                top_p: 1,
+                prompt: your_qus,
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                temperature: 0.8,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                simulateBotResponse(("请稍后..."))
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalResult;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        saveHistory(your_qus, finalResult);
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            fillBotResponse(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_wobcw = nowResult.id;
+                        }
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:", err)
+            }
+        })
+
+    }
+
+
 
     var generateRandomIP = () => {
         const ip = [];
@@ -670,6 +740,14 @@
             AIDUTU(inputField.value.trim())
         });
 
+        let chatBtn8 = document.createElement("button");
+        chatBtn8.innerText = "插件接口7"
+        chatBtn8.setAttribute("id", "WOBCW")
+        chatBtn8.addEventListener("click", () => {
+            console.log("WOBCW")
+            WOBCW(inputField.value.trim())
+        });
+
 
         document.getElementById("input-container").append(chatBtn);
         document.getElementById("input-container").append(chatBtn1);
@@ -679,6 +757,7 @@
         document.getElementById("input-container").append(chatBtn5);
         document.getElementById("input-container").append(chatBtn6);
         document.getElementById("input-container").append(chatBtn7);
+        document.getElementById("input-container").append(chatBtn8);
         document.getElementById("chat-header").append(" -JS版本:" + JSVer)
     }, 1500)
 
