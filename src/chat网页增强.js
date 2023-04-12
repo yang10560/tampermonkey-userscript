@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.2
+// @version      2.3
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -15,6 +15,7 @@
 // @connect    ai5.wuguokai.top
 // @connect    chat.aidutu.cn
 // @connect    gpt.wobcw.com
+// @connect    chat.68686.ltd
 // @connect    ai.ls
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
@@ -26,7 +27,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.2"
+    var JSVer = "v2.3"
 
     //enc-start
     async function digestMessage(r) {
@@ -638,6 +639,71 @@
 
     }
 
+    var parentID_68686;
+
+    function LTD68686(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let ops = {};
+        if (parentID_68686) {
+            ops = {parentMessageId: parentID_68686};
+        }
+        console.log(ops)
+        let finalResult = [];
+         GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://chat.68686.ltd/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://chat.68686.ltd/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                simulateBotResponse(("请稍后..."))
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        saveHistory(your_qus, finalResult);
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            fillBotResponse(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_68686 = nowResult.id;
+                        }
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        })
+
+    }
+
 
 
     var generateRandomIP = () => {
@@ -748,6 +814,14 @@
             WOBCW(inputField.value.trim())
         });
 
+        let chatBtn9 = document.createElement("button");
+        chatBtn9.innerText = "插件接口8"
+        chatBtn9.setAttribute("id", "LTD68686")
+        chatBtn9.addEventListener("click", () => {
+            console.log("LTD68686")
+            LTD68686(inputField.value.trim())
+        });
+
 
         document.getElementById("input-container").append(chatBtn);
         document.getElementById("input-container").append(chatBtn1);
@@ -758,6 +832,7 @@
         document.getElementById("input-container").append(chatBtn6);
         document.getElementById("input-container").append(chatBtn7);
         document.getElementById("input-container").append(chatBtn8);
+        document.getElementById("input-container").append(chatBtn9);
         document.getElementById("chat-header").append(" -JS版本:" + JSVer)
     }, 1500)
 
