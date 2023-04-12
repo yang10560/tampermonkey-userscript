@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.5.2
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
+// @version       1.5.3
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
 // @match        https://www.bing.com/*
@@ -60,6 +60,7 @@
 // @connect   ai.ls
 // @connect   chatgpt.letsearches.com
 // @connect   gpt.wobcw.com
+// @connect   chat.68686.ltd
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -884,10 +885,10 @@
 
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "LEILUAN") {
+        } else if (GPTMODE && GPTMODE == "LTD68686") {
 
-            console.log("LEILUAN")
-            LEILUAN()
+            console.log("LTD68686")
+            LTD68686()
 
             return;
             //end if
@@ -909,19 +910,19 @@
             try {
                 resultCoolAI = [];
                 WebsocketCoolAI.send(`42["ask",{"userId":"cool","content":"${your_qus}"}]`)
-            }catch (e) {
+            } catch (e) {
                 initSocket()
             }
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "MYDOG") {
+        } else if (GPTMODE && GPTMODE == "MYDOG") {
             console.log("MYDOG")
             MYDOG();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "WOBCW") {
+        } else if (GPTMODE && GPTMODE == "WOBCW") {
             console.log("WOBCW")
             WOBCW();
 
@@ -1022,10 +1023,29 @@
     <input id="gptInput" type=text><button class="s_btn" id="button_GPT" >chat一下</button>
     </div>
     <div id=gptCueBox>
-    <p id="gptStatus">&nbsp<a id="changMode" style="color: red;" href="javascript:void(0)">切换线路</a> 部分线路需要科学上网</p>
+    <p id="gptStatus">&nbsp&nbsp
+   <select id="modeSelect">
+      <option value="Default">默认线路</option>
+      <option value="CHATGPT">CHATGPT</option>
+      <option value="EXTKJ">EXTKJ</option>
+      <option value="THEBAI">THEBAI</option>
+      <option value="YQCLOUD">YQCLOUD</option>
+      <option value="AIDUTU">AIDUTU</option>
+      <option value="LTXUK">LTXUK</option>
+      <option value="51GPT">51GPT</option>
+      <option value="TDCHAT">TDCHAT</option>
+      <option value="XEASY">XEASY</option>
+      <option value="WGK">WGK</option>
+      <option value="LTD68686">LTD68686</option>
+      <option value="AILS">AILS</option>
+      <option value="LERSEARCH">LERSEARCH</option>
+      <option value="COOLAI">COOLAI</option>
+      <option value="MYDOG">MYDOG</option>
+      <option value="WOBCW">WOBCW</option>
+    </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.2已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.3已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1034,35 +1054,45 @@
     async function pivElemAddEventAndValue(append_case) {
         var search_content
 
-        if (append_case === 7) {
-            search_content = document.querySelector("#search_form input").value
-        }
-        if (append_case === 5) {
-            search_content = document.getElementById("search-input").value
-        }
-
-        if (append_case === 4) {
-            search_content = document.getElementById("keyword").value
-        }
-
-        if (append_case === 3) {
-            search_content = document.querySelectorAll("input")[0].value
-        }
-
-        if (append_case === 2) {
-            search_content = document.getElementById('kw').value
-        }
-        if (append_case === 1) {
-            search_content = document.querySelector(
-                "#tsf > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input:nth-child(3)"
-            ).value
-        }
-        if (append_case === 0) {
-            search_content = document.getElementsByClassName('b_searchbox')[0].value
-            if (!search_content) {
-                search_content = document.querySelector("textarea[class='b_searchbox']").value;
+        try {
+            if (append_case === 7) {
+                search_content = document.querySelector("#search_form input").value
             }
+            if (append_case === 5) {
+                search_content = document.getElementById("search-input").value
+            }
+
+            if (append_case === 4) {
+                search_content = document.getElementById("keyword").value
+            }
+
+            if (append_case === 3) {
+                search_content = document.querySelectorAll("input")[0].value
+            }
+
+            if (append_case === 2) {
+                search_content = document.getElementById('kw').value
+            }
+            if (append_case === 1) {
+                try{
+                    search_content = document.querySelector(
+                        "#tsf > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input:nth-child(3)"
+                    ).value
+                }catch (e) {
+                    search_content = document.querySelector("textarea").value
+                }
+
+            }
+            if (append_case === 0) {
+                search_content = document.getElementsByClassName('b_searchbox')[0].value
+                if (!search_content) {
+                    search_content = document.querySelector("textarea[class='b_searchbox']").value;
+                }
+            }
+        } catch (e) {
+            console.log(e)
         }
+
         document.getElementById("gptInput").value = search_content
         document.getElementById('button_GPT').addEventListener('click', () => {
             your_qus = document.getElementById("gptInput").value
@@ -1074,32 +1104,16 @@
             setPubkey()
         })
 
-        document.getElementById('changMode').addEventListener('click', () => {
-            document.getElementById("gptAnswer").innerText = "正在切换模式..."
-            let chatList = ["Default", "CHATGPT", "EXTKJ", "THEBAI", "YQCLOUD", "AIDUTU", "LTXUK", "51GPT", "TDCHAT",
-                "XEASY", "WGK", "LEILUAN", "AILS", "LERSEARCH", "COOLAI","MYDOG","WOBCW"];
-            let GPTMODE = localStorage.getItem("GPTMODE")
-            if (GPTMODE) {
-                let idx = 0;//Default
-                for (let i = 0; i < chatList.length; i++) {
-                    if (chatList[i] == GPTMODE) {
-                        idx = (i + 1 >= chatList.length) ? 0 : i + 1;
-                    }
-                }
+        document.getElementById('modeSelect').addEventListener('change', () => {
+            const selectEl = document.getElementById('modeSelect');
+            const selectedValue = selectEl.options[selectEl.selectedIndex].value;
+            localStorage.setItem('GPTMODE', selectedValue);
 
-                if(chatList[idx]=="COOLAI"){
-                    initSocket();
-                }
-
-                localStorage.setItem("GPTMODE", chatList[idx])
-                document.getElementById("gptAnswer").innerText = `切换成功，当前模式:${chatList[idx]}`
-
-            } else {
-                //不存在默认CHATGPT
-                localStorage.setItem("GPTMODE", "CHATGPT")
-                document.getElementById("gptAnswer").innerText = "切换成功，当前模式:CHATGPT模式"
+            if (selectedValue === 'COOLAI') {
+                initSocket();
             }
-        })
+            document.getElementById('gptAnswer').innerHTML = `切换成功，当前模式:${selectedValue}模式`;
+        });
 
 
     }
@@ -1308,84 +1322,71 @@
     }
 
 
-    function LEILUAN() {
 
-        console.log(CryptoJS.MD5(your_qus).toString().toLowerCase())
+    var parentID_68686;
 
-        //这里填你的cookie里面的token 地址：https://aichat.leiluan.cc/static/html/pc.html
-        let leiluanToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiJkNDFkOGNkOThmMDBiMjA0ZTk4MDA5OThlY2Y4NDI3ZSIsImlzcyI6ImFpY2hhdC5sZWlsdWFuLmNjIiwiYXVkIjoiYWljaGF0LmxlaWx1YW4uY2MiLCJpYXQiOjE2ODAyNDY1MTgsIm5iZiI6MTY4MDI0NjUxOCwiZXhwIjoxNjgyODM4NTE4LCJqdGkiOnsiaWQiOjg0LCJ0eXBlIjoiYXBpIn19.1Z3oNWp0mi-GJALHdonBwnm4-jiOHRfu3edj4hH6Evs";
-        GM_xmlhttpRequest({
-            url: "https://aichat.leiluan.cc/api/user/openchat",
+    function LTD68686() {
+        let ops = {};
+        if (parentID_68686) {
+            ops = {parentMessageId: parentID_68686};
+        }
+        console.log(ops)
+        let finalResult = [];
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://chat.68686.ltd/api/chat-process",
             headers: {
-                "accept": "*/*",
-                "authori-zation": `Bearer ${leiluanToken}`,
-                "referrer": "https://aichat.leiluan.cc/pages/lei_luan/content/talk?content=%E4%BD%A0%E6%98%AF%E4%BB%80%E4%B9%88%E5%9E%83%E5%9C%BE",
-                "content-type": "application/json"
+                "Content-Type": "application/json",
+                "Referer": "https://chatbot.theb.ai/",
+                "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
                 prompt: your_qus,
-                chatlogid: CryptoJS.MD5(your_qus).toString().toLowerCase()
+                options: ops
             }),
-            method: "POST",
-            onload: (resp) => {
-                let rs = resp.responseText;
-                let tk = JSON.parse(rs).data.token;
-                GM_xmlhttpRequest({
-                    url: "https://chat.gptservice.xyz/indext.php?token=" + tk,
-                    method: "GET",
-                    headers: {
-                        "accept": "text/event-stream",
-                        "content-type": "text/event-stream",
-                        "referrer": "https://aichat.leiluan.cc/"
-                    },
-                    onloadstart: (stream) => {
-                        const reader = stream.response.getReader();
-                        let chunks = [];
-                        reader.read().then(function processText({done, value}) {
-                            if (done) {
-                                // 数据已经被完全消耗
-                                const targetString = chunks.join("");
-                                const regExp = /"content":"(.+?)"/gi;
-                                const matchResult = targetString.match(regExp);
-                                let finalAns = []
-                                matchResult.forEach(item => {
-                                    try {
-                                        console.log("====" + /"content":"(.+?)"/g.exec(item)[1] + "=====")
-                                        finalAns.push(/"content":"(.+?)"/g.exec(item)[1])
-                                    } catch (e) {
-                                        console.error(e, item)
-                                    }
-                                })
-
-                                // console.log(finalAns.join(""))
-                                showAnserAndHighlightCodeStr(finalAns.join(""))
-                                return;
-                            }
-                            try {
-                                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                                //console.log(d)
-                                chunks.push(d)
-                            } catch (e) {
-                                console.error(e)
-                            }
-
-                            return reader.read().then(processText);
-                        });
-
-
-                    },
-                    responseType: "stream",
-                    onerror: function (err) {
-                        console.log(err)
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let charsReceived = 0;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
                     }
 
-                })
+                    charsReceived += value.length;
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
 
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_68686 = nowResult.id;
+                        }
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
             }
-
         })
 
     }
+
 
     var messageChain2 = [];//AILS
     var messageChain4 = [];//LTXUK
@@ -1734,7 +1735,7 @@
             url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.3",
             headers: {
                 "accept": "*/*",
-                "referrer": "https://aichat.leiluan.cc/",
+                "referrer": "https://chat.aidutu.cn/",
                 "x-iam:": _iam,
                 "content-type": "application/json"
             },
@@ -2144,7 +2145,7 @@
 
         });
     }
-    if (localStorage.getItem("GPTMODE")== "COOLAI") {
+    if (localStorage.getItem("GPTMODE") == "COOLAI") {
         setTimeout(initSocket, 1500);
     }
 
