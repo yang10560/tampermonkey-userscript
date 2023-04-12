@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.3
+// @version      2.4
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -27,7 +27,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.3"
+    var JSVer = "v2.4"
 
     //enc-start
     async function digestMessage(r) {
@@ -745,94 +745,78 @@
 
     //初始化
     setTimeout(() => {
-        let chatBtn = document.createElement("button");
-        chatBtn.innerText = "插件接口0"
-        chatBtn.setAttribute("id", "chatX")
-        chatBtn.addEventListener("click", () => {
-            showWait();
-            kill(inputField.value.trim());
-        });
 
-        let chatBtn1 = document.createElement("button");
-        chatBtn1.innerText = "插件接口1"
-        chatBtn1.setAttribute("id", "ltxuk")
-        chatBtn1.addEventListener("click", () => {
-            showWait();
-            ltxuk(inputField.value.trim());
-        });
-
-        let chatBtn2 = document.createElement("button");
-        chatBtn2.innerText = "插件接口2"
-        chatBtn2.setAttribute("id", "ails")
-        chatBtn2.addEventListener("click", () => {
-            showWait();
-            AILS(inputField.value.trim());
-        });
-
-        let chatBtn3 = document.createElement("button");
-        chatBtn3.innerText = "插件接口3"
-        chatBtn3.setAttribute("id", "tdchat")
-        chatBtn3.addEventListener("click", () => {
-            showWait();
-            TDCHAT(inputField.value.trim());
-        });
-
-        let chatBtn4 = document.createElement("button");
-        chatBtn4.innerText = "插件接口4"
-        chatBtn4.setAttribute("id", "xeasy")
-        chatBtn4.addEventListener("click", () => {
-            showWait();
-            chat6Xeasy(inputField.value.trim());
-        });
-
-        let chatBtn5 = document.createElement("button");
-        chatBtn5.innerText = "更新key"
-        chatBtn5.setAttribute("id", "aigckey")
-        chatBtn5.addEventListener("click", () => {
+        let aigckeybtn = document.createElement("button");
+        aigckeybtn.innerText = "更新key"
+        aigckeybtn.setAttribute("id", "aigckey")
+        aigckeybtn.addEventListener("click", () => {
             getAIgcKey();
         });
 
-        let chatBtn6 = document.createElement("button");
-        chatBtn6.innerText = "插件接口5"
-        chatBtn6.setAttribute("id", "wgk")
-        chatBtn6.addEventListener("click", () => {
-            WGK(inputField.value.trim())
+        let aiJKbtn = document.createElement("button");
+        aiJKbtn.innerText = "插件接口"
+        aiJKbtn.setAttribute("id", "aiJKbtn")
+        aiJKbtn.addEventListener("click", () => {
+            // 获取 <select> 元素
+            const selectElement = document.getElementById("modeSelect");
+            // 获取选中项的索引
+            const selectedIndex = selectElement.selectedIndex;
+            // 获取所有选项的列表
+            const options = selectElement.options;
+            // 获取选中项对应的 <option> 元素的 value 属性
+            const apimode = options[selectedIndex].value;
+
+            let qus = inputField.value.trim();
+            switch (apimode){
+                case "ltxuk":
+                    showWait();
+                    ltxuk(qus);
+                    break;
+                case "ails":
+                    showWait();
+                    AILS(qus);
+                    break;
+                case "tdchat":
+                    showWait();
+                    TDCHAT(qus);
+                    break;
+                case "xeasy":
+                    showWait();
+                    chat6Xeasy(qus);
+                    break;
+                case "wgk":
+                    WGK(qus);
+                    break;
+                case "aidutu":
+                    AIDUTU(qus);
+                    break;
+                case "WOBCW":
+                    WOBCW(qus);
+                    break;
+                case "LTD68686":
+                    LTD68686(qus);
+                    break;
+                default:
+                    showWait();
+                    kill(qus);
+            }
+
         });
 
-        let chatBtn7 = document.createElement("button");
-        chatBtn7.innerText = "插件接口6"
-        chatBtn7.setAttribute("id", "aidutu")
-        chatBtn7.addEventListener("click", () => {
-            AIDUTU(inputField.value.trim())
-        });
+        document.getElementById("modeSelect").innerHTML =`<option selected value="Defalut">默认</option>
+ <option value="ltxuk">ltxuk</option>
+ <option value="ails">ails</option>
+ <option value="tdchat">tdchat</option>
+ <option value="xeasy">xeasy</option>
+ <option value="wgk">wgk</option>
+ <option value="WOBCW">WOBCW</option>
+ <option value="LTD68686">LTD68686</option>
+ <option value="aidutu">aidutu</option>`;
 
-        let chatBtn8 = document.createElement("button");
-        chatBtn8.innerText = "插件接口7"
-        chatBtn8.setAttribute("id", "WOBCW")
-        chatBtn8.addEventListener("click", () => {
-            console.log("WOBCW")
-            WOBCW(inputField.value.trim())
-        });
-
-        let chatBtn9 = document.createElement("button");
-        chatBtn9.innerText = "插件接口8"
-        chatBtn9.setAttribute("id", "LTD68686")
-        chatBtn9.addEventListener("click", () => {
-            console.log("LTD68686")
-            LTD68686(inputField.value.trim())
-        });
+        document.getElementById("input-container").append(aigckeybtn);
+        document.getElementById("input-container").append(aiJKbtn);
 
 
-        document.getElementById("input-container").append(chatBtn);
-        document.getElementById("input-container").append(chatBtn1);
-        document.getElementById("input-container").append(chatBtn2);
-        document.getElementById("input-container").append(chatBtn3);
-        document.getElementById("input-container").append(chatBtn4);
-        document.getElementById("input-container").append(chatBtn5);
-        document.getElementById("input-container").append(chatBtn6);
-        document.getElementById("input-container").append(chatBtn7);
-        document.getElementById("input-container").append(chatBtn8);
-        document.getElementById("input-container").append(chatBtn9);
         document.getElementById("chat-header").append(" -JS版本:" + JSVer)
     }, 1500)
 
