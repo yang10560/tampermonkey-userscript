@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.4
+// @version      2.5
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -17,6 +17,9 @@
 // @connect    gpt.wobcw.com
 // @connect    chat.68686.ltd
 // @connect    ai.ls
+// @connect    chat.ohtoai.com
+// @connect    mirrorchat.extkj.cn
+// @connect    free.anzz.top
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -27,7 +30,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.4"
+    var JSVer = "v2.5"
 
     //enc-start
     async function digestMessage(r) {
@@ -51,6 +54,7 @@
     var messageChain1 = []
     var messageChain2 = []
     var messageChain3 = []
+    var messageChain4 = []//OHTOAI
 
     function addMessageChain(messageChain, element) {
         if (messageChain.length >= 5) {
@@ -433,7 +437,7 @@
             }),
             onloadstart: (stream) => {
                 let finalResult = []
-                simulateBotResponse(("请稍后..."))
+                simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -528,7 +532,7 @@
                     }),
                     onloadstart: (stream) => {
                         let result = "";
-                        simulateBotResponse(("请稍后..."))
+                        simulateBotResponse("请稍后...")
                         const reader = stream.response.getReader();
                         //     console.log(reader.read)
                         let finalResult = "";
@@ -597,7 +601,7 @@
             }),
             onloadstart: (stream) => {
                 let result = "";
-                simulateBotResponse(("请稍后..."))
+                simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
                 let finalResult;
@@ -664,7 +668,7 @@
             }),
             onloadstart: (stream) => {
                 let result = "";
-                simulateBotResponse(("请稍后..."))
+                simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -704,6 +708,77 @@
 
     }
 
+    var parentID_anzz;
+    function ANZZ(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let ops = {};
+        if (parentID_anzz) {
+            ops = {parentMessageId: parentID_anzz};
+        }
+        console.log(ops)
+         GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://free.anzz.top/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://free.anzz.top/",
+                "origin": "https://free.anzz.top",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                top_p: 1,
+                prompt: your_qus,
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                temperature: 0.8,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalResult;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        saveHistory(your_qus, finalResult);
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        console.log(decoder.decode(byteArray))
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            fillBotResponse(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_anzz = nowResult.id;
+                        }
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                simulateBotResponse("erro:", err)
+            }
+        })
+
+    }
+
+
 
 
     var generateRandomIP = () => {
@@ -741,6 +816,142 @@
                 alert("更新成功：" + gckey)
             }
         });
+    }
+
+
+    function OHTOAI(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let baseURL = "https://chat.ohtoai.com/";
+        addMessageChain(messageChain4, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "access-code": "",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain4,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                max_tokens: 2000,
+                presence_penalty: 0
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain4, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            fillBotResponse(finalResult)
+                            saveHistory(your_qus, finalResult);
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onprogress: function (msg) {
+                //console.log(msg)
+            },
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+    var parentID_extkj;
+    function EXTKJ(question){
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let ops = {};
+        if (parentID_extkj) {
+            ops = {parentMessageId: parentID_extkj};
+        }
+        console.log(ops)
+        let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__").toString()
+        console.log("aes:" + pt)
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://mirrorchat.extkj.cn/api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://mirrorchat.extkj.cn/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: pt,
+                options: ops,
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-" + new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                let finalResult = [];
+                simulateBotResponse("请稍后...")
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        fillBotResponse(finalResult)
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        console.log(decoder.decode(byteArray))
+                        let nowResult = decoder.decode(byteArray)
+
+                        if (nowResult) {
+                            let jsonLine = nowResult.split("\n");
+                            let jsonObj = JSON.parse(jsonLine[jsonLine.length - 1]);
+                            finalResult = jsonObj.text;
+                            if(jsonObj.id){
+                                parentID_extkj = jsonObj.id;
+                            }
+                            fillBotResponse(finalResult)
+                        }
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        })
     }
 
     //初始化
@@ -796,6 +1007,15 @@
                 case "LTD68686":
                     LTD68686(qus);
                     break;
+                 case "ANZZ":
+                     ANZZ(qus);
+                    break;
+                case "OHTOAI":
+                    OHTOAI(qus);
+                    break;
+                case "EXTKJ":
+                    EXTKJ(qus);
+                    break;
                 default:
                     showWait();
                     kill(qus);
@@ -811,6 +1031,9 @@
  <option value="wgk">wgk</option>
  <option value="WOBCW">WOBCW</option>
  <option value="LTD68686">LTD68686</option>
+ <option value="ANZZ">ANZZ</option>
+ <option value="OHTOAI">OHTOAI</option>
+ <option value="EXTKJ">EXTKJ</option>
  <option value="aidutu">aidutu</option>`;
 
         document.getElementById("input-container").append(aigckeybtn);
