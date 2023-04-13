@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.5.4
+// @version       1.5.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -49,6 +49,7 @@
 // @connect    luntianxia.uk
 // @connect    chat.51buygpt.com
 // @connect    chat.extkj.cn
+// @connect    mirrorchat.extkj.cn
 // @connect    api.tdchat0.com
 // @connect    chat6.xeasy.me
 // @connect   chat.wuguokai.cn
@@ -63,6 +64,8 @@
 // @connect   chat.68686.ltd
 // @connect   www.aitianhu.com
 // @connect   free.anzz.top
+// @connect   chat.ohtoai.com
+// @connect   freeopenai.xyz
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -122,6 +125,7 @@
             GM_xmlhttpRequest({
                 method: "GET",
                 nocache: true,
+                synchronous: true,
                 url: "http://gpt66.cn/gongxkey.html",
                 headers: {
                     //"Content-Type": "application/json",
@@ -153,6 +157,36 @@
                 onerror: (e) => {
                     localStorage.removeItem("openAIkey")
                     document.getElementById("gptAnswer").innerText = "openAI key获取失败"
+                }
+            });
+
+            GM_xmlhttpRequest({
+                method: "GET",
+                nocache: true,
+                synchronous: true,
+                url: "https://freeopenai.xyz/api.txt",
+                headers: {
+                    //"Content-Type": "application/json",
+                    "Referer": `http://freeopenai.xyz/`
+                },
+                onload: function (response) {
+                    let resp = response.responseText;
+                    if (!resp) {
+                        localStorage.removeItem("openAIkey")
+                        return
+                    }
+                    //localStorage.setItem("openAIkey", pubkey)
+                    let ht = ""
+                    let keys = resp.split("\n");
+                    keys.forEach(key => {
+                        ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
+                    })
+                    document.getElementById("gptAnswer").innerHTML = document.getElementById("gptAnswer").innerHTML + ht;
+                    //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
+                    localStorage.removeItem("openAIkey")
+                },
+                onerror: (e) => {
+                    localStorage.removeItem("openAIkey")
                 }
             });
 
@@ -785,6 +819,18 @@
 
             return;
             //end if
+        } else if (GPTMODE && GPTMODE == "OHTOAI") {
+            console.log("OHTOAI")
+            OHTOAI();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE == "EXTKJ") {
+            console.log("EXTKJ")
+            EXTKJ();
+
+            return;
+            //end if
         }
 
 
@@ -899,10 +945,12 @@
       <option value="COOLAI">COOLAI</option>
       <option value="MYDOG">MYDOG</option>
       <option value="WOBCW">WOBCW</option>
+      <option value="EXTKJ">EXTKJ</option>
+      <option value="OHTOAI">OHTOAI</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.4已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.5已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1248,6 +1296,7 @@
     var messageChain4 = [];//LTXUK
     var messageChain5 = [];//XEASY
     var messageChain6 = [];//MYDOG
+    var messageChain7 = [];//OHTOAI
     var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
@@ -2102,6 +2151,136 @@
             }
         })
 
+    }
+
+
+    function OHTOAI() {
+
+        let baseURL = "https://chat.ohtoai.com/";
+        addMessageChain(messageChain7, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "access-code": "",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain7,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                max_tokens: 2000,
+                presence_penalty: 0
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain7, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onprogress: function (msg) {
+                //console.log(msg)
+            },
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+    var parentID_extkj;
+    function EXTKJ(){
+        let ops = {};
+        if (parentID_extkj) {
+            ops = {parentMessageId: parentID_extkj};
+        }
+        console.log(ops)
+        let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__").toString()
+        console.log("aes:" + pt)
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://mirrorchat.extkj.cn/api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://mirrorchat.extkj.cn/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: pt,
+                options: ops,
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-" + new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                let finalResult = [];
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        console.log(decoder.decode(byteArray))
+                        let nowResult = decoder.decode(byteArray)
+
+                        if (nowResult) {
+                            let jsonLine = nowResult.split("\n");
+                            let jsonObj = JSON.parse(jsonLine[jsonLine.length - 1]);
+                            finalResult = jsonObj.text;
+                            if(jsonObj.id){
+                                parentID_extkj = jsonObj.id;
+                            }
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        })
     }
 
     var WebsocketCoolAI;
