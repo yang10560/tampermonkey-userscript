@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.5
+// @version      2.6
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -20,6 +20,9 @@
 // @connect    chat.ohtoai.com
 // @connect    mirrorchat.extkj.cn
 // @connect    free.anzz.top
+// @connect   supremes.pro
+// @connect   chat.bnu120.space
+// @connect   chat7.aifks001.online
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -30,7 +33,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.5"
+    var JSVer = "v2.6"
 
     //enc-start
     async function digestMessage(r) {
@@ -954,6 +957,248 @@
         })
     }
 
+    //https://supremes.pro/
+    var messageChain8 = [];
+    function SUPREMES(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let now = Date.now();
+        let Baseurl = "https://supremes.pro/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY
+        }).then(sign => {
+            addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain8,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    simulateBotResponse("请稍后...")
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain8, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                fillBotResponse(finalResult)
+                                saveHistory(your_qus, finalResult);
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            fillBotResponse(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+    //https://chat.bnu120.space/
+    var messageChain9 = [];
+    function BNU120(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let now = Date.now();
+        let Baseurl = "https://chat.bnu120.space/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY
+        }).then(sign => {
+            addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain9,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    simulateBotResponse("请稍后...")
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain9, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                fillBotResponse(finalResult)
+                                saveHistory(your_qus, finalResult);
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            fillBotResponse(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+
+    //https://chat7.aifks001.online/v1/chat/gpt/
+    var aifskList = [];
+    var aifsid = generateRandomString(21);
+
+    function AIFKS(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let Baseurl = "https://chat7.aifks001.online/";
+        let padZero = (num) => {
+            // 如果数字小于 10，前面补一个 0
+            return num < 10 ? `0${num}` : num;
+        }
+        let formatTime = () => {
+            const now = new Date(); // 获取当前时间
+            const hours = now.getHours(); // 获取小时
+            const minutes = now.getMinutes(); // 获取分钟
+            const seconds = now.getSeconds(); // 获取秒数
+            // 格式化为 HH:MM:SS 的形式
+            return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+        }
+        console.log(formatTime())
+        aifskList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
+        aifskList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        if (aifskList.length > 10){
+            aifskList = aifskList.shift();
+        }
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: Baseurl + "v1/chat/gpt/",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": Baseurl,
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                "list": aifskList,
+                "id": aifsid,
+                "title": your_qus,
+                "prompt": "",
+                "temperature": 0.5,
+                "models": "0",
+                "continuous": true
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            aifskList[aifskList.length - 1] = {
+                                "content": finalResult,
+                                "role": "assistant",
+                                "nickname": "AI",
+                                "time": formatTime(),
+                                "isMe": false
+                            };
+                            fillBotResponse(finalResult)
+                            saveHistory(your_qus, finalResult);
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        console.log(d)
+                        result.push(d)
+                        fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+
     //初始化
     setTimeout(() => {
 
@@ -1016,6 +1261,15 @@
                 case "EXTKJ":
                     EXTKJ(qus);
                     break;
+                case "SUPREMES":
+                    SUPREMES(qus);
+                    break;
+                case "BNU120":
+                    BNU120(qus);
+                    break;
+                case "AIFKS":
+                    AIFKS(qus);
+                    break;
                 default:
                     showWait();
                     kill(qus);
@@ -1034,7 +1288,28 @@
  <option value="ANZZ">ANZZ</option>
  <option value="OHTOAI">OHTOAI</option>
  <option value="EXTKJ">EXTKJ</option>
+ <option value="SUPREMES">SUPREMES</option>
+ <option value="BNU120">BNU120</option>
+ <option value="AIFKS">AIFKS</option>
  <option value="aidutu">aidutu</option>`;
+
+        document.getElementById('modeSelect').addEventListener('change', () => {
+            const selectEl = document.getElementById('modeSelect');
+            const selectedValue = selectEl.options[selectEl.selectedIndex].value;
+            localStorage.setItem('mymode', selectedValue);
+        });
+
+        if(localStorage.getItem('mymode')){
+            const selectEl = document.getElementById('modeSelect');
+            let optionElements = selectEl.querySelectorAll("option");
+            for (let op in optionElements) {
+                if(optionElements[op].value == localStorage.getItem('mymode')){
+                    optionElements[op].setAttribute("selected", "selected");
+                    break;
+                }
+            }
+        }
+
 
         document.getElementById("input-container").append(aigckeybtn);
         document.getElementById("input-container").append(aiJKbtn);
