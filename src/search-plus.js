@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.5.6
+// @version       1.5.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -66,6 +66,9 @@
 // @connect   free.anzz.top
 // @connect   chat.ohtoai.com
 // @connect   freeopenai.xyz
+// @connect   supremes.pro
+// @connect   chat.bnu120.space
+// @connect   chat7.aifks001.online
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -825,9 +828,27 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "EXTKJ") {
+        } else if (GPTMODE && GPTMODE == "EXTKJ") {
             console.log("EXTKJ")
             EXTKJ();
+
+            return;
+            //end if
+        } else if (GPTMODE && GPTMODE == "SUPREMES") {
+            console.log("SUPREMES")
+            SUPREMES();
+
+            return;
+            //end if
+        } else if (GPTMODE && GPTMODE == "BNU120") {
+            console.log("BNU120")
+            BNU120();
+
+            return;
+            //end if
+        } else if (GPTMODE && GPTMODE == "AIFKS") {
+            console.log("AIFKS")
+            AIFKS();
 
             return;
             //end if
@@ -947,10 +968,13 @@
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
       <option value="OHTOAI">OHTOAI</option>
+      <option value="SUPREMES">SUPREMES</option>
+      <option value="BNU120">BNU120</option>
+      <option value="AIFKS">AIFKS</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.6已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1297,6 +1321,8 @@
     var messageChain5 = [];//XEASY
     var messageChain6 = [];//MYDOG
     var messageChain7 = [];//OHTOAI
+    var messageChain8 = [];//SUPREMES
+    var messageChain9 = [];//bnu120
     var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
@@ -1931,6 +1957,7 @@
 
 
     var parentID_wobcw;
+
     function WOBCW() {
         let ops = {};
         if (parentID_wobcw) {
@@ -1998,6 +2025,7 @@
 
     var parentID_tianhu;
     let tianhu_first = true;
+
     function AITIANHU() {
         let ops = {};
         if (parentID_tianhu) {
@@ -2005,7 +2033,7 @@
         }
         console.log(ops)
 
-        if(tianhu_first){
+        if (tianhu_first) {
             GM_xmlhttpRequest({
                 method: "POST",
                 synchronous: true,
@@ -2087,6 +2115,7 @@
 
 
     var parentID_anzz;
+
     function ANZZ() {
         let ops = {};
         if (parentID_anzz) {
@@ -2219,7 +2248,8 @@
     }
 
     var parentID_extkj;
-    function EXTKJ(){
+
+    function EXTKJ() {
         let ops = {};
         if (parentID_extkj) {
             ops = {parentMessageId: parentID_extkj};
@@ -2263,7 +2293,7 @@
                             let jsonLine = nowResult.split("\n");
                             let jsonObj = JSON.parse(jsonLine[jsonLine.length - 1]);
                             finalResult = jsonObj.text;
-                            if(jsonObj.id){
+                            if (jsonObj.id) {
                                 parentID_extkj = jsonObj.id;
                             }
                             showAnserAndHighlightCodeStr(finalResult)
@@ -2281,6 +2311,235 @@
                 console.log(err)
             }
         })
+    }
+
+    //https://supremes.pro/
+    function SUPREMES() {
+
+        let now = Date.now();
+        let Baseurl = "https://supremes.pro/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY
+        }).then(sign => {
+            addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain8,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain8, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                showAnserAndHighlightCodeStr(finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+    //https://chat.bnu120.space/
+    function BNU120() {
+
+        let now = Date.now();
+        let Baseurl = "https://chat.bnu120.space/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY
+        }).then(sign => {
+            addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain9,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain9, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                showAnserAndHighlightCodeStr(finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+
+    //https://chat7.aifks001.online/v1/chat/gpt/
+    var aifskList = [];
+    var aifsid = generateRandomString(21);
+
+    function AIFKS() {
+        let Baseurl = "https://chat7.aifks001.online/";
+        let padZero = (num) => {
+            // 如果数字小于 10，前面补一个 0
+            return num < 10 ? `0${num}` : num;
+        }
+        let formatTime = () => {
+            const now = new Date(); // 获取当前时间
+            const hours = now.getHours(); // 获取小时
+            const minutes = now.getMinutes(); // 获取分钟
+            const seconds = now.getSeconds(); // 获取秒数
+            // 格式化为 HH:MM:SS 的形式
+            return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+        }
+        console.log(formatTime())
+        aifskList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
+        aifskList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        if (aifskList.length > 10){
+            aifskList = aifskList.shift();
+        }
+        abortXml= GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "v1/chat/gpt/",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+                    "list": aifskList,
+                    "id": aifsid,
+                    "title": your_qus,
+                    "prompt": "",
+                    "temperature": 0.5,
+                    "models": "0",
+                    "continuous": true
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                aifskList[aifskList.length - 1] = {
+                                    "content": finalResult,
+                                    "role": "assistant",
+                                    "nickname": "AI",
+                                    "time": formatTime(),
+                                    "isMe": false
+                                };
+                                showAnserAndHighlightCodeStr(finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            console.log(d)
+                            result.push(d)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onerror: function (err) {
+                    console.log(err)
+                }
+            });
+
     }
 
     var WebsocketCoolAI;
