@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.6
+// @version      2.8
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -33,7 +33,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.6"
+    var JSVer = "v2.8"
 
     //enc-start
     async function digestMessage(r) {
@@ -73,7 +73,10 @@
         console.log("aikey:" + aikey)
         let your_qus = question;//你的问题
         let now = Date.now();
-        const pk = "7CCjWG8L3h3v";//查看js的generateSignature函数中的key
+        let pk = "92zu73NsjFjd";//查看js的generateSignature函数中的key
+        if(defualtAPIPUBKEY){
+            pk = defualtAPIPUBKEY;
+        }
         let Baseurl = "https://chatai.to/";
         addMessageChain(messageChain0, {role: "user", content: your_qus})//连续话
         generateSignatureWithPkey({
@@ -102,6 +105,7 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
+                    simulateBotResponse("...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
@@ -115,12 +119,12 @@
                             } catch (e) {
                                 //TODO handle the exception
                             }
-                            simulateBotResponse(finalResult)
-                            hideWait()
+                            fillBotResponse(finalResult)
                             return;
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
+                        fillBotResponse(result.join(""))
                         return reader.read().then(processText);
                     });
                 },
@@ -174,6 +178,7 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
+                    simulateBotResponse("...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
@@ -188,12 +193,12 @@
                             } catch (e) {
                                 //TODO handle the exception
                             }
-                            simulateBotResponse(finalResult)
-                            hideWait()
+                            fillBotResponse(finalResult)
                             return;
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
+                        fillBotResponse(result.join(""))
                         return reader.read().then(processText);
                     });
                 },
@@ -247,6 +252,7 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
+                    simulateBotResponse("...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
@@ -261,12 +267,12 @@
                             } catch (e) {
                                 //TODO handle the exception
                             }
-                            simulateBotResponse(finalResult)
-                            hideWait()
+                            fillBotResponse(finalResult)
                             return;
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
+                        fillBotResponse(result.join(""))
                         return reader.read().then(processText);
                     });
                 },
@@ -301,6 +307,7 @@
             data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(question).replace(/%/g, '‰')}&length=${question.length}&stream=1`,
             onloadstart: (stream) => {
                 let result = [];
+                simulateBotResponse("...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -311,8 +318,7 @@
                         } catch (e) {
                             console.error(e)
                         } finally {
-                            simulateBotResponse(finalResult)
-                            hideWait()
+                            fillBotResponse(result.join(""))
                         }
 
 
@@ -324,6 +330,7 @@
                         let delta = JSON.parse(d.replace(/data: /, "")).choices[0].delta.content
                         console.log(d)
                         result.push(delta)
+                        fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)
                     }
@@ -380,6 +387,7 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
+                    simulateBotResponse("...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
@@ -394,12 +402,12 @@
                             } catch (e) {
                                 //TODO handle the exception
                             }
-                            simulateBotResponse(finalResult)
-                            hideWait()
+                            fillBotResponse(finalResult)
                             return;
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
+                        fillBotResponse(result.join(""))
                         return reader.read().then(processText);
                     });
                 },
@@ -1225,19 +1233,15 @@
             let qus = inputField.value.trim();
             switch (apimode){
                 case "ltxuk":
-                    showWait();
                     ltxuk(qus);
                     break;
                 case "ails":
-                    showWait();
                     AILS(qus);
                     break;
                 case "tdchat":
-                    showWait();
                     TDCHAT(qus);
                     break;
                 case "xeasy":
-                    showWait();
                     chat6Xeasy(qus);
                     break;
                 case "wgk":
@@ -1271,7 +1275,6 @@
                     AIFKS(qus);
                     break;
                 default:
-                    showWait();
                     kill(qus);
             }
 
