@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.8
+// @version      2.9
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -23,6 +23,8 @@
 // @connect   supremes.pro
 // @connect   chat.bnu120.space
 // @connect   chat7.aifks001.online
+// @connect   chat.sunls.me
+// @connect   www.ftcl.store
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -33,7 +35,10 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.8"
+    var JSVer = "v2.9"
+    // var simulateBotResponse;
+    // var fillBotResponse;
+    // var saveHistory;
 
     //enc-start
     async function digestMessage(r) {
@@ -1207,6 +1212,162 @@
     }
 
 
+
+    var messageChain10 =[];//FTCL
+    function FTCL(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let now = Date.now();
+        let Baseurl = "https://www.ftcl.store/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY
+        }).then(sign => {
+            addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain10,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    simulateBotResponse("请稍后...")
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain10, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                fillBotResponse(finalResult)
+                                saveHistory(your_qus,finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            fillBotResponse(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+    //https://chat.sunls.me/
+    function SUNLE(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let msgobj = {
+            message: your_qus,
+            stream: true,
+            clientOptions: {
+                clientToUse: "chatgpt",
+                modelOptions: {
+                    "max_tokens": 1024
+                }
+            }
+        };
+        console.log(msgobj)
+         GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://chat.sunls.me/conversation",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://chat.sunls.me/",
+                "origin": "https://chat.sunls.me",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify(msgobj),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalRes;
+                simulateBotResponse("请稍后")
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        if(finalRes){
+                            fillBotResponse(finalRes)
+                            saveHistory(your_qus,finalRes)
+                        }else{
+                            fillBotResponse(result.join(""))
+                            saveHistory(your_qus,result.join(""))
+                        }
+
+                        return;
+                    }
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = decoder.decode(byteArray)
+
+                        if(nowResult.indexOf("DONE") > -1){
+                            let jsonData = nowResult.replace(/event: result/,"")
+                                .replace(/data: \[DONE\]/,"")
+                                .replace(/data:/,"").trim();
+                            finalRes = JSON.parse(jsonData).response;
+                            console.log(JSON.parse(jsonData))
+                        }else{
+                            const regex = /data: "([^"]*)"/;
+                            const match = regex.exec(nowResult);
+                            console.log(nowResult); // 输出：Hello world
+                            result.push(match[1])
+                           fillBotResponse(result.join(""))
+                        }
+
+
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                simulateBotResponse("erro:", err)
+            }
+        })
+
+    }
+
     //初始化
     setTimeout(() => {
 
@@ -1274,6 +1435,12 @@
                 case "AIFKS":
                     AIFKS(qus);
                     break;
+               case "SUNLE":
+                   SUNLE(qus);
+                    break;
+                case "FTCL":
+                    FTCL(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -1294,6 +1461,8 @@
  <option value="SUPREMES">SUPREMES</option>
  <option value="BNU120">BNU120</option>
  <option value="AIFKS">AIFKS</option>
+ <option value="FTCL">FTCL</option>
+ <option value="SUNLE">SUNLE</option>
  <option value="aidutu">aidutu</option>`;
 
         document.getElementById('modeSelect').addEventListener('change', () => {
