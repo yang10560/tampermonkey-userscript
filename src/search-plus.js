@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.5.7
+// @version       1.5.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -69,6 +69,9 @@
 // @connect   supremes.pro
 // @connect   chat.bnu120.space
 // @connect   chat7.aifks001.online
+// @connect   ai.usesless.com
+// @connect   www.ftcl.store
+// @connect   chat.sunls.me
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -163,35 +166,37 @@
                 }
             });
 
-            GM_xmlhttpRequest({
-                method: "GET",
-                nocache: true,
-                synchronous: true,
-                url: "https://freeopenai.xyz/api.txt",
-                headers: {
-                    //"Content-Type": "application/json",
-                    "Referer": `http://freeopenai.xyz/`
-                },
-                onload: function (response) {
-                    let resp = response.responseText;
-                    if (!resp) {
-                        localStorage.removeItem("openAIkey")
-                        return
-                    }
-                    //localStorage.setItem("openAIkey", pubkey)
-                    let ht = ""
-                    let keys = resp.split("\n");
-                    keys.forEach(key => {
-                        ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
-                    })
-                    document.getElementById("gptAnswer").innerHTML = document.getElementById("gptAnswer").innerHTML + ht;
-                    //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
-                    localStorage.removeItem("openAIkey")
-                },
-                onerror: (e) => {
-                    localStorage.removeItem("openAIkey")
-                }
-            });
+           setTimeout(()=>{
+               GM_xmlhttpRequest({
+                   method: "GET",
+                   nocache: true,
+                   synchronous: true,
+                   url: "https://freeopenai.xyz/api.txt",
+                   headers: {
+                       //"Content-Type": "application/json",
+                       "Referer": `http://freeopenai.xyz/`
+                   },
+                   onload: function (response) {
+                       let resp = response.responseText;
+                       if (!resp) {
+                           localStorage.removeItem("openAIkey")
+                           return
+                       }
+                       //localStorage.setItem("openAIkey", pubkey)
+                       let ht = ""
+                       let keys = resp.split("\n");
+                       keys.forEach(key => {
+                           ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
+                       })
+                       document.getElementById("gptAnswer").innerHTML = document.getElementById("gptAnswer").innerHTML + ht;
+                       //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
+                       localStorage.removeItem("openAIkey")
+                   },
+                   onerror: (e) => {
+                       localStorage.removeItem("openAIkey")
+                   }
+               });
+           },2000)
 
             return
         }
@@ -852,6 +857,24 @@
 
             return;
             //end if
+        } else if (GPTMODE && GPTMODE == "USESLESS") {
+            console.log("USESLESS")
+            USESLESS();
+
+            return;
+            //end if
+        } else if (GPTMODE && GPTMODE == "FTCL") {
+            console.log("FTCL")
+            FTCL();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE == "SUNLE") {
+            console.log("SUNLE")
+            SUNLE();
+
+            return;
+            //end if
         }
 
 
@@ -971,10 +994,13 @@
       <option value="SUPREMES">SUPREMES</option>
       <option value="BNU120">BNU120</option>
       <option value="AIFKS">AIFKS</option>
+      <option value="USESLESS">USESLESS</option>
+      <option value="FTCL">FTCL</option>
+      <option value="SUNLE">SUNLE</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1323,6 +1349,7 @@
     var messageChain7 = [];//OHTOAI
     var messageChain8 = [];//SUPREMES
     var messageChain9 = [];//bnu120
+    var messageChain10 = [];//ftcl
     var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
@@ -2268,7 +2295,7 @@
             data: JSON.stringify({
                 prompt: pt,
                 options: ops,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-" + new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()
+                systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-${new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()}`
             }),
             onloadstart: (stream) => {
                 let result = "";
@@ -2539,6 +2566,223 @@
                     console.log(err)
                 }
             });
+
+    }
+
+
+    var parentID_usesless;
+    var referer_uesless = "https://ai.usesless.com/chat/"+Date.now();
+    function USESLESS() {
+        let ops = {
+            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-${new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()}`,
+            completionParams:{presence_penalty: 0.8, temperature: 1, model: "gpt-3.5-turbo"}
+        };
+        if (parentID_usesless) {
+            ops.parentMessageId = parentID_usesless;
+        }
+        console.log(ops)
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://ai.usesless.com/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": referer_uesless,
+                "origin": "https://ai.usesless.com",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                openaiKey: "",
+                prompt: your_qus,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalResult;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_usesless = nowResult.id;
+                        }
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:", err)
+            }
+        })
+
+    }
+
+
+    function FTCL() {
+
+        let now = Date.now();
+        let Baseurl = "https://www.ftcl.store/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY
+        }).then(sign => {
+            addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer null",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+
+                    messages: messageChain10,
+                    time: now,
+                    pass: null,
+                    sign: sign,
+                    key: ""
+                }),
+                onloadstart: (stream) => {
+                    let result = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            let finalResult = result.join("")
+                            try {
+                                console.log(finalResult)
+                                addMessageChain(messageChain10, {
+                                    role: "assistant",
+                                    content: finalResult
+                                })
+                                showAnserAndHighlightCodeStr(finalResult)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                            return;
+                        }
+                        try {
+                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                            result.push(d)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        } catch (e) {
+                            console.log(e)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                onprogress: function (msg) {
+                    //console.log(msg)
+                },
+                onerror: function (err) {
+                    console.log(err)
+                },
+                ontimeout: function (err) {
+                    console.log(err)
+                }
+            });
+
+        });
+    }
+
+    //https://chat.sunls.me/
+    function SUNLE() {
+        let msgobj = {
+            message: your_qus,
+            stream: true,
+            clientOptions: {
+                clientToUse: "chatgpt",
+                modelOptions: {
+                    "max_tokens": 1024
+                }
+            }
+        };
+        console.log(msgobj)
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://chat.sunls.me/conversation",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://chat.sunls.me/",
+                "origin": "https://chat.sunls.me",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify(msgobj),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalRes;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        if(finalRes){
+                            showAnserAndHighlightCodeStr(finalRes)
+                        }else{
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }
+
+                        return;
+                    }
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = decoder.decode(byteArray)
+
+                        if(nowResult.indexOf("DONE") > -1){
+                            let jsonData = nowResult.replace(/event: result/,"")
+                                .replace(/data: \[DONE\]/,"")
+                                .replace(/data:/,"").trim();
+                            finalRes = JSON.parse(jsonData).response;
+                            console.log(JSON.parse(jsonData))
+                        }else{
+                            const regex = /data: "([^"]*)"/;
+                            const match = regex.exec(nowResult);
+                            console.log(nowResult); // 输出：Hello world
+                            result.push(match[1])
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }
+
+
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:", err)
+            }
+        })
 
     }
 
