@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.6.3
+// @version       1.6.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -75,6 +75,8 @@
 // @connect   chat.wobcw.com
 // @connect   www.pizzagpt.it
 // @connect   www.phind.com
+// @connect   chat.bushiai.com
+// @connect   chatgpt.qdymys.cn
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -730,9 +732,9 @@
            TDCHAT()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "XEASY") {
-            console.log("当前模式XEASY")
-            XEASY();
+        } else if (GPTMODE && GPTMODE == "QDYMYS") {
+            console.log("当前模式QDYMYS")
+            QDYMYS();
 
             //end if
             return;
@@ -941,7 +943,7 @@
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
-      <option value="XEASY">XEASY</option>
+      <option value="QDYMYS">QDYMYS</option>
       <option value="WGK">WGK</option>
       <option value="LTD68686">LTD68686</option>
       <option value="AILS">AILS</option>
@@ -960,7 +962,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.3已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.4已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1303,7 +1305,6 @@
 
 
     var messageChain2 = [];//AILS
-    var messageChain5 = [];//XEASY
     var messageChain7 = [];//OHTOAI
     var messageChain8 = [];//SUPREMES
     var messageChain9 = [];//bnu120
@@ -1771,73 +1772,7 @@
         });
     }
 
-    function XEASY() {
-        let now = Date.now()
-        const pk = {}.PUBLIC_SECRET_KEY;
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: pk
-        }).then(sign => {
-            console.log(sign)
-            addMessageChain(messageChain5, {role: "user", content: your_qus})//连续话
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                url: "https://chat6.xeasy.me/api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Referer": `https://chat6.xeasy.me/`
-                },
-                data: JSON.stringify({
-                    messages: messageChain5,
-                    time: now,
-                    pass: null,
-                    sign: sign
-                    //key: "",
-                    //usage: Math.floor(Math.random() * 8) + 1
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            console.log(finalResult)
-                            showAnserAndHighlightCodeStr(finalResult)
-                            addMessageChain(messageChain5, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            return;
-                        }
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        try {
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        } catch (e) {
-                            log(e)
-                        }
 
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>some err happends,errinfo :<br>${err.messages}</div>`
-                },
-                ontimeout: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
-                }
-            });
-        });
-
-    }
 
     function PHIND() {
 
@@ -2187,7 +2122,8 @@
 
     function OHTOAI() {
 
-        let baseURL = "https://chat.ohtoai.com/";
+       // let baseURL = "https://chat.ohtoai.com/";
+        let baseURL = "https://chat.bushiai.com/";
         addMessageChain(messageChain7, {role: "user", content: your_qus})//连续话
         GM_xmlhttpRequest({
             method: "POST",
@@ -2817,6 +2753,78 @@
         })
 
     }
+
+
+    var parentID_qdymys;
+
+    function QDYMYS() {
+        let ops = {};
+        if (parentID_qdymys) {
+            ops = {parentMessageId: parentID_qdymys};
+        }
+        console.log(ops)
+        let finalResult = [];
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "http://chatgpt.qdymys.cn/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "http://chatgpt.qdymys.cn/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let charsReceived = 0;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
+                    }
+
+                    charsReceived += value.length;
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_qdymys = nowResult.id;
+                        }
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onprogress: function (msg) {
+                //console.log(msg) //Todo
+            },
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        })
+
+    }
+
 
     var WebsocketCoolAI;
     var resultCoolAI = [];
