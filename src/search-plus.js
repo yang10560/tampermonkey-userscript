@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.6.0
+// @version       1.6.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -780,8 +780,8 @@
             //end if
         } else if (GPTMODE && GPTMODE == "WOBCW") {
             console.log("WOBCW")
-           // WOBCW();
-            WGK();
+           WOBCW();
+
 
             return;
             //end if
@@ -958,7 +958,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.0已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.1已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1464,72 +1464,55 @@
 
 
 
+    var userId_wgk = "#/chat/" + Date.now();
+
     function WGK() {
-
-        GM_xmlhttpRequest({
-            url: "https://chat.wobcw.com/chat",
-            headers: {
-                "accept": "*/*",
-                "referrer": "https://chat.wobcw.com/",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarybrMK1QixymFcNJzK"
-            },
-            data: `------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundarybrMK1QixymFcNJzK--\r\n`,
+        console.log(userId_wgk)
+        abortXml = GM_xmlhttpRequest({
             method: "POST",
-            onload: (resp) => {
-                let rs = resp.responseText;
-                console.log(rs)
-                let chat_id = JSON.parse(rs).chat_id;
-                console.log(chat_id)
-                abortXml = GM_xmlhttpRequest({
-                    method: "GET",
-                    url: `https://chat.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
-                    headers: {
-                        "Content-Type": "application/json",
-                        // "Authorization": "Bearer null",
-                        "Referer": "https://chat.wobcw.com/",
-                        //"Host":"www.aiai.zone",
-                        "accept": "text/event-stream"
-                    },
-                    onloadstart: (stream) => {
-                        let result = [];
-                        let finalResult = [];
-                        const reader = stream.response.getReader();
-                        reader.read().then(function processText({done, value}) {
-                            if (done) {
-                                finalResult = result.join("")
-                                showAnserAndHighlightCodeStr(finalResult)
-                                return;
-                            }
-
-                            try {
-
-                                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                                console.log("raw:",d)
-                                let dd = d.replace(/data: /g, "").split("\n\n")
-                                console.log("dd:",dd)
-                                dd.forEach(item=>{
-                                    try {
-                                        let delta = JSON.parse(item).choices[0].delta.content
-                                        result.push(delta)
-                                        showAnserAndHighlightCodeStr(result.join(""))
-                                    }catch (e) {
-
-                                    }
-                                })
-                            } catch (e) {
-                                console.log(e)
-                            }
-
-                            return reader.read().then(processText);
-                        });
-                    },
-                    responseType: "stream",
-                    onerror: function (err) {
-                        console.log(err)
-                        showAnserAndHighlightCodeStr("erro:", err)
+            url: "https://ai5.wuguokai.top/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": "https://chat.wuguokai.cn/",
+                //"Host":"www.aiai.zone",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                userId: userId_wgk,
+                options: {}
+            }),
+            onloadstart: (stream) => {
+                let finalResult = []
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        showAnserAndHighlightCodeStr(finalResult.join(""))
+                        return;
                     }
-                })
-            }//end onload
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = decoder.decode(byteArray)
+
+                        finalResult.push(nowResult)
+                        showAnserAndHighlightCodeStr(finalResult.join(""))
+
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:", err)
+            }
         })
 
     }
@@ -1959,69 +1942,75 @@
     }
 
 
-    var parentID_wobcw;
+
 
     function WOBCW() {
-        let ops = {};
-        if (parentID_wobcw) {
-            ops = {parentMessageId: parentID_wobcw};
-        }
-        console.log(ops)
-        abortXml = GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://gpt.wobcw.com/api/chat-process",
+        GM_xmlhttpRequest({
+            url: "https://chat.wobcw.com/chat",
             headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://gpt.wobcw.com/",
-                "accept": "application/json, text/plain, */*"
+                "accept": "*/*",
+                "referrer": "https://chat.wobcw.com/",
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarybrMK1QixymFcNJzK"
             },
-            data: JSON.stringify({
-                top_p: 1,
-                prompt: your_qus,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                temperature: 0.8,
-                options: ops
-            }),
-            onloadstart: (stream) => {
-                let result = "";
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        highlightCodeStr()
-                        return;
+            data: `------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundarybrMK1QixymFcNJzK--\r\n`,
+            method: "POST",
+            onload: (resp) => {
+                let rs = resp.responseText;
+                console.log(rs)
+                let chat_id = JSON.parse(rs).chat_id;
+                console.log(chat_id)
+                abortXml = GM_xmlhttpRequest({
+                    method: "GET",
+                    url: `https://chat.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
+                    headers: {
+                        "Content-Type": "application/json",
+                        // "Authorization": "Bearer null",
+                        "Referer": "https://chat.wobcw.com/",
+                        //"Host":"www.aiai.zone",
+                        "accept": "text/event-stream"
+                    },
+                    onloadstart: (stream) => {
+                        let result = [];
+                        let finalResult = [];
+                        const reader = stream.response.getReader();
+                        reader.read().then(function processText({done, value}) {
+                            if (done) {
+                                finalResult = result.join("")
+                                showAnserAndHighlightCodeStr(finalResult)
+                                return;
+                            }
+
+                            try {
+
+                                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                                console.log("raw:",d)
+                                let dd = d.replace(/data: /g, "").split("\n\n")
+                                console.log("dd:",dd)
+                                dd.forEach(item=>{
+                                    try {
+                                        let delta = JSON.parse(item).choices[0].delta.content
+                                        result.push(delta)
+                                        showAnserAndHighlightCodeStr(result.join(""))
+                                    }catch (e) {
+
+                                    }
+                                })
+                            } catch (e) {
+                                console.log(e)
+                            }
+
+                            return reader.read().then(processText);
+                        });
+                    },
+                    responseType: "stream",
+                    onerror: function (err) {
+                        console.log(err)
+                        showAnserAndHighlightCodeStr("erro:", err)
                     }
-
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
-
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_wobcw = nowResult.id;
-                        }
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
-            }
+                })
+            }//end onload
         })
+
 
     }
 
