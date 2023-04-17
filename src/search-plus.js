@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.6.2
+// @version       1.6.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -73,6 +73,8 @@
 // @connect   www.ftcl.store
 // @connect   chat.sunls.me
 // @connect   chat.wobcw.com
+// @connect   www.pizzagpt.it
+// @connect   www.phind.com
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -713,9 +715,9 @@
 
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "LTXUK") {
-            console.log("当前模式LTXUK")
-            LTXUK();
+        } else if (GPTMODE && GPTMODE == "PIZZA") {
+            console.log("当前模式PIZZA")
+            PIZZA();
             //end if
             return;
         } else if (GPTMODE && GPTMODE == "AITIANHU") {
@@ -772,9 +774,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "MYDOG") {
-            console.log("MYDOG")
-            MYDOG();
+        } else if (GPTMODE && GPTMODE == "PHIND") {
+            console.log("PHIND")
+            PHIND();
 
             return;
             //end if
@@ -936,7 +938,7 @@
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="AIDUTU">AIDUTU</option>
-      <option value="LTXUK">LTXUK</option>
+      <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
       <option value="XEASY">XEASY</option>
@@ -945,7 +947,7 @@
       <option value="AILS">AILS</option>
       <option value="LERSEARCH">LERSEARCH</option>
       <option value="COOLAI">COOLAI</option>
-      <option value="MYDOG">MYDOG</option>
+      <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
       <option value="OHTOAI">OHTOAI</option>
@@ -958,7 +960,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.2已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.3已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1301,9 +1303,7 @@
 
 
     var messageChain2 = [];//AILS
-    var messageChain4 = [];//LTXUK
     var messageChain5 = [];//XEASY
-    var messageChain6 = [];//MYDOG
     var messageChain7 = [];//OHTOAI
     var messageChain8 = [];//SUPREMES
     var messageChain9 = [];//bnu120
@@ -1730,75 +1730,44 @@
     }
 
 
-    function LTXUK() {
-        let now = Date.now()
-        const pk = {}.PUBLIC_SECRET_KEY;
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: pk
-        }).then(sign => {
-            console.log(sign)
-            addMessageChain(messageChain4, {role: "user", content: your_qus})//连续话
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                url: "https://luntianxia.uk/api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Referer": `https://luntianxia.uk/`
-                },
-                data: JSON.stringify({
-                    messages: messageChain4,
-                    time: now,
-                    pass: null,
-                    sign: sign
-                    //key: "",
-                    //usage: Math.floor(Math.random() * 8) + 1
-                }),
+    function PIZZA() {
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://www.pizzagpt.it/api/chat-completion",
+            headers: {
+                "Content-Type": "text/plain;charset=UTF-8",
+                "Referer": `https://www.pizzagpt.it/`
+            },
+            data: JSON.stringify({
+                question: your_qus
+            }),
+            onload: function (res) {
+                if (res.status === 200) {
+                    console.log('成功....')
+                    console.log(res.response)
+                    let rest = res.response
+                    //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
 
-
-                onload: function (res) {
-                    if (res.status === 200) {
-                        console.log('成功....')
-                        console.log(res.response)
-                        let rest = res.response
-                        //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
-
-                        try {
-                            log(rest)
-                            showAnserAndHighlightCodeStr(rest)
-                            addMessageChain(messageChain4, {
-                                role: "assistant",
-                                content: rest
-                            })
-                        } catch (e) {
-                            //TODO handle the exception
-                            console.log(e)
-                            document.getElementById('gptAnswer').innerHTML = `${rest}`
-                        }
-
-                        highlightCodeStr()
-                    } else {
-                        console.log('失败')
-                        console.log(res)
-                        document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                    try {
+                        showAnserAndHighlightCodeStr(JSON.parse(rest).answer.content)
+                    } catch (e) {
+                        //TODO handle the exception
+                        console.log(e)
+                        document.getElementById('gptAnswer').innerHTML = rest
                     }
-                },
 
-                responseType: "application/json;charset=UTF-8",
-
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>some err happends,errinfo :<br>${err.messages}</div>`
-                },
-                ontimeout: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
+                } else {
+                    console.log('失败')
+                    console.log(res)
+                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
                 }
-            });
+            },
+
+            responseType: "application/json;charset=UTF-8",
+            onerror: function (err) {
+                document.getElementById('gptAnswer').innerHTML =
+                    `<div>some err happends,errinfo :<br>${err.messages}</div>`
+            }
         });
     }
 
@@ -1870,77 +1839,116 @@
 
     }
 
-    function MYDOG() {
+    function PHIND() {
 
-        let now = Date.now();
-        const pk = {}.pkey;//查看js的generateSignature函数中的key
-        let Baseurl = "https://a.mydog.buzz/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: pk
-        }).then(sign => {
-            addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
-                    messages: messageChain6,
-                    time: now,
-                    continuous: true,
-                    code: "",
-                    sign: sign,
-                    customKey: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain6, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } catch (e) {
-                                console.log(e)
+
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://www.phind.com/api/bing/search",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": `https://www.phind.com`
+            },
+            data: JSON.stringify({
+                "q": your_qus,
+                "userRankList": {},
+                "browserLanguage": "zh-CN"
+            }),
+            onload: function (res) {
+                if (res.status === 200) {
+                    console.log('成功....')
+                    console.log(res.response)
+                    let rest = res.response
+                    //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
+                    let rjson = JSON.parse(rest);
+                    let _bingResults = rjson.processedBingResults;
+                    console.log(_bingResults)
+
+                    GM_xmlhttpRequest({
+                        method: "POST",
+                        url: "https://www.phind.com/api/infer/answer",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Referer": "https://www.phind.com/",
+                            "accept": "*/*"
+                        },
+                        data: JSON.stringify({
+                            "question": your_qus,
+                            "bingResults": _bingResults,
+                            "codeContext": "",
+                            "options": {
+                                "skill": "intermediate",
+                                "date": formatTime(),
+                                "language": "zh-CN",
+                                "detailed": true,
+                                "creative": false
                             }
-                            return;
-                        }
-                        try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        } catch (e) {
-                            console.log(e)
-                        }
+                        }),
+                        onloadstart: (stream) => {
+                            let result = [];
+                            const reader = stream.response.getReader();
+                            reader.read().then(function processText({done, value}) {
+                                if (done) {
+                                    let finalResult = result.join("")
+                                    try {
+                                        console.log(finalResult)
+                                        showAnserAndHighlightCodeStr(finalResult)
+                                    } catch (e) {
+                                        console.log(e)
+                                    }
+                                    return;
+                                }
+                                try {
+                                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                                    console.log(d)
+                                    let dd = d.replace(/data: /g, "").split("\r\n\r\n")
+                                    console.log("dd:",dd)
+                                    dd.forEach(item=>{
+                                        try {
+                                            result.push(item)
+                                            showAnserAndHighlightCodeStr(result.join(""))
+                                        }catch (e) {
 
-                        return reader.read().then(processText);
+                                        }
+                                    })
+
+                                } catch (e) {
+                                    console.log(e)
+                                }
+
+                                return reader.read().then(processText);
+                            });
+                        },
+                        responseType: "stream",
+                        onprogress: function (msg) {
+                            //console.log(msg)
+                        },
+                        onerror: function (err) {
+                            console.log(err)
+                        },
+                        ontimeout: function (err) {
+                            console.log(err)
+                        }
                     });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            });
 
+
+                } else {
+                    console.log('失败')
+                    console.log(res)
+                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                }
+            },
+
+            responseType: "application/json;charset=UTF-8",
+            onerror: function (err) {
+                document.getElementById('gptAnswer').innerHTML =
+                    `<div>some err happends,errinfo :<br>${err.messages}</div>`
+            }
         });
+
+
+
+
     }
 
 
@@ -2458,20 +2466,23 @@
     var aifskList = [];
     var aifsid = generateRandomString(21);
 
-    function AIFKS() {
-        let Baseurl = "https://chat7.aifks001.online/";
+    var  formatTime = () => {
         let padZero = (num) => {
             // 如果数字小于 10，前面补一个 0
             return num < 10 ? `0${num}` : num;
         }
-        let formatTime = () => {
-            const now = new Date(); // 获取当前时间
-            const hours = now.getHours(); // 获取小时
-            const minutes = now.getMinutes(); // 获取分钟
-            const seconds = now.getSeconds(); // 获取秒数
-            // 格式化为 HH:MM:SS 的形式
-            return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
-        }
+        const now = new Date(); // 获取当前时间
+        const hours = now.getHours(); // 获取小时
+        const minutes = now.getMinutes(); // 获取分钟
+        const seconds = now.getSeconds(); // 获取秒数
+        // 格式化为 HH:MM:SS 的形式
+        return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+    }
+
+    function AIFKS() {
+        let Baseurl = "https://chat7.aifks001.online/";
+
+
         console.log(formatTime())
         aifskList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
         aifskList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
