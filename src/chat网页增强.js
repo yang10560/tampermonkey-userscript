@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.2
+// @version      3.3
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -26,6 +26,10 @@
 // @connect   chat.sunls.me
 // @connect   www.ftcl.store
 // @connect   chat.wobcw.com
+// @connect   chatgpt.qdymys.cn
+// @connect   chat.bushiai.com
+// @connect   www.pizzagpt.it
+// @connect   www.phind.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -36,7 +40,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.2"
+    var JSVer = "v3.3"
     // var simulateBotResponse;
     // var fillBotResponse;
     // var saveHistory;
@@ -71,6 +75,19 @@
         }
         messageChain.push(element);
         console.log(messageChain)
+    }
+
+    var  formatTime = () => {
+        let padZero = (num) => {
+            // 如果数字小于 10，前面补一个 0
+            return num < 10 ? `0${num}` : num;
+        }
+        const now = new Date(); // 获取当前时间
+        const hours = now.getHours(); // 获取小时
+        const minutes = now.getMinutes(); // 获取分钟
+        const seconds = now.getSeconds(); // 获取秒数
+        // 格式化为 HH:MM:SS 的形式
+        return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
     }
 
 
@@ -149,80 +166,49 @@
         });
     }
 
-    //LTX.uk
-    function ltxuk(question) {
 
+    function PIZZA(question) {
         let your_qus = question;//你的问题
-        let now = Date.now();
-        const pk = {}.pkey;//查看js的generateSignature函数中的key
-        let Baseurl = "https://luntianxia.uk/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: pk
-        }).then(sign => {
-            addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
-            handleUserInput(3)
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    //"Host":"www.aiai.zone",
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
+        handleUserInput(null)
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://www.pizzagpt.it/api/chat-completion",
+            headers: {
+                "Content-Type": "text/plain;charset=UTF-8",
+                "Referer": `https://www.pizzagpt.it/`
+            },
+            data: JSON.stringify({
+                question: your_qus
+            }),
+            onload: function (res) {
+                if (res.status === 200) {
+                    console.log('成功....')
+                    console.log(res.response)
+                    let rest = res.response
+                    //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
 
-                    messages: messageChain1,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    simulateBotResponse("...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                saveHistory(your_qus, finalResult);
-                                addMessageChain(messageChain1, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })//连续对话
-                            } catch (e) {
-                                //TODO handle the exception
-                            }
-                            fillBotResponse(finalResult)
-                            return;
-                        }
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        fillBotResponse(result.join(""))
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
+                    try {
+                        simulateBotResponse(JSON.parse(rest).answer.content)
+                        saveHistory(your_qus, JSON.parse(rest).answer.content)
+
+                    } catch (e) {
+                        console.log(e)
+
+                    }
+
+                } else {
+                    console.log('失败')
+                    console.log(res)
+
                 }
-            });
+            },
 
+            responseType: "application/json;charset=UTF-8",
+            onerror: function (err) {
+                simulateBotResponse(`<div>some err happends,errinfo :<br>${err.messages}</div>`)
+            }
         });
     }
-
 
     function AILS(question) {
 
@@ -368,78 +354,185 @@
     }
 
 
-    function chat6Xeasy(question) {
+    var parentID_qdymys;
 
+    function QDYMYS(question) {
         let your_qus = question;//你的问题
-        let now = Date.now();
-        const pk = {}.pkey;//查看js的generateSignature函数中的key
-        let Baseurl = "https://chat6.xeasy.me/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: pk
-        }).then(sign => {
-            addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
-            handleUserInput(3)
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    //"Host":"www.aiai.zone",
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
+        handleUserInput(null)
+        let ops = {};
+        if (parentID_qdymys) {
+            ops = {parentMessageId: parentID_qdymys};
+        }
+        console.log(ops)
+        let finalResult = [];
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "http://chatgpt.qdymys.cn/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "http://chatgpt.qdymys.cn/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                simulateBotResponse("...")
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        saveHistory(your_qus, finalResult);
+                        return;
+                    }
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
 
-                    messages: messageChain3,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    simulateBotResponse("...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                saveHistory(your_qus, finalResult);
-                                addMessageChain(messageChain3, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                            } catch (e) {
-                                //TODO handle the exception
-                            }
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
                             fillBotResponse(finalResult)
-                            return;
                         }
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        fillBotResponse(result.join(""))
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            });
+                        if (nowResult.id) {
+                            parentID_qdymys = nowResult.id;
+                        }
 
-        });
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onprogress: function (msg) {
+                //console.log(msg) //Todo
+            },
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        })
+
     }
+
+
+    function PHIND(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://www.phind.com/api/bing/search",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": `https://www.phind.com`
+            },
+            data: JSON.stringify({
+                "q": your_qus,
+                "userRankList": {},
+                "browserLanguage": "zh-CN"
+            }),
+            onload: function (res) {
+                if (res.status === 200) {
+                    console.log('成功....')
+                    console.log(res.response)
+                    let rest = res.response
+                    //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
+                    let rjson = JSON.parse(rest);
+                    let _bingResults = rjson.processedBingResults;
+                    console.log(_bingResults)
+
+                    GM_xmlhttpRequest({
+                        method: "POST",
+                        url: "https://www.phind.com/api/infer/answer",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Referer": "https://www.phind.com/",
+                            "accept": "*/*"
+                        },
+                        data: JSON.stringify({
+                            "question": your_qus,
+                            "bingResults": _bingResults,
+                            "codeContext": "",
+                            "options": {
+                                "skill": "intermediate",
+                                "date": formatTime(),
+                                "language": "zh-CN",
+                                "detailed": true,
+                                "creative": false
+                            }
+                        }),
+                        onloadstart: (stream) => {
+                            let result = [];
+                            simulateBotResponse("...")
+                            const reader = stream.response.getReader();
+                            reader.read().then(function processText({done, value}) {
+                                if (done) {
+                                    let finalResult = result.join("")
+                                    try {
+                                        console.log(finalResult)
+                                        fillBotResponse(finalResult)
+                                        saveHistory(your_qus, finalResult)
+                                    } catch (e) {
+                                        console.log(e)
+                                    }
+                                    return;
+                                }
+                                try {
+                                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                                    console.log(d)
+                                    let dd = d.replace(/data: /g, "").split("\r\n\r\n")
+                                    console.log("dd:",dd)
+                                    dd.forEach(item=>{
+                                        try {
+                                            result.push(item)
+                                            fillBotResponse(result.join(""))
+                                        }catch (e) {
+
+                                        }
+                                    })
+
+                                } catch (e) {
+                                    console.log(e)
+                                }
+
+                                return reader.read().then(processText);
+                            });
+                        },
+                        responseType: "stream",
+                        onerror: function (err) {
+                            console.log(err)
+                        }
+                    });
+
+
+                } else {
+                    console.log('失败')
+                    console.log(res)
+                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                }
+            },
+
+            responseType: "application/json;charset=UTF-8",
+            onerror: function (err) {
+                document.getElementById('gptAnswer').innerHTML =
+                    `<div>some err happends,errinfo :<br>${err.messages}</div>`
+            }
+        });
+
+
+
+
+    }
+
 
     var userId_wgk = "#/chat/" + Date.now();
     function WGK(question) {
@@ -526,7 +619,7 @@
             url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.5",
             headers: {
                 "accept": "*/*",
-                "referrer": "https://aichat.leiluan.cc/",
+                "referrer": "https://chat.aidutu.cn/",
                 "x-iam": _iam,
                 "Cookie": `_UHAO={"uid":"160941","school":"","time":1681704243,"ts":"2","name":"chat_q2Ac","head":"\/res\/head\/2ciyuan\/24.jpg","term":"201801","sign":"714653d141dac0e7709f31003b8df858"}; _UIP=0e98d94e599ef74c29fb40cb35971810`,
                 "content-type": "application/json"
@@ -859,7 +952,7 @@
     function OHTOAI(question) {
         let your_qus = question;//你的问题
         handleUserInput(null)
-        let baseURL = "https://chat.ohtoai.com/";
+        let baseURL = "https://chat.bushiai.com/";
         addMessageChain(messageChain4, {role: "user", content: your_qus})//连续话
         GM_xmlhttpRequest({
             method: "POST",
@@ -1414,8 +1507,11 @@
 
             let qus = inputField.value.trim();
             switch (apimode){
-                case "ltxuk":
-                    ltxuk(qus);
+                case "PIZZA":
+                    PIZZA(qus);
+                    break;
+                case "PHIND":
+                    PHIND(qus);
                     break;
                 case "ails":
                     AILS(qus);
@@ -1423,8 +1519,8 @@
                 case "tdchat":
                     TDCHAT(qus);
                     break;
-                case "xeasy":
-                    chat6Xeasy(qus);
+                case "QDYMYS":
+                    QDYMYS(qus);
                     break;
                 case "wgk":
                     WGK(qus);
@@ -1469,10 +1565,11 @@
         });
 
         document.getElementById("modeSelect").innerHTML =`<option selected value="Defalut">默认</option>
- <option value="ltxuk">ltxuk</option>
+ <option value="PIZZA">PIZZA</option>
+ <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
- <option value="xeasy">xeasy</option>
+ <option value="QDYMYS">QDYMYS</option>
  <option value="wgk">wgk</option>
  <option value="WOBCW">WOBCW</option>
  <option value="LTD68686">LTD68686</option>
