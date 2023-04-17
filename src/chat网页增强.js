@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.1
+// @version      3.2
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -36,7 +36,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.1"
+    var JSVer = "v3.2"
     // var simulateBotResponse;
     // var fillBotResponse;
     // var saveHistory;
@@ -527,7 +527,8 @@
             headers: {
                 "accept": "*/*",
                 "referrer": "https://aichat.leiluan.cc/",
-                "x-iam:": _iam,
+                "x-iam": _iam,
+                "Cookie": `_UHAO={"uid":"160941","school":"","time":1681704243,"ts":"2","name":"chat_q2Ac","head":"\/res\/head\/2ciyuan\/24.jpg","term":"201801","sign":"714653d141dac0e7709f31003b8df858"}; _UIP=0e98d94e599ef74c29fb40cb35971810`,
                 "content-type": "application/json"
             },
             data: JSON.stringify({
@@ -546,6 +547,7 @@
                     headers: {
                         "Content-Type": "application/json",
                         "Referer": "https://chat.aidutu.cn/",
+                        "Cookie": `_UHAO={"uid":"160941","school":"","time":1681704243,"ts":"2","name":"chat_q2Ac","head":"\/res\/head\/2ciyuan\/24.jpg","term":"201801","sign":"714653d141dac0e7709f31003b8df858"}; _UIP=0e98d94e599ef74c29fb40cb35971810`,
                         "accept": "application/json, text/plain, */*",
                         "x-token": xtoken
                     },
