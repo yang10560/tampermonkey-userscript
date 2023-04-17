@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.0
+// @version      3.1
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -25,6 +25,7 @@
 // @connect   chat7.aifks001.online
 // @connect   chat.sunls.me
 // @connect   www.ftcl.store
+// @connect   chat.wobcw.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -35,7 +36,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.0"
+    var JSVer = "v3.1"
     // var simulateBotResponse;
     // var fillBotResponse;
     // var saveHistory;
@@ -600,71 +601,80 @@
         })
     }
 
-    var parentID_wobcw;
+
     function WOBCW(question) {
         let your_qus = question;//你的问题
         handleUserInput(null)
-        let ops = {};
-        if (parentID_wobcw) {
-            ops = {parentMessageId: parentID_wobcw};
-        }
-        console.log(ops)
-         GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://gpt.wobcw.com/api/chat-process",
+
+        GM_xmlhttpRequest({
+            url: "https://chat.wobcw.com/chat",
             headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://gpt.wobcw.com/",
-                "accept": "application/json, text/plain, */*"
+                "accept": "*/*",
+                "referrer": "https://chat.wobcw.com/",
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarybrMK1QixymFcNJzK"
             },
-            data: JSON.stringify({
-                top_p: 1,
-                prompt: your_qus,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                temperature: 0.8,
-                options: ops
-            }),
-            onloadstart: (stream) => {
-                let result = "";
-                simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        saveHistory(your_qus, finalResult);
-                        return;
+            data: `------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundarybrMK1QixymFcNJzK--\r\n`,
+            method: "POST",
+            onload: (resp) => {
+                let rs = resp.responseText;
+                console.log(rs)
+                let chat_id = JSON.parse(rs).chat_id;
+                console.log(chat_id)
+                 GM_xmlhttpRequest({
+                    method: "GET",
+                    url: `https://chat.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
+                    headers: {
+                        "Content-Type": "application/json",
+                        // "Authorization": "Bearer null",
+                        "Referer": "https://chat.wobcw.com/",
+                        //"Host":"www.aiai.zone",
+                        "accept": "text/event-stream"
+                    },
+                    onloadstart: (stream) => {
+                        let result = [];
+                        let finalResult = [];
+                        simulateBotResponse("请稍后...")
+                        const reader = stream.response.getReader();
+                        reader.read().then(function processText({done, value}) {
+                            if (done) {
+                                finalResult = result.join("")
+                                saveHistory(your_qus, finalResult);
+                                return;
+                            }
+
+                            try {
+
+                                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                                console.log("raw:",d)
+                                let dd = d.replace(/data: /g, "").split("\n\n")
+                                console.log("dd:",dd)
+                                dd.forEach(item=>{
+                                    try {
+                                        let delta = JSON.parse(item).choices[0].delta.content
+                                        result.push(delta)
+                                        fillBotResponse(result.join(""))
+                                    }catch (e) {
+
+                                    }
+                                })
+                            } catch (e) {
+                                console.log(e)
+                            }
+
+                            return reader.read().then(processText);
+                        });
+                    },
+                    responseType: "stream",
+                    onerror: function (err) {
+                        console.log(err)
+                        fillBotResponse("erro:", err)
                     }
-
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
-
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            fillBotResponse(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_wobcw = nowResult.id;
-                        }
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
-            }
+                })
+            }//end onload
         })
+
+
+
 
     }
 
