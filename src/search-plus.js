@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.5.8
+// @version       1.5.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -724,51 +724,7 @@
             return;
         } else if (GPTMODE && GPTMODE == "TDCHAT") {
             console.log("当前模式TDCHAT")
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                url: "https://api.tdchat0.com/",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    // "Authorization": "Bearer null",
-                    "Referer": "http://hzcy5.tdchat6.com/",
-                    //"Host":"www.aiai.zone",
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g, '‰')}&length=${your_qus.length}&stream=1`,
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            finalResult = result.join("")
-                            showAnserAndHighlightCodeStr(finalResult)
-                            return;
-                        }
-
-                        try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            let delta = JSON.parse(d.replace(/data: /, "")).choices[0].delta.content
-                            console.log(d)
-                            result.push(delta)
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        } catch (e) {
-                            console.log(e)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            })
+           TDCHAT()
             //end if
             return;
         } else if (GPTMODE && GPTMODE == "XEASY") {
@@ -1000,7 +956,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.5.9已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1690,7 +1646,7 @@
         }
         console.log(ops)
         GM_xmlhttpRequest({
-            url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.3",
+            url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.5",
             headers: {
                 "accept": "*/*",
                 "referrer": "https://chat.aidutu.cn/",
@@ -2781,6 +2737,60 @@
             onerror: function (err) {
                 console.log(err)
                 showAnserAndHighlightCodeStr("erro:", err)
+            }
+        })
+
+    }
+
+
+    function TDCHAT(){
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://api.tdchat0.com/",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                // "Authorization": "Bearer null",
+                "Referer": "http://hzcy5.tdchat6.com/",
+                //"Host":"www.aiai.zone",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g, '‰')}&length=${your_qus.length}&stream=1`,
+            onloadstart: (stream) => {
+                let result = [];
+                let finalResult = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        finalResult = result.join("")
+                        showAnserAndHighlightCodeStr(finalResult)
+                        return;
+                    }
+
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        console.log("raw:",d)
+                        let dd = d.replace(/data: /g, "").split("\n\n")
+                        console.log("dd:",dd)
+                        dd.forEach(item=>{
+                            try {
+                                let delta = JSON.parse(item).choices[0].delta.content
+                                result.push(delta)
+                                showAnserAndHighlightCodeStr(result.join(""))
+                            }catch (e) {
+
+                            }
+                        })
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
             }
         })
 

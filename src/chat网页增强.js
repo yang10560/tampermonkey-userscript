@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      2.9
+// @version      3.0
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -35,7 +35,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v2.9"
+    var JSVer = "v3.0"
     // var simulateBotResponse;
     // var fillBotResponse;
     // var saveHistory;
@@ -301,11 +301,12 @@
         handleUserInput(3)
         GM_xmlhttpRequest({
             method: "POST",
+            //http://5p2ag.tdchat0.com/
             url: "https://api.tdchat0.com/",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                 // "Authorization": "Bearer null",
-                "Referer": "http://hzcy5.tdchat6.com/",
+                "Referer": "http://eea8c.tdchat9.com/",
                 //"Host":"www.aiai.zone",
                 "accept": "application/json, text/plain, */*"
             },
@@ -332,10 +333,18 @@
 
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        let delta = JSON.parse(d.replace(/data: /, "")).choices[0].delta.content
-                        console.log(d)
-                        result.push(delta)
-                        fillBotResponse(result.join(""))
+                        console.log("raw:",d)
+                        let dd = d.replace(/data: /g, "").split("\n\n")
+                        console.log("dd:",dd)
+                        dd.forEach(item=>{
+                           try {
+                               let delta = JSON.parse(item).choices[0].delta.content
+                               result.push(delta)
+                               fillBotResponse(result.join(""))
+                           }catch (e) {
+
+                           }
+                        })
                     } catch (e) {
                         console.log(e)
                     }
@@ -513,7 +522,7 @@
         }
         console.log(ops)
         GM_xmlhttpRequest({
-            url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.3",
+            url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.5",
             headers: {
                 "accept": "*/*",
                 "referrer": "https://aichat.leiluan.cc/",
