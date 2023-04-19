@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.3
+// @version      3.4
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -30,6 +30,7 @@
 // @connect   chat.bushiai.com
 // @connect   www.pizzagpt.it
 // @connect   www.phind.com
+// @connect   easyai.one
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -40,7 +41,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.3"
+    var JSVer = "v3.4"
     // var simulateBotResponse;
     // var fillBotResponse;
     // var saveHistory;
@@ -1171,7 +1172,7 @@
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
-            pkey: {}.PUBLIC_SECRET_KEY
+            pkey: "sksksk"
         }).then(sign => {
             addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
             console.log(sign)
@@ -1482,6 +1483,61 @@
 
     }
 
+
+    // http://easyai.one
+    var sessionId_easyai = generateRandomString(20);
+    var easyai_ip = generateRandomIP();
+    function EASYAI(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        console.log(sessionId_easyai)
+         GM_xmlhttpRequest({
+            method: "POST",
+            url: `http://easyai.one/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
+            headers: {
+                "Referer": "http://easyai.one/chat",
+                "X-Forwarded-For": easyai_ip,
+                "accept": "text/event-stream"
+            },
+            onloadstart: (stream) => {
+                let finalResult = []
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        fillBotResponse(finalResult.join(""))
+                        saveHistory(your_qus, finalResult.join(""));
+                        return;
+                    }
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        console.log(decoder.decode(byteArray))
+                        let regx = /\{\"content\":\"(.*?)\"\}/g;
+                        let nowResult = regx.exec(decoder.decode(byteArray))[1]
+                        console.log(nowResult)
+
+                        finalResult.push(nowResult)
+                        fillBotResponse(finalResult.join(""))
+
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                simulateBotResponse("erro:", err)
+            }
+        })
+
+    }
+
     //初始化
     setTimeout(() => {
 
@@ -1558,6 +1614,9 @@
                 case "FTCL":
                     FTCL(qus);
                     break;
+                case "EASYAI":
+                    EASYAI(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -1581,6 +1640,7 @@
  <option value="AIFKS">AIFKS</option>
  <option value="FTCL">FTCL</option>
  <option value="SUNLE">SUNLE</option>
+ <option value="EASYAI">EASYAI</option>
  <option value="aidutu">aidutu</option>`;
 
         document.getElementById('modeSelect').addEventListener('change', () => {
