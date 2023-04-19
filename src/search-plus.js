@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.6.4
+// @version       1.6.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -77,6 +77,8 @@
 // @connect   www.phind.com
 // @connect   chat.bushiai.com
 // @connect   chatgpt.qdymys.cn
+// @connect   easyai.one
+// @connect   api.aichatos.cloud
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -125,6 +127,16 @@
         }, "PUBKEY");
     } catch (e) {
         console.log(e)
+    }
+
+
+    var generateRandomIP = () => {
+        const ip = [];
+        for (let i = 0; i < 4; i++) {
+            ip.push(Math.floor(Math.random() * 256));
+        }
+        console.log(ip.join('.'))
+        return ip.join('.');
     }
 
 
@@ -206,15 +218,7 @@
             return
         }
 
-        //default:
-        let generateRandomIP = () => {
-            const ip = [];
-            for (let i = 0; i < 4; i++) {
-                ip.push(Math.floor(Math.random() * 256));
-            }
-            console.log(ip.join('.'))
-            return ip.join('.');
-        }
+
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -837,6 +841,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "EASYAI") {
+            console.log("EASYAI")
+            EASYAI();
+
+            return;
+            //end if
         }
 
 
@@ -959,10 +969,11 @@
       <option value="USESLESS">USESLESS</option>
       <option value="FTCL">FTCL</option>
       <option value="SUNLE">SUNLE</option>
+      <option value="EASYAI">EASYAI</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://blog.yeyusmile.top/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.4已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.6已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1525,11 +1536,12 @@
         console.log(userId_yqcloud)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "https://cbjtestapi.binjie.site:7777/api/generateStream",
+            //url: "https://cbjtestapi.binjie.site:7777/api/generateStream",
+            url: "https://api.aichatos.cloud/api/generateStream",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "http://choiajsd.aichatos.com/",
-                "origin": "choiajsd.aichatos.com",
+                "Referer": "https://chat6.aichatos.com/",
+                "origin": "https://chat6.aichatos.com",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -2324,6 +2336,57 @@
         });
     }
 
+   // http://easyai.one
+    var sessionId_easyai = generateRandomString(20);
+    var easyai_ip = generateRandomIP();
+    function EASYAI() {
+        console.log(sessionId_easyai)
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: `http://easyai.one/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
+            headers: {
+                "Referer": "http://easyai.one/chat",
+                "X-Forwarded-For": easyai_ip,
+                "accept": "text/event-stream"
+            },
+            onloadstart: (stream) => {
+                let finalResult = []
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        showAnserAndHighlightCodeStr(finalResult.join(""))
+                        return;
+                    }
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        console.log(decoder.decode(byteArray))
+                        let regx = /\{\"content\":\"(.*?)\"\}/g;
+                        let nowResult = regx.exec(decoder.decode(byteArray))[1]
+                        console.log(nowResult)
+                        finalResult.push(nowResult)
+                        showAnserAndHighlightCodeStr(finalResult.join(""))
+
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:", err)
+            }
+        })
+
+    }
+
+
+
     //https://chat.bnu120.space/
     function BNU120() {
 
@@ -2332,7 +2395,7 @@
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
-            pkey: {}.PUBLIC_SECRET_KEY
+            pkey: "sksksk"
         }).then(sign => {
             addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
             console.log(sign)
