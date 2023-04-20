@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.6
+// @version      3.7
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -34,6 +34,9 @@
 // @connect   www.phind.com
 // @connect   easyai.one
 // @connect   chat2.wuguokai.cn
+// @connect   www.gtpcleandx.xyz
+// @connect   gpt.esojourn.org
+// @connect   free-api.cveoy.top
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -44,7 +47,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.6"
+    var JSVer = "v3.7"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
     // var simulateBotResponse;
     // var fillBotResponse;
@@ -68,9 +71,9 @@
         return await digestMessage(a);
     };
 //enc-end
-    var messageChain0 = []
-    var messageChain1 = []
-    var messageChain2 = []
+    var messageChain0 = []//chatai
+    var messageChain1 = [] //eso
+    var messageChain2 = []//ails
     var messageChain3 = []
     var messageChain4 = []//OHTOAI
 
@@ -1544,6 +1547,202 @@
 
     }
 
+
+    //http://www.gtpcleandx.xyz/#/home/chat
+    var cleandxid = generateRandomString(21);
+    var cleandxList = [];
+    function CLEANDX(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+
+        let Baseurl = "http://www.gtpcleandx.xyz/";
+        console.log(formatTime())
+        cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
+        cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        console.log(cleandxList)
+        console.log(cleandxid)
+        if (cleandxList.length > 6){
+            cleandxList = cleandxList.shift();
+        }
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: Baseurl + "v1/chat/gpt/",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": Baseurl,
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                "list": cleandxList,
+                "id": cleandxid,
+                "title": your_qus,
+                "prompt": "",
+                "temperature": 0.5,
+                "models": "0",
+                "continuous": true
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            cleandxList[cleandxList.length - 1] = {
+                                "content": finalResult,
+                                "role": "assistant",
+                                "nickname": "AI",
+                                "time": formatTime(),
+                                "isMe": false
+                            };
+                            fillBotResponse(finalResult)
+                            saveHistory(your_qus, finalResult);
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        console.log(d)
+                        result.push(d)
+                        fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+    //https://gpt.esojourn.org/api/chat-stream
+    function ESO(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let baseURL = "https://gpt.esojourn.org/";
+        addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "access-code": "puB-02-bRw9b$djqt15^",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain1,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                max_tokens: 2000,
+                presence_penalty: 0
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain1, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            fillBotResponse(finalResult)
+                            saveHistory(your_qus, finalResult);
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+    //https://ai1.chagpt.fun/
+    function CVEOY(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let baseURL = "https://free-api.cveoy.top/";
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "v3/completions",
+            headers: {
+                "Content-Type": "application/json",
+                "origin": "https://ai1.chagpt.fun",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                prompt: your_qus
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+
+                        try {
+                            let finalResult = result.join("")
+                            console.log(finalResult)
+                            fillBotResponse(finalResult)
+                            saveHistory(your_qus, finalResult);
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        if(d.match(/wxgpt@qq.com/gi)){
+                            d = d.replace(/wxgpt@qq.com/gi,"")
+                        }
+                        result.push(d);
+                        console.log(d)
+                        fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+
     //初始化
     setTimeout(() => {
 
@@ -1623,13 +1822,25 @@
                 case "EASYAI":
                     EASYAI(qus);
                     break;
+                case "CLEANDX":
+                    console.log("CLEANDX")
+                    CLEANDX(qus);
+                    break;
+                case "ESO":
+                    console.log("ESO")
+                    ESO(qus);
+                    break;
+                case "CVEOY":
+                    console.log("CVEOY")
+                    CVEOY(qus);
+                    break;
                 default:
                     kill(qus);
             }
 
         });
 
-        document.getElementById("modeSelect").innerHTML =`<option selected value="Defalut">默认</option>
+        document.getElementById("modeSelect").innerHTML = `<option selected value="Defalut">默认</option>
  <option value="PIZZA">PIZZA</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
@@ -1647,7 +1858,11 @@
  <option value="FTCL">FTCL</option>
  <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
- <option value="aidutu">aidutu</option>`;
+ <option value="aidutu">aidutu</option>
+ <option value="CLEANDX">CLEANDX</option>
+  <option value="ESO">ESO</option>
+  <option value="CVEOY">CVEOY</option>
+`;
 
         document.getElementById('modeSelect').addEventListener('change', () => {
             const selectEl = document.getElementById('modeSelect');

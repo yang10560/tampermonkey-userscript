@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.6.9
+// @version       1.7.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -84,6 +84,9 @@
 // @connect   api.aichatos.cloud
 // @connect   chat.xiami.one
 // @connect   chat2.wuguokai.cn
+// @connect   www.gtpcleandx.xyz
+// @connect   gpt.esojourn.org
+// @connect   free-api.cveoy.top
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -852,6 +855,24 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "CLEANDX") {
+            console.log("CLEANDX")
+            CLEANDX();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE == "ESO") {
+            console.log("ESO")
+            ESO();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE == "CVEOY") {
+            console.log("CVEOY")
+            CVEOY();
+
+            return;
+            //end if
         }
 
 
@@ -975,10 +996,13 @@
       <option value="FTCL">FTCL</option>
       <option value="SUNLE">SUNLE</option>
       <option value="EASYAI">EASYAI</option>
+      <option value="CLEANDX">CLEANDX</option>
+      <option value="ESO">ESO</option>
+      <option value="CVEOY">CVEOY</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.9已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.0已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1322,6 +1346,7 @@
 
     var messageChain2 = [];//AILS
     var messageChain7 = [];//OHTOAI
+    var messageChain4 = [];//ESO
     var messageChain8 = [];//SUPREMES
     var messageChain9 = [];//bnu120
     var messageChain10 = [];//ftcl
@@ -2275,6 +2300,119 @@
 
     }
 
+    //https://gpt.esojourn.org/api/chat-stream
+    function ESO() {
+
+        let baseURL = "https://gpt.esojourn.org/";
+        addMessageChain(messageChain4, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "access-code": "puB-02-bRw9b$djqt15^",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain4,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                max_tokens: 2000,
+                presence_penalty: 0
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain4, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+    //https://ai1.chagpt.fun/
+    function CVEOY() {
+
+        let baseURL = "https://free-api.cveoy.top/";
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "v3/completions",
+            headers: {
+                "Content-Type": "application/json",
+                "origin": "https://ai1.chagpt.fun",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                prompt: your_qus
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+
+                        try {
+                            let finalResult = result.join("")
+                            console.log(finalResult)
+                            showAnserAndHighlightCodeStr(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        if(d.match(/wxgpt@qq.com/gi)){
+                           d = d.replace(/wxgpt@qq.com/gi,"")
+                        }
+                        result.push(d);
+                        console.log(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+
     var parentID_extkj;
 
     function EXTKJ() {
@@ -2593,6 +2731,78 @@
                         try {
                             console.log(finalResult)
                             aifskList[aifskList.length - 1] = {
+                                "content": finalResult,
+                                "role": "assistant",
+                                "nickname": "AI",
+                                "time": formatTime(),
+                                "isMe": false
+                            };
+                            showAnserAndHighlightCodeStr(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        console.log(d)
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+    //http://www.gtpcleandx.xyz/#/home/chat
+    var cleandxid = generateRandomString(21);
+    var cleandxList = [];
+    function CLEANDX() {
+        let Baseurl = "http://www.gtpcleandx.xyz/";
+
+        console.log(formatTime())
+        cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
+        cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        console.log(cleandxList)
+        console.log(cleandxid)
+        if (cleandxList.length > 6){
+            cleandxList = cleandxList.shift();
+        }
+        abortXml= GM_xmlhttpRequest({
+            method: "POST",
+            url: Baseurl + "v1/chat/gpt/",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": Baseurl,
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                "list": cleandxList,
+                "id": cleandxid,
+                "title": your_qus,
+                "prompt": "",
+                "temperature": 0.5,
+                "models": "0",
+                "continuous": true
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            cleandxList[cleandxList.length - 1] = {
                                 "content": finalResult,
                                 "role": "assistant",
                                 "nickname": "AI",
