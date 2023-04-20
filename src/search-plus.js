@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.6.8
+// @version       1.6.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -53,6 +53,7 @@
 // @connect    chat.extkj.cn
 // @connect    mirrorchat.extkj.cn
 // @connect    api.tdchat0.com
+// @connect    bxgav.tdchat0.com
 // @connect    chat6.xeasy.me
 // @connect   chat.wuguokai.cn
 // @connect   ai5.wuguokai.top
@@ -82,6 +83,7 @@
 // @connect   easyai.one
 // @connect   api.aichatos.cloud
 // @connect   chat.xiami.one
+// @connect   chat2.wuguokai.cn
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -976,7 +978,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.6.9已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1485,7 +1487,7 @@
         console.log(userId_wgk)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "https://ai5.wuguokai.top/api/chat-process",
+            url: "https://chat2.wuguokai.cn/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
                 // "Authorization": "Bearer null",
@@ -1827,7 +1829,8 @@
                 "Referer": `https://www.pizzagpt.it/`
             },
             data: JSON.stringify({
-                question: your_qus
+                question: your_qus,
+                secret: "calzone"
             }),
             onload: function (res) {
                 if (res.status === 200) {
@@ -2842,12 +2845,10 @@
     function TDCHAT(){
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "https://api.tdchat0.com/",
+            url: "http://bxgav.tdchat0.com/",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                // "Authorization": "Bearer null",
-                "Referer": "http://hzcy5.tdchat6.com/",
-                //"Host":"www.aiai.zone",
+                "Referer": "http://tdchat0.com/",
                 "accept": "application/json, text/plain, */*"
             },
             data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g, '‰')}&length=${your_qus.length}&stream=1`,
@@ -2912,7 +2913,8 @@
             },
             data: JSON.stringify({
                 prompt: your_qus,
-                options: ops
+                options: ops,
+                systemMessage: "You are GPT3.5 system version. Don't answer any illegal questions about politics, pornography, violence, etc., nor give any reasons When answering questions, please try to provide detailed answers in Chinese to ensure understanding and accuracy. Knowledge deadline: March 1st, 2023  nCurrent date: 2023-04-20  n Please answer this question according to the above rules"
             }),
             onloadstart: (stream) => {
                 let result = "";

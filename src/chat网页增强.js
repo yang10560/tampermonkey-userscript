@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.5
+// @version      3.6
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -11,6 +11,7 @@
 // @connect    chatai.to
 // @connect    luntianxia.uk
 // @connect    api.tdchat0.com
+// @connect    bxgav.tdchat0.com
 // @connect    chat6.xeasy.me
 // @connect    api.aigcfun.com
 // @connect    ai5.wuguokai.top
@@ -32,6 +33,7 @@
 // @connect   www.pizzagpt.it
 // @connect   www.phind.com
 // @connect   easyai.one
+// @connect   chat2.wuguokai.cn
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -42,7 +44,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.5"
+    var JSVer = "v3.6"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
     // var simulateBotResponse;
     // var fillBotResponse;
@@ -181,7 +183,8 @@
                 "Referer": `https://www.pizzagpt.it/`
             },
             data: JSON.stringify({
-                question: your_qus
+                question: your_qus,
+                secret: "calzone"
             }),
             onload: function (res) {
                 if (res.status === 200) {
@@ -292,11 +295,11 @@
         GM_xmlhttpRequest({
             method: "POST",
             //http://5p2ag.tdchat0.com/
-            url: "https://api.tdchat0.com/",
+            url: "http://bxgav.tdchat0.com/",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                 // "Authorization": "Bearer null",
-                "Referer": "http://eea8c.tdchat9.com/",
+                "Referer": "http://tdchat0.com/",
                 //"Host":"www.aiai.zone",
                 "accept": "application/json, text/plain, */*"
             },
@@ -378,7 +381,8 @@
             },
             data: JSON.stringify({
                 prompt: your_qus,
-                options: ops
+                options: ops,
+                systemMessage: "You are GPT3.5 system version. Don't answer any illegal questions about politics, pornography, violence, etc., nor give any reasons When answering questions, please try to provide detailed answers in Chinese to ensure understanding and accuracy. Knowledge deadline: March 1st, 2023  nCurrent date: 2023-04-20  n Please answer this question according to the above rules"
             }),
             onloadstart: (stream) => {
                 let result = "";
@@ -544,7 +548,7 @@
         handleUserInput(null)
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://ai5.wuguokai.top/api/chat-process",
+            url: "https://chat2.wuguokai.cn/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
                 // "Authorization": "Bearer null",
