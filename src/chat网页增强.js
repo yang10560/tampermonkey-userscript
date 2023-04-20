@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.7
+// @version      3.8
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -47,7 +47,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.7"
+    var JSVer = "v3.8"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
     // var simulateBotResponse;
     // var fillBotResponse;
@@ -1635,7 +1635,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "puB-02-bRw9b$djqt15^",
+                "access-code": "pub-03-$dm65ozKre",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
