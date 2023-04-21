@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.9
+// @version      4.0
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -49,7 +49,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.9"
+    var JSVer = "v4.0"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
     // var simulateBotResponse;
     // var fillBotResponse;
@@ -179,27 +179,29 @@
 
     var pizzaSecret;
     function setPizzakey() {
-        let reqJS = GM_getResourceText("pizzaSource").match("index.*?\.js")[0];
-        GM_xmlhttpRequest({
-            method: "GET",
-            nocache: true,
-            synchronous: true,
-            url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
-            headers: {
-                //"Content-Type": "application/json",
-                "Referer": `www.pizzagpt.it`
-            },
-            onload: function (response) {
-                let resp = response.responseText;
-                pizzaSecret = resp.match("x=\"(.*?)\"")[1]
-                console.log("pizzaSecret:",pizzaSecret)
-            },
-            onerror: (e) => {
-                console.log(e)
-            }
-        });
-
-
+      try{
+          let reqJS = GM_getResourceText("pizzaSource").match("index.*?\.js")[0];
+          GM_xmlhttpRequest({
+              method: "GET",
+              nocache: true,
+              synchronous: true,
+              url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
+              headers: {
+                  //"Content-Type": "application/json",
+                  "Referer": `www.pizzagpt.it`
+              },
+              onload: function (response) {
+                  let resp = response.responseText;
+                  pizzaSecret = resp.match("x=\"(.*?)\"")[1]
+                  console.log("pizzaSecret:",pizzaSecret)
+              },
+              onerror: (e) => {
+                  console.log(e)
+              }
+          });
+      }catch (e) {
+          console.log(e)
+      }
     }
     setPizzakey();
 
@@ -1663,7 +1665,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "pub-03-$dm65ozKre",
+                "access-code": "pub04-23Xs67AErn454",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
