@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      3.8
+// @version      3.9
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
 // @match        http://127.0.0.1:8088/chatxc/AI1.html*
 // @match        *://yeyu1024.xyz/gpt.html*
 // @grant       GM_xmlhttpRequest
+// @grant      GM_getResourceText
+// @resource pizzaSource https://www.pizzagpt.it/
 // @connect    chatai.to
 // @connect    luntianxia.uk
 // @connect    api.tdchat0.com
@@ -47,7 +49,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v3.8"
+    var JSVer = "v3.9"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
     // var simulateBotResponse;
     // var fillBotResponse;
@@ -175,6 +177,32 @@
     }
 
 
+    var pizzaSecret;
+    function setPizzakey() {
+        let reqJS = GM_getResourceText("pizzaSource").match("index.*?\.js")[0];
+        GM_xmlhttpRequest({
+            method: "GET",
+            nocache: true,
+            synchronous: true,
+            url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
+            headers: {
+                //"Content-Type": "application/json",
+                "Referer": `www.pizzagpt.it`
+            },
+            onload: function (response) {
+                let resp = response.responseText;
+                pizzaSecret = resp.match("x=\"(.*?)\"")[1]
+                console.log("pizzaSecret:",pizzaSecret)
+            },
+            onerror: (e) => {
+                console.log(e)
+            }
+        });
+
+
+    }
+    setPizzakey();
+
     function PIZZA(question) {
         let your_qus = question;//你的问题
         handleUserInput(null)
@@ -187,7 +215,7 @@
             },
             data: JSON.stringify({
                 question: your_qus,
-                secret: "calzone"
+                secret: pizzaSecret
             }),
             onload: function (res) {
                 if (res.status === 200) {

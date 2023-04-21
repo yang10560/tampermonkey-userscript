@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.7.1
+// @version       1.7.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -30,6 +30,7 @@
 // @grant      GM_registerMenuCommand
 // @grant      GM_setValue
 // @grant      GM_getValue
+// @grant      GM_getResourceText
 // @run-at     document-end
 // @require    https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
 // @require    https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js
@@ -93,6 +94,7 @@
 // @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.min.js
+// @resource pizzaSource https://www.pizzagpt.it/
 
 // ==/UserScript==
 
@@ -104,6 +106,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
+    //console.log(GM_getResourceText("pizzaSource"))
 
     //(prefers-color-scheme: light)
     $("head").append($(
@@ -1002,7 +1005,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://so.csdn.net/so/search?t=chat">ChitGPT</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.1已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.2已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1845,6 +1848,32 @@
     }
 
 
+    var pizzaSecret;
+    function setPizzakey() {
+        let reqJS = GM_getResourceText("pizzaSource").match("index.*?\.js")[0];
+        GM_xmlhttpRequest({
+            method: "GET",
+            nocache: true,
+            synchronous: true,
+            url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
+            headers: {
+                //"Content-Type": "application/json",
+                "Referer": `www.pizzagpt.it`
+            },
+            onload: function (response) {
+                let resp = response.responseText;
+                pizzaSecret = resp.match("x=\"(.*?)\"")[1]
+                console.log("pizzaSecret:",pizzaSecret)
+            },
+            onerror: (e) => {
+                console.log(e)
+            }
+        });
+
+
+    }
+    setPizzakey();
+
     function PIZZA() {
         abortXml = GM_xmlhttpRequest({
             method: "POST",
@@ -1855,7 +1884,7 @@
             },
             data: JSON.stringify({
                 question: your_qus,
-                secret: "calzone"
+                secret: pizzaSecret
             }),
             onload: function (res) {
                 if (res.status === 200) {
