@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.0
+// @version      4.1
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -39,6 +39,9 @@
 // @connect   www.gtpcleandx.xyz
 // @connect   gpt.esojourn.org
 // @connect   free-api.cveoy.top
+// @connect   chatcleand.xyz
+// @connect   154.40.59.105
+// @connect   gptplus.one
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -49,7 +52,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v4.0"
+    var JSVer = "v4.1"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
     // var simulateBotResponse;
     // var fillBotResponse;
@@ -77,7 +80,6 @@
     var messageChain1 = [] //eso
     var messageChain2 = []//ails
     var messageChain3 = []
-    var messageChain4 = []//OHTOAI
 
     function addMessageChain(messageChain, element) {
         if (messageChain.length >= 5) {
@@ -98,6 +100,49 @@
         const seconds = now.getSeconds(); // 获取秒数
         // 格式化为 HH:MM:SS 的形式
         return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+    }
+
+
+    //通用秘钥获取
+    function getKeyFromURL(url,callback) {
+        console.log(`getKeyFromURL:${url}`)
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: url + "/?" + Math.random(),
+            onload: function(response) {
+                let resp = response.responseText;
+                let regex = /component-url="(.*?)"/i;
+                let match = resp.match(regex);
+                let jsurl = match[1];
+                console.log("js url:" + jsurl);
+                if (!jsurl) {
+                    //错误
+                    console.log("秘钥地址获取失败")
+                    return
+                }
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: url + jsurl + "?" + Math.random(),
+                    onload: function(response) {
+                        let resp = response.responseText;
+                        let regex = /\`\$\{e\}:\$\{r\}:(.*?)\`/;
+                        let match = resp.match(regex);
+                        let mykey = match[1];
+                        if (!mykey) {
+                            console.log("秘钥获取失败")
+                            return
+                        }
+                        console.log(mykey);
+                        try{
+                            callback(mykey);
+                        }catch (e) {
+                            console.log(e)
+                        }
+
+                    }
+                });
+            }
+        });
     }
 
 
@@ -989,72 +1034,79 @@
     }
 
 
-    function OHTOAI(question) {
+    var parentID_gptplus;
+
+    function GPTPLUS(question) {
         let your_qus = question;//你的问题
         handleUserInput(null)
-        let baseURL = "https://chat.bushiai.com/";
-        addMessageChain(messageChain4, {role: "user", content: your_qus})//连续话
+        let ops = {};
+        if (parentID_gptplus) {
+            ops = {parentMessageId: parentID_gptplus};
+        }
+        console.log(ops)
+
         GM_xmlhttpRequest({
             method: "POST",
-            url: baseURL + "api/chat-stream",
+            url: "https://api.gptplus.one/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "",
-                "path": "v1/chat/completions",
-                "Referer": baseURL
+                "Referer": "http://www.cutim.cn/",
+                "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                messages: messageChain4,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                max_tokens: 2000,
-                presence_penalty: 0
+                top_p: 1,
+                prompt: your_qus,
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                temperature: 0.8,
+                options: ops
             }),
             onloadstart: (stream) => {
-                let result = [];
+                let result = "";
                 simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalResult;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain4, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            fillBotResponse(finalResult)
-                            saveHistory(your_qus, finalResult);
-                        } catch (e) {
-                            console.log(e)
-                        }
+                        fillBotResponse(finalResult)
+                        saveHistory(your_qus, finalResult);
                         return;
                     }
+
+                    const chunk = value;
+                    result += chunk;
                     try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        fillBotResponse(result.join(""))
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        console.log(decoder.decode(byteArray))
+                        var jsonLines = decoder.decode(byteArray).split("\n");
+                        let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            fillBotResponse(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_gptplus = nowResult.id;
+                        }
+
                     } catch (e) {
-                        console.log(e)
+
                     }
 
                     return reader.read().then(processText);
                 });
             },
             responseType: "stream",
-            onprogress: function (msg) {
-                //console.log(msg)
-            },
             onerror: function (err) {
                 console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
             }
-        });
+        })
 
     }
+
 
     var parentID_extkj;
     function EXTKJ(question){
@@ -1200,6 +1252,69 @@
 
         });
     }
+
+    var parentID_nbai;
+
+    function NBAI(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let ops = {};
+        if (parentID_nbai) {
+            ops = {parentMessageId: parentID_nbai};
+        }
+        console.log(ops)
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://154.40.59.105:3006/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://f1.nbai.live/",
+                "accept": "application/json, text/plain, */*",
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                let finalResult = "";
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        saveHistory(your_qus, finalResult);
+                        return;
+                    }
+
+                    try {
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let dstr = decoder.decode(byteArray)
+                        if(dstr.includes("role")){
+                            parentID_nbai =  /\"parentMessageId\":\"(.*?)\"/gi.exec(dstr)[1]
+                        }else{
+                            console.log(dstr)
+                            result.push(dstr)
+                            finalResult = result.join("")
+                            fillBotResponse(finalResult)
+                        }
+
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        })
+
+    }
+
 
     //https://chat.bnu120.space/
     var messageChain9 = [];
@@ -1585,7 +1700,7 @@
         let your_qus = question;//你的问题
         handleUserInput(null)
 
-        let Baseurl = "http://www.gtpcleandx.xyz/";
+        let Baseurl = "http://www.chatcleand.xyz/";
         console.log(formatTime())
         cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
         cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
@@ -1828,8 +1943,8 @@
                  case "ANZZ":
                      ANZZ(qus);
                     break;
-                case "OHTOAI":
-                    OHTOAI(qus);
+                case "GPTPLUS":
+                    GPTPLUS(qus);
                     break;
                 case "EXTKJ":
                     EXTKJ(qus);
@@ -1837,8 +1952,8 @@
                 case "SUPREMES":
                     SUPREMES(qus);
                     break;
-                case "BNU120":
-                    BNU120(qus);
+                case "NBAI":
+                    NBAI(qus);
                     break;
                 case "AIFKS":
                     AIFKS(qus);
@@ -1880,15 +1995,15 @@
  <option value="WOBCW">WOBCW</option>
  <option value="LTD68686">LTD68686</option>
  <option value="ANZZ">ANZZ</option>
- <option value="OHTOAI">OHTOAI</option>
+ <option value="GPTPLUS">GPTPLUS</option>
  <option value="EXTKJ">EXTKJ</option>
  <option value="SUPREMES">SUPREMES</option>
- <option value="BNU120">BNU120</option>
+ <option value="NBAI">NBAI</option>
  <option value="AIFKS">AIFKS</option>
  <option value="FTCL">FTCL</option>
  <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
- <option value="aidutu">aidutu</option>
+ <option value="aidutu">aidutu(挂)</option>
  <option value="CLEANDX">CLEANDX</option>
   <option value="ESO">ESO</option>
   <option value="CVEOY">CVEOY</option>

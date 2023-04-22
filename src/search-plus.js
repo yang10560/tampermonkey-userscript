@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.7.3
+// @version       1.7.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match        https://cn.bing.com/*
@@ -88,6 +88,9 @@
 // @connect   www.gtpcleandx.xyz
 // @connect   gpt.esojourn.org
 // @connect   free-api.cveoy.top
+// @connect   chatcleand.xyz
+// @connect   154.40.59.105
+// @connect   gptplus.one
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -804,9 +807,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "OHTOAI") {
-            console.log("OHTOAI")
-            OHTOAI();
+        } else if (GPTMODE && GPTMODE == "GPTPLUS") {
+            console.log("GPTPLUS")
+            GPTPLUS();
 
             return;
             //end if
@@ -822,9 +825,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "BNU120") {
-            console.log("BNU120")
-            BNU120();
+        } else if (GPTMODE && GPTMODE == "NBAI") {
+            console.log("NBAI")
+            NBAI();
 
             return;
             //end if
@@ -991,9 +994,9 @@
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
-      <option value="OHTOAI">OHTOAI</option>
+      <option value="GPTPLUS">GPTPLUS</option>
       <option value="SUPREMES">SUPREMES</option>
-      <option value="BNU120">BNU120</option>
+      <option value="NBAI">NBAI</option>
       <option value="AIFKS">AIFKS</option>
       <option value="USESLESS">USESLESS</option>
       <option value="FTCL">FTCL</option>
@@ -1005,7 +1008,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://so.csdn.net/so/search?t=chat">ChitGPT</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.3已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.4已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1757,94 +1760,64 @@
 
     }
 
-    var parentID_aidutu;
+    var parentID_nbai;
 
-    function AIDUTU() {
-        let _iam = generateRandomString(8)
+    function NBAI() {
         let ops = {};
-        if (parentID_aidutu) {
-            ops = {parentMessageId: parentID_aidutu};
+        if (parentID_nbai) {
+            ops = {parentMessageId: parentID_nbai};
         }
         console.log(ops)
-        GM_xmlhttpRequest({
-            url: "https://chat.aidutu.cn/api/cg/chatgpt/user/info?v=1.5",
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://154.40.59.105:3006/api/chat-process",
             headers: {
-                "accept": "*/*",
-                "referrer": "https://chat.aidutu.cn/",
-                "x-iam": _iam,
-                "Cookie": `_UHAO={"uid":"160941","school":"","time":1681704243,"ts":"2","name":"chat_q2Ac","head":"\/res\/head\/2ciyuan\/24.jpg","term":"201801","sign":"714653d141dac0e7709f31003b8df858"}; _UIP=0e98d94e599ef74c29fb40cb35971810`,
-                "content-type": "application/json"
+                "Content-Type": "application/json",
+                "Referer": "https://f1.nbai.live/",
+                "accept": "application/json, text/plain, */*",
             },
             data: JSON.stringify({
-                q: your_qus,
-                iam: _iam
-            }),
-            method: "POST",
-            onload: (resp) => {
-                let rs = resp.responseText;
-                console.log(rs)
-                let xtoken = JSON.parse(rs).data.token;
-                console.log(xtoken)
-                abortXml = GM_xmlhttpRequest({
-                    method: "POST",
-                    url: "https://chat.aidutu.cn/api/chat-process",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Referer": "https://chat.aidutu.cn/",
-                        "Cookie": `_UHAO={"uid":"160941","school":"","time":1681704243,"ts":"2","name":"chat_q2Ac","head":"\/res\/head\/2ciyuan\/24.jpg","term":"201801","sign":"714653d141dac0e7709f31003b8df858"}; _UIP=0e98d94e599ef74c29fb40cb35971810`,
-                        "accept": "application/json, text/plain, */*",
-                        "x-token": xtoken
-                    },
-                    data: JSON.stringify({
-                        prompt: your_qus,
-                        temperature: 0.8,
-                        top_p: 1,
-                        options: ops,
-                        systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
-                    }),
-                    onloadstart: (stream) => {
-                        let result = "";
-                        const reader = stream.response.getReader();
-                        //     console.log(reader.read)
-                        let finalResult = "";
-                        reader.read().then(function processText({done, value}) {
-                            if (done) {
-                                highlightCodeStr()
-                                return;
-                            }
-                            const chunk = value;
-                            result += chunk;
-                            try {
-                                let byteArray = new Uint8Array(chunk);
-                                let decoder = new TextDecoder('utf-8');
-                                let nowResult = JSON.parse(decoder.decode(byteArray))
-                                console.log(nowResult)
-                                if (nowResult.text) {
-                                    console.log(nowResult)
-                                    finalResult = nowResult.text
-                                    showAnserAndHighlightCodeStr(finalResult)
-                                }
-                                if (nowResult.id) {
-                                    parentID_aidutu = nowResult.id;
-                                }
-
-
-                            } catch (e) {
-                                console.log(e)
-                            }
-
-                            return reader.read().then(processText);
-                        });
-                    },
-                    responseType: "stream",
-                    onerror: function (err) {
-                        console.log(err)
+                prompt: your_qus,
+                options: ops
+             }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalResult = "";
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
                     }
-                })
 
-            }//end onload
+                    try {
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let dstr = decoder.decode(byteArray)
+                        if(dstr.includes("role")){
+                            parentID_nbai =  /\"parentMessageId\":\"(.*?)\"/gi.exec(dstr)[1]
+                        }else{
+                            console.log(dstr)
+                            result.push(dstr)
+                            finalResult = result.join("")
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
 
+
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
         })
+
     }
 
 
@@ -2198,6 +2171,9 @@
     }
 
 
+
+
+
     var parentID_anzz;
 
     function ANZZ() {
@@ -2265,6 +2241,77 @@
         })
 
     }
+
+    var parentID_gptplus;
+
+    function GPTPLUS() {
+        let ops = {};
+        if (parentID_gptplus) {
+            ops = {parentMessageId: parentID_gptplus};
+        }
+        console.log(ops)
+
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://api.gptplus.one/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "http://www.cutim.cn/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                top_p: 1,
+                prompt: your_qus,
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                temperature: 0.8,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let result = "";
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                let finalResult;
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
+                    }
+
+                    const chunk = value;
+                    result += chunk;
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(chunk);
+                        let decoder = new TextDecoder('utf-8');
+                        console.log(decoder.decode(byteArray))
+                        var jsonLines = decoder.decode(byteArray).split("\n");
+                        let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_gptplus = nowResult.id;
+                        }
+
+                    } catch (e) {
+
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                showAnserAndHighlightCodeStr("erro:", err)
+            }
+        })
+
+    }
+
 
 
     function OHTOAI() {
@@ -2798,7 +2845,7 @@
     var cleandxid = generateRandomString(21);
     var cleandxList = [];
     function CLEANDX() {
-        let Baseurl = "http://www.gtpcleandx.xyz/";
+        let Baseurl = "http://www.chatcleand.xyz/";
 
         console.log(formatTime())
         cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
