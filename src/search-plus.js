@@ -1,17 +1,17 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.7.4
+// @version       1.7.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
-// @match        https://cn.bing.com/*
-// @match        https://www.bing.com/*
+// @match      https://cn.bing.com/*
+// @match      https://www.bing.com/*
 // @match      https://chat.openai.com/chat
 // @match      https://www.google.com/*
 // @match      https://duckduckgo.com/*
 // @match      https://www.so.com/s*
-// @match      http*://www.baidu.com/s*
-// @match      https://www.baidu.com*
+// @match      *://www.baidu.com/s*
+// @match      https://www.baidu.com/*
 // @match      https://m.baidu.com/*
 // @match      http*://yandex.ru/search*
 // @match      http*://yandex.com/search*
@@ -91,6 +91,7 @@
 // @connect   chatcleand.xyz
 // @connect   154.40.59.105
 // @connect   gptplus.one
+// @connect   xcbl.cc
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -879,6 +880,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "XCBL") {
+            console.log("XCBL")
+            XCBL();
+
+            return;
+            //end if
         }
 
 
@@ -1005,10 +1012,11 @@
       <option value="CLEANDX">CLEANDX</option>
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
+      <option value="XCBL">XCBL</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://so.csdn.net/so/search?t=chat">ChitGPT</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.4已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") ? localStorage.getItem("GPTMODE") : "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.5已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1353,6 +1361,7 @@
     var messageChain2 = [];//AILS
     var messageChain7 = [];//OHTOAI
     var messageChain4 = [];//ESO
+    var messageChain5 = [];//XCBL
     var messageChain8 = [];//SUPREMES
     var messageChain9 = [];//bnu120
     var messageChain10 = [];//ftcl
@@ -1364,12 +1373,13 @@
         }
     ];//default AIGCFUN
 
-    function addMessageChain(messageChain, element) {
-        if (messageChain.length >= 6) {
+    function addMessageChain(messageChain, element,maxLength) {
+        maxLength = maxLength || 6;
+        if (messageChain.length >= maxLength) {
             messageChain.shift();
         }
         messageChain.push(element);
-        console.log(messageChain)
+        console.log(messageChain,maxLength)
     }
 
     function AILS() {
@@ -2410,6 +2420,62 @@
                         try {
                             console.log(finalResult)
                             addMessageChain(messageChain4, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
+
+    function XCBL() {
+
+        let baseURL = "https://gpt.xcbl.cc/";
+        addMessageChain(messageChain5, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain5,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                presence_penalty: 0
+            }),
+            onloadstart: (stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain5, {
                                 role: "assistant",
                                 content: finalResult
                             })
