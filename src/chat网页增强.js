@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.2
+// @version      4.3
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -43,6 +43,7 @@
 // @connect   154.40.59.105
 // @connect   gptplus.one
 // @connect   xcbl.cc
+// @connect   hz-it-dev.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://blog.yeyusmile.top/gpt.html
@@ -53,7 +54,7 @@
 (function () {
     'use strict';
     console.log("AI增强")
-    var JSVer = "v4.2"
+    var JSVer = "v4.3"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
     // var simulateBotResponse;
     // var fillBotResponse;
@@ -81,6 +82,8 @@
     var messageChain1 = [] //eso
     var messageChain2 = []//ails
     var messageChain3 = []//XCBL
+    var messageChain6 = []//HZIT
+
 
     function addMessageChain(messageChain, element) {
         if (messageChain.length >= 5) {
@@ -1947,6 +1950,62 @@
 
     }
 
+    function HZIT(question) {
+        let your_qus = question;//你的问题
+        handleUserInput(null)
+        let baseURL = "https://chargpt.hz-it-dev.com/";
+        addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "send2",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain6,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                text: your_qus,
+                presence_penalty: 0
+            }),
+
+            onload:(res)=>{
+
+                if (res.status === 200) {
+                    console.log('成功....')
+                    console.log(res.response)
+                    let rest = JSON.parse(res.response).data;
+                    console.log(rest)
+
+                    try {
+                        simulateBotResponse(rest);
+                        addMessageChain(messageChain6, {
+                            role: "assistant",
+                            content: rest
+                        })
+                        saveHistory(your_qus, rest);
+
+                    } catch (e) {
+                        //TODO handle the exception
+                        simulateBotResponse(rest);
+                    }
+
+                } else {
+                    simulateBotResponse('访问失败了');
+                }
+            },
+            onerror: function (err) {
+                console.log(err)
+                simulateBotResponse('访问出错');
+            }
+        });
+
+    }
+
 
     //初始化
     setTimeout(() => {
@@ -2039,6 +2098,10 @@
                     console.log("CVEOY")
                     CVEOY(qus);
                     break;
+                case "HZIT":
+                    console.log("HZIT")
+                    HZIT(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2067,6 +2130,7 @@
  <option value="CLEANDX">CLEANDX</option>
   <option value="ESO">ESO</option>
   <option value="CVEOY">CVEOY</option>
+  <option value="HZIT">HZIT</option>
 `;
 
         document.getElementById('modeSelect').addEventListener('change', () => {

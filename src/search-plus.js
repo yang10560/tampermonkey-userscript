@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.7.5
+// @version       1.7.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -92,6 +92,7 @@
 // @connect   154.40.59.105
 // @connect   gptplus.one
 // @connect   xcbl.cc
+// @connect   hz-it-dev.com
 // @license    MIT
 // @website    https://blog.yeyusmile.top/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -133,7 +134,7 @@
             GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
         }, "updateChat");
         const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
-            alert("交流群4：745163513\n交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992")
+            alert("交流群6：792365186\n交流群4：745163513\n交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992")
         }, "groupNum");
 
         const menu_pubkey_id = GM_registerMenuCommand("更新key", function (event) {
@@ -886,6 +887,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "HZIT") {
+            console.log("HZIT")
+            HZIT();
+
+            return;
+            //end if
         }
 
 
@@ -1013,10 +1020,11 @@
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
       <option value="XCBL">XCBL</option>
+      <option value="HZIT">HZIT</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://so.csdn.net/so/search?t=chat">ChitGPT</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.5已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.6已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1362,6 +1370,7 @@
     var messageChain7 = [];//OHTOAI
     var messageChain4 = [];//ESO
     var messageChain5 = [];//XCBL
+    var messageChain6 = [];//HZIT
     var messageChain8 = [];//SUPREMES
     var messageChain9 = [];//bnu120
     var messageChain10 = [];//ftcl
@@ -1520,6 +1529,59 @@
 
     }
 
+    function HZIT() {
+
+        let baseURL = "https://chargpt.hz-it-dev.com/";
+        addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: baseURL + "send2",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain6,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                text: your_qus,
+                presence_penalty: 0
+            }),
+
+            onload:(res)=>{
+
+                if (res.status === 200) {
+                    console.log('成功....')
+                    console.log(res.response)
+                    let rest = JSON.parse(res.response).data;
+                    console.log(rest)
+
+                    try {
+                        showAnserAndHighlightCodeStr(rest);
+                        addMessageChain(messageChain6, {
+                            role: "assistant",
+                            content: rest
+                        })
+                    } catch (e) {
+                        //TODO handle the exception
+                        document.getElementById('gptAnswer').innerHTML = `${rest}`
+                    }
+
+                    highlightCodeStr()
+                } else {
+                    console.log(res)
+                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                }
+            },
+            onerror: function (err) {
+                console.log(err)
+            }
+        });
+
+    }
 
 
     var userId_wgk = "#/chat/" + Date.now();
