@@ -81,7 +81,7 @@
     async function GM_fetch(details) {
         return new Promise((resolve, reject) =>{
             switch (details.responseType){
-                case "steam":
+                case "stream":
                     details.onloadstart = (res)=>{
                         resolve(res)
                     };
