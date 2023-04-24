@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.3
+// @version      4.4
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -9,7 +9,6 @@
 // @match        *://yeyu1024.xyz/gpt.html*
 // @grant       GM_xmlhttpRequest
 // @grant      GM_getResourceText
-// @resource pizzaSource https://www.pizzagpt.it/
 // @connect    chatai.to
 // @connect    luntianxia.uk
 // @connect    api.tdchat0.com
@@ -46,19 +45,68 @@
 // @connect   hz-it-dev.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
-// @website    https://blog.yeyusmile.top/gpt.html
+// @website    https://yeyu1024.xyz/gpt.html
 // @run-at     document-end
 
 // ==/UserScript==
 
 (function () {
     'use strict';
-    console.log("AI增强")
-    var JSVer = "v4.3"
+    console.log("======AI增强=====")
+    var JSVer = "v4.4"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
-    // var simulateBotResponse;
-    // var fillBotResponse;
-    // var saveHistory;
+
+
+    function GM_simulateBotResponse(str) {
+        simulateBotResponse(str)
+    }
+    function GM_fillBotResponse(str) {
+        fillBotResponse(str)
+    }
+    function GM_saveHistory(your_qus, ans) {
+        saveHistory(your_qus,ans)
+    }
+    function GM_simulateBotResponseAndSave(your_qus, ans) {
+        simulateBotResponse(ans)
+        saveHistory(your_qus,ans)
+    }
+
+    function GM_fillBotResponseAndSave(your_qus, ans) {
+        fillBotResponse(ans)
+        saveHistory(your_qus,ans)
+    }
+
+
+    //封装GM_xmlhttpRequest ---start---
+    async function GM_fetch(details) {
+        return new Promise((resolve, reject) =>{
+            switch (details.responseType){
+                case "steam":
+                    details.onloadstart = (res)=>{
+                        resolve(res)
+                    };
+                    break;
+                default:
+                    details.onload = (res)=>{
+                        resolve(res)
+                    };
+            }
+
+            details.onerror = (res)=>{
+                reject(res)
+            };
+            details.ontimeout = (res)=>{
+                reject(res)
+            };
+            details.onabort = (res)=>{
+                reject(res)
+            };
+            GM_xmlhttpRequest(details)
+        });
+    }
+    //封装GM_xmlhttpRequest ---end---
+
+
 
     //enc-start
     async function digestMessage(r) {
@@ -150,16 +198,46 @@
     }
 
 
+
+
+
+    function setChataiKey() {
+
+        GM_fetch({
+            method: "GET",
+            url: "https://chatai.to/?" + Math.random()
+        }).then((response)=> {
+            let resp = response.responseText;
+            let regex = /component-url="(.*?)"/i;
+            let match = resp.match(regex);
+            let jsurl = match[1];
+            console.log("js url:" + jsurl);
+            if (jsurl) {
+                GM_fetch({
+                    method: "GET",
+                    url: "https://chatai.to" + jsurl + "?" + Math.random()
+                }).then((response)=> {
+                    let resp = response.responseText;
+                    let regex = /\`\$\{e\}:\$\{r\}:(.*?)\`/;
+                    let match = resp.match(regex);
+                    console.log("chataikey:",match[1]);
+                    chataiKey = match[1];
+                })
+            }
+
+        })
+
+    }
+    setTimeout(setChataiKey)
+    var chataiKey;
     function kill(question) {
         let aikey = localStorage.getItem("myAIkey") ? localStorage.getItem("myAIkey") : "";
         console.log("aikey:" + aikey)
         let your_qus = question;//你的问题
         let now = Date.now();
-        let pk = "92zu73NsjFjd";//查看js的generateSignature函数中的key
-        if(defualtAPIPUBKEY){
-            pk = defualtAPIPUBKEY;
-        }
+        let pk = chataiKey || "FjyXA27v77";//查看js的generateSignature函数中的key FjyXA27v77
         let Baseurl = "https://chatai.to/";
+        console.log(pk)
         addMessageChain(messageChain0, {role: "user", content: your_qus})//连续话
         generateSignatureWithPkey({
             t: now,
@@ -187,13 +265,13 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
-                    simulateBotResponse("...")
+                    GM_simulateBotResponse("...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
                             let finalResult = result.join("")
                             try {
-                                saveHistory(your_qus, finalResult)
+                                GM_saveHistory(your_qus, finalResult)
                                 addMessageChain(messageChain0, {
                                     role: "assistant",
                                     content: finalResult
@@ -201,12 +279,12 @@
                             } catch (e) {
                                 //TODO handle the exception
                             }
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                             return;
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
-                        fillBotResponse(result.join(""))
+                        GM_fillBotResponse(result.join(""))
                         return reader.read().then(processText);
                     });
                 },
@@ -227,32 +305,42 @@
 
 
     var pizzaSecret;
-    function setPizzakey() {
-      try{
-          let reqJS = GM_getResourceText("pizzaSource").match("index.*?\.js")[0];
-          GM_xmlhttpRequest({
-              method: "GET",
-              nocache: true,
-              synchronous: true,
-              url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
-              headers: {
-                  //"Content-Type": "application/json",
-                  "Referer": `www.pizzagpt.it`
-              },
-              onload: function (response) {
-                  let resp = response.responseText;
-                  pizzaSecret = resp.match("x=\"(.*?)\"")[1]
-                  console.log("pizzaSecret:",pizzaSecret)
-              },
-              onerror: (e) => {
-                  console.log(e)
-              }
-          });
-      }catch (e) {
-          console.log(e)
-      }
+    async function setPizzakey() {
+        try {
+
+            let source = await GM_fetch({
+                method: "GET",
+                nocache: true,
+                url: "https://www.pizzagpt.it/",
+                headers: {
+                    "Referer": `www.pizzagpt.it`
+                }
+            })
+            console.log(source)
+            let reqJS = source.responseText.match("index.*?\.js")[0];
+
+            GM_fetch({
+                method: "GET",
+                nocache: true,
+                synchronous: true,
+                url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
+                headers: {
+                    //"Content-Type": "application/json",
+                    "Referer": `www.pizzagpt.it`
+                }
+            }).then((response)=> {
+                let resp = response.responseText;
+                pizzaSecret = resp.match("x=\"(.*?)\"")[1]
+                console.log("pizzaSecret:", pizzaSecret)
+            }).catch((e) => {
+                console.log(e)
+            })
+        } catch (e) {
+            console.log(e)
+        }
+
     }
-    setPizzakey();
+    setTimeout(setPizzakey);
 
     function PIZZA(question) {
         let your_qus = question;//你的问题
@@ -276,8 +364,7 @@
                     //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
 
                     try {
-                        simulateBotResponse(JSON.parse(rest).answer.content)
-                        saveHistory(your_qus, JSON.parse(rest).answer.content)
+                        GM_simulateBotResponseAndSave(your_qus, JSON.parse(rest).answer.content)
 
                     } catch (e) {
                         console.log(e)
@@ -293,7 +380,7 @@
 
             responseType: "application/json;charset=UTF-8",
             onerror: function (err) {
-                simulateBotResponse(`<div>some err happends,errinfo :<br>${err.messages}</div>`)
+                GM_simulateBotResponse(`<div>some err happends,errinfo :<br>${err.messages}</div>`)
             }
         });
     }
@@ -332,14 +419,14 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
-                    simulateBotResponse("...")
+                    GM_simulateBotResponse("...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
                             let finalResult = result.join("")
                             try {
                                 console.log(finalResult)
-                                saveHistory(your_qus, finalResult);
+                                GM_saveHistory(your_qus, finalResult);
                                 addMessageChain(messageChain2, {
                                     role: "assistant",
                                     content: finalResult
@@ -347,12 +434,12 @@
                             } catch (e) {
                                 //TODO handle the exception
                             }
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                             return;
                         }
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
-                        fillBotResponse(result.join(""))
+                        GM_fillBotResponse(result.join(""))
                         return reader.read().then(processText);
                     });
                 },
@@ -388,18 +475,18 @@
             data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(question).replace(/%/g, '‰')}&length=${question.length}&stream=1`,
             onloadstart: (stream) => {
                 let result = [];
-                simulateBotResponse("...")
+                GM_simulateBotResponse("...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
                         let finalResult = result.join("")
                         try {
                             console.log(finalResult)
-                            saveHistory(your_qus, finalResult);
+                            GM_saveHistory(your_qus, finalResult);
                         } catch (e) {
                             console.error(e)
                         } finally {
-                            fillBotResponse(result.join(""))
+                            GM_fillBotResponse(result.join(""))
                         }
 
 
@@ -415,7 +502,7 @@
                            try {
                                let delta = JSON.parse(item).choices[0].delta.content
                                result.push(delta)
-                               fillBotResponse(result.join(""))
+                               GM_fillBotResponse(result.join(""))
                            }catch (e) {
 
                            }
@@ -470,10 +557,10 @@
                 let result = "";
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
-                simulateBotResponse("...")
+                GM_simulateBotResponse("...")
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        saveHistory(your_qus, finalResult);
+                        GM_saveHistory(your_qus, finalResult);
                         return;
                     }
                     const chunk = value;
@@ -487,7 +574,7 @@
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                         }
                         if (nowResult.id) {
                             parentID_qdymys = nowResult.id;
@@ -561,15 +648,14 @@
                         }),
                         onloadstart: (stream) => {
                             let result = [];
-                            simulateBotResponse("...")
+                            GM_simulateBotResponse("...")
                             const reader = stream.response.getReader();
                             reader.read().then(function processText({done, value}) {
                                 if (done) {
                                     let finalResult = result.join("")
                                     try {
                                         console.log(finalResult)
-                                        fillBotResponse(finalResult)
-                                        saveHistory(your_qus, finalResult)
+                                        GM_fillBotResponseAndSave(your_qus, finalResult)
                                     } catch (e) {
                                         console.log(e)
                                     }
@@ -583,7 +669,7 @@
                                     dd.forEach(item=>{
                                         try {
                                             result.push(item)
-                                            fillBotResponse(result.join(""))
+                                            GM_fillBotResponse(result.join(""))
                                         }catch (e) {
 
                                         }
@@ -645,18 +731,18 @@
             }),
             onloadstart: (stream) => {
                 let finalResult = []
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
 
                         try {
                             console.log(finalResult.join(""))
-                            saveHistory(your_qus, finalResult.join(""));
+                            GM_saveHistory(your_qus, finalResult.join(""));
                         } catch (e) {
                             console.error(e)
                         } finally {
-                            fillBotResponse(finalResult.join(""))
+                            GM_fillBotResponse(finalResult.join(""))
                         }
                         return;
                     }
@@ -666,7 +752,7 @@
                         let decoder = new TextDecoder('utf-8');
                         let nowResult = decoder.decode(byteArray)
                         finalResult.push(nowResult)
-                        fillBotResponse(finalResult.join(""))
+                        GM_fillBotResponse(finalResult.join(""))
                     } catch (e) {
                         console.log(e)
                     }
@@ -677,7 +763,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                fillBotResponse("erro:",err)
+                GM_fillBotResponse("erro:",err)
             }
         })
 
@@ -742,13 +828,13 @@
                     }),
                     onloadstart: (stream) => {
                         let result = "";
-                        simulateBotResponse("请稍后...")
+                        GM_simulateBotResponse("请稍后...")
                         const reader = stream.response.getReader();
                         //     console.log(reader.read)
                         let finalResult = "";
                         reader.read().then(function processText({done, value}) {
                             if (done) {
-                                saveHistory(your_qus, finalResult);
+                                GM_saveHistory(your_qus, finalResult);
                                 return;
                             }
                             const chunk = value;
@@ -761,7 +847,7 @@
                                 if (nowResult.text) {
                                     console.log(nowResult)
                                     finalResult = nowResult.text
-                                    fillBotResponse(finalResult)
+                                    GM_fillBotResponse(finalResult)
                                 }
                                 if(nowResult.id){
                                     parentID_aidutu = nowResult.id;
@@ -817,12 +903,12 @@
                     onloadstart: (stream) => {
                         let result = [];
                         let finalResult = [];
-                        simulateBotResponse("请稍后...")
+                        GM_simulateBotResponse("请稍后...")
                         const reader = stream.response.getReader();
                         reader.read().then(function processText({done, value}) {
                             if (done) {
                                 finalResult = result.join("")
-                                saveHistory(your_qus, finalResult);
+                                GM_saveHistory(your_qus, finalResult);
                                 return;
                             }
 
@@ -836,7 +922,7 @@
                                     try {
                                         let delta = JSON.parse(item).choices[0].delta.content
                                         result.push(delta)
-                                        fillBotResponse(result.join(""))
+                                        GM_fillBotResponse(result.join(""))
                                     }catch (e) {
 
                                     }
@@ -851,7 +937,7 @@
                     responseType: "stream",
                     onerror: function (err) {
                         console.log(err)
-                        fillBotResponse("erro:", err)
+                        GM_fillBotResponse("erro:", err)
                     }
                 })
             }//end onload
@@ -887,11 +973,11 @@
             }),
             onloadstart: (stream) => {
                 let result = "";
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        saveHistory(your_qus, finalResult);
+                        GM_saveHistory(your_qus, finalResult);
                         return;
                     }
 
@@ -906,7 +992,7 @@
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                         }
                         if (nowResult.id) {
                             parentID_68686 = nowResult.id;
@@ -954,13 +1040,13 @@
             }),
             onloadstart: (stream) => {
                 let result = "";
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
                 let finalResult;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        saveHistory(your_qus, finalResult);
+                        GM_saveHistory(your_qus, finalResult);
                         return;
                     }
 
@@ -976,7 +1062,7 @@
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                         }
                         if (nowResult.id) {
                             parentID_anzz = nowResult.id;
@@ -991,7 +1077,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                simulateBotResponse("erro:", err)
+                GM_simulateBotResponse("erro:", err)
             }
         })
 
@@ -1066,14 +1152,13 @@
             }),
             onloadstart: (stream) => {
                 let result = "";
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
                 let finalResult;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        fillBotResponse(finalResult)
-                        saveHistory(your_qus, finalResult);
+                        GM_fillBotResponseAndSave(your_qus, finalResult);
                         return;
                     }
 
@@ -1090,7 +1175,7 @@
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                         }
                         if (nowResult.id) {
                             parentID_gptplus = nowResult.id;
@@ -1140,10 +1225,10 @@
                 let result = "";
                 const reader = stream.response.getReader();
                 let finalResult = [];
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        fillBotResponse(finalResult)
+                        GM_fillBotResponse(finalResult)
                         return;
                     }
 
@@ -1163,7 +1248,7 @@
                             if(jsonObj.id){
                                 parentID_extkj = jsonObj.id;
                             }
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                         }
 
                     } catch (e) {
@@ -1213,7 +1298,7 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
-                    simulateBotResponse("请稍后...")
+                    GM_simulateBotResponse("请稍后...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
@@ -1224,8 +1309,7 @@
                                     role: "assistant",
                                     content: finalResult
                                 })
-                                fillBotResponse(finalResult)
-                                saveHistory(your_qus, finalResult);
+                                GM_fillBotResponseAndSave(your_qus, finalResult);
                             } catch (e) {
                                 console.log(e)
                             }
@@ -1234,7 +1318,7 @@
                         try {
                             let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                             result.push(d)
-                            fillBotResponse(result.join(""))
+                            GM_fillBotResponse(result.join(""))
                         } catch (e) {
                             console.log(e)
                         }
@@ -1281,12 +1365,12 @@
             }),
             onloadstart: (stream) => {
                 let result = [];
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 let finalResult = "";
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        saveHistory(your_qus, finalResult);
+                        GM_saveHistory(your_qus, finalResult);
                         return;
                     }
 
@@ -1300,7 +1384,7 @@
                             console.log(dstr)
                             result.push(dstr)
                             finalResult = result.join("")
-                            fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult)
                         }
 
 
@@ -1353,7 +1437,7 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
-                    simulateBotResponse("请稍后...")
+                    GM_simulateBotResponse("请稍后...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
@@ -1364,8 +1448,7 @@
                                     role: "assistant",
                                     content: finalResult
                                 })
-                                fillBotResponse(finalResult)
-                                saveHistory(your_qus, finalResult);
+                                GM_fillBotResponseAndSave(your_qus, finalResult);
                             } catch (e) {
                                 console.log(e)
                             }
@@ -1374,7 +1457,7 @@
                         try {
                             let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                             result.push(d)
-                            fillBotResponse(result.join(""))
+                            GM_fillBotResponse(result.join(""))
                         } catch (e) {
                             console.log(e)
                         }
@@ -1444,7 +1527,7 @@
             }),
             onloadstart: (stream) => {
                 let result = [];
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -1458,8 +1541,7 @@
                                 "time": formatTime(),
                                 "isMe": false
                             };
-                            fillBotResponse(finalResult)
-                            saveHistory(your_qus, finalResult);
+                            GM_fillBotResponseAndSave(your_qus, finalResult);
                         } catch (e) {
                             console.log(e)
                         }
@@ -1469,7 +1551,7 @@
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         console.log(d)
                         result.push(d)
-                        fillBotResponse(result.join(""))
+                        GM_fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)
                     }
@@ -1517,7 +1599,7 @@
                 }),
                 onloadstart: (stream) => {
                     let result = [];
-                    simulateBotResponse("请稍后...")
+                    GM_simulateBotResponse("请稍后...")
                     const reader = stream.response.getReader();
                     reader.read().then(function processText({done, value}) {
                         if (done) {
@@ -1528,8 +1610,7 @@
                                     role: "assistant",
                                     content: finalResult
                                 })
-                                fillBotResponse(finalResult)
-                                saveHistory(your_qus,finalResult)
+                                GM_fillBotResponseAndSave(your_qus,finalResult)
                             } catch (e) {
                                 console.log(e)
                             }
@@ -1538,7 +1619,7 @@
                         try {
                             let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                             result.push(d)
-                            fillBotResponse(result.join(""))
+                            GM_fillBotResponse(result.join(""))
                         } catch (e) {
                             console.log(e)
                         }
@@ -1591,15 +1672,13 @@
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
                 let finalRes;
-                simulateBotResponse("请稍后")
+                GM_simulateBotResponse("请稍后")
                 reader.read().then(function processText({done, value}) {
                     if (done) {
                         if(finalRes){
-                            fillBotResponse(finalRes)
-                            saveHistory(your_qus,finalRes)
+                            GM_fillBotResponseAndSave(your_qus,finalRes)
                         }else{
-                            fillBotResponse(result.join(""))
-                            saveHistory(your_qus,result.join(""))
+                            GM_fillBotResponseAndSave(your_qus,result.join(""))
                         }
 
                         return;
@@ -1621,7 +1700,7 @@
                             const match = regex.exec(nowResult);
                             console.log(nowResult); // 输出：Hello world
                             result.push(match[1])
-                           fillBotResponse(result.join(""))
+                           GM_fillBotResponse(result.join(""))
                         }
 
 
@@ -1635,7 +1714,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                simulateBotResponse("erro:", err)
+                GM_simulateBotResponse("erro:", err)
             }
         })
 
@@ -1659,12 +1738,11 @@
             },
             onloadstart: (stream) => {
                 let finalResult = []
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        fillBotResponse(finalResult.join(""))
-                        saveHistory(your_qus, finalResult.join(""));
+                        GM_fillBotResponseAndSave(your_qus, finalResult.join(""));
                         return;
                     }
                     try {
@@ -1677,7 +1755,7 @@
                         console.log(nowResult)
 
                         finalResult.push(nowResult)
-                        fillBotResponse(finalResult.join(""))
+                        GM_fillBotResponse(finalResult.join(""))
 
 
                     } catch (e) {
@@ -1690,7 +1768,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                simulateBotResponse("erro:", err)
+                GM_simulateBotResponse("erro:", err)
             }
         })
 
@@ -1733,7 +1811,7 @@
             }),
             onloadstart: (stream) => {
                 let result = [];
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -1747,8 +1825,7 @@
                                 "time": formatTime(),
                                 "isMe": false
                             };
-                            fillBotResponse(finalResult)
-                            saveHistory(your_qus, finalResult);
+                            GM_fillBotResponseAndSave(your_qus, finalResult);
                         } catch (e) {
                             console.log(e)
                         }
@@ -1758,7 +1835,7 @@
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         console.log(d)
                         result.push(d)
-                        fillBotResponse(result.join(""))
+                        GM_fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)
                     }
@@ -1798,7 +1875,7 @@
             }),
             onloadstart: (stream) => {
                 let result = [];
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -1809,8 +1886,7 @@
                                 role: "assistant",
                                 content: finalResult
                             })
-                            fillBotResponse(finalResult)
-                            saveHistory(your_qus, finalResult);
+                            GM_fillBotResponseAndSave(your_qus, finalResult);
                         } catch (e) {
                             console.log(e)
                         }
@@ -1819,7 +1895,7 @@
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
-                        fillBotResponse(result.join(""))
+                        GM_fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)
                     }
@@ -1857,7 +1933,7 @@
             }),
             onloadstart: (stream) => {
                 let result = [];
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -1868,8 +1944,7 @@
                                 role: "assistant",
                                 content: finalResult
                             })
-                            fillBotResponse(finalResult)
-                            saveHistory(your_qus, finalResult);
+                            GM_fillBotResponseAndSave(your_qus, finalResult);
                         } catch (e) {
                             console.log(e)
                         }
@@ -1878,7 +1953,7 @@
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
-                        fillBotResponse(result.join(""))
+                        GM_fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)
                     }
@@ -1912,7 +1987,7 @@
             }),
             onloadstart: (stream) => {
                 let result = [];
-                simulateBotResponse("请稍后...")
+                GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
@@ -1920,8 +1995,7 @@
                         try {
                             let finalResult = result.join("")
                             console.log(finalResult)
-                            fillBotResponse(finalResult)
-                            saveHistory(your_qus, finalResult);
+                            GM_fillBotResponseAndSave(your_qus, finalResult);
                         } catch (e) {
                             console.log(e)
                         }
@@ -1934,7 +2008,7 @@
                         }
                         result.push(d);
                         console.log(d)
-                        fillBotResponse(result.join(""))
+                        GM_fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)
                     }
@@ -1982,25 +2056,24 @@
                     console.log(rest)
 
                     try {
-                        simulateBotResponse(rest);
                         addMessageChain(messageChain6, {
                             role: "assistant",
                             content: rest
                         })
-                        saveHistory(your_qus, rest);
+                        GM_simulateBotResponseAndSave(your_qus, rest);
 
                     } catch (e) {
                         //TODO handle the exception
-                        simulateBotResponse(rest);
+                        GM_simulateBotResponse(rest);
                     }
 
                 } else {
-                    simulateBotResponse('访问失败了');
+                    GM_simulateBotResponse('访问失败了');
                 }
             },
             onerror: function (err) {
                 console.log(err)
-                simulateBotResponse('访问出错');
+                GM_simulateBotResponse('访问出错');
             }
         });
 
