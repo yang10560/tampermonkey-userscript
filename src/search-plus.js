@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.7.6
+// @version       1.7.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -83,7 +83,7 @@
 // @connect   chatgpt.qdymys.cn
 // @connect   easyai.one
 // @connect   api.aichatos.cloud
-// @connect   chat.xiami.one
+// @connect   xiami.one
 // @connect   chat2.wuguokai.cn
 // @connect   www.gtpcleandx.xyz
 // @connect   gpt.esojourn.org
@@ -94,12 +94,11 @@
 // @connect   xcbl.cc
 // @connect   hz-it-dev.com
 // @license    MIT
-// @website    https://blog.yeyusmile.top/gpt.html
+// @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.min.js
-// @resource pizzaSource https://www.pizzagpt.it/
 
 // ==/UserScript==
 
@@ -111,7 +110,6 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    //console.log(GM_getResourceText("pizzaSource"))
 
     //(prefers-color-scheme: light)
     $("head").append($(
@@ -144,6 +142,59 @@
     } catch (e) {
         console.log(e)
     }
+    
+    //封装GM_xmlhttpRequest ---start---
+    async function GM_fetch(details) {
+       return new Promise((resolve, reject) =>{
+           switch (details.responseType){
+               case "stream":
+                   details.onloadstart = (res)=>{
+                       resolve(res)
+                   }
+                   break;
+               default:
+                   details.onload = (res)=>{
+                       resolve(res)
+                   };
+           }
+
+           details.onerror = (res)=>{
+               reject(res)
+           };
+           details.ontimeout = (res)=>{
+               reject(res)
+           };
+           details.onabort = (res)=>{
+               reject(res)
+           };
+           GM_xmlhttpRequest(details)
+        });
+    }
+
+    function GM_httpRequest(details, callBack, errorCallback, timeoutCallback, abortCallback){
+        if(callBack){
+            switch (details.responseType){
+                case "stream":
+                    details.onloadstart = callBack;
+                    break;
+                default:
+                    details.onload = callBack
+            }
+        }
+        if(errorCallback){
+            details.onerror = errorCallback;
+        }
+        if(timeoutCallback){
+            details.ontimeout = timeoutCallback;
+        }
+        if(abortCallback){
+            details.onabort = abortCallback;
+        }
+        console.log(details)
+        GM_xmlhttpRequest(details);
+    }
+
+    //封装GM_xmlhttpRequest ---end---
 
 
     var generateRandomIP = () => {
@@ -159,92 +210,46 @@
     //动态pubkey
     function setPubkey() {
         let GPTMODE = localStorage.getItem("GPTMODE")
-        if (GPTMODE && GPTMODE == "CHATGPT") {
-            //https://gptkey.oss-cn-hangzhou.aliyuncs.com/key.txt
-            GM_xmlhttpRequest({
+        if (GPTMODE === "CHATGPT") {
+
+            GM_fetch({
                 method: "GET",
                 nocache: true,
-                synchronous: true,
-                url: "http://gpt66.cn/gongxkey.html",
+                url: "https://freeopenai.xyz/api.txt",
                 headers: {
                     //"Content-Type": "application/json",
-                    "Referer": `http://gpt66.cn/`
-                },
-                onload: function (response) {
-                    let resp = response.responseText;
-                    const regex = /data-key="([^"]+)"/g;
-                    const keys = [];
-                    let match;
-                    while (match = regex.exec(resp)) {
-                        keys.push(match[1]);
-                    }
-
-                    if (keys.length == 0) {
-                        localStorage.removeItem("openAIkey")
-                        document.getElementById("gptAnswer").innerText = "openAI key获取失败\n"
-                        return
-                    }
-                    //localStorage.setItem("openAIkey", pubkey)
-                    let ht = ""
-                    keys.forEach(key => {
-                        ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
-                    })
-                    document.getElementById("gptAnswer").innerHTML = ht;
-                    //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
-                    localStorage.removeItem("openAIkey")
-                },
-                onerror: (e) => {
-                    localStorage.removeItem("openAIkey")
-                    document.getElementById("gptAnswer").innerText = "openAI key获取失败"
+                    "Referer": `https://freeopenai.xyz/`
                 }
-            });
+            }).then((response)=> {
+                let resp = response.responseText;
+                console.log(response)
+                if (!resp) {
+                    localStorage.removeItem("openAIkey")
+                    return
+                }
+                //localStorage.setItem("openAIkey", pubkey)
+                let ht = ""
+                let keys = resp.split("\n");
+                keys.forEach(key => {
+                    ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
+                })
+                document.getElementById("gptAnswer").innerHTML =  ht;
+                //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
+                localStorage.removeItem("openAIkey")
+            }).catch((res)=>{
+                console.log(res)
+            })
 
-            setTimeout(()=>{
-                GM_xmlhttpRequest({
-                    method: "GET",
-                    nocache: true,
-                    synchronous: true,
-                    url: "https://freeopenai.xyz/api.txt",
-                    headers: {
-                        //"Content-Type": "application/json",
-                        "Referer": `http://freeopenai.xyz/`
-                    },
-                    onload: function (response) {
-                        let resp = response.responseText;
-                        if (!resp) {
-                            localStorage.removeItem("openAIkey")
-                            return
-                        }
-                        //localStorage.setItem("openAIkey", pubkey)
-                        let ht = ""
-                        let keys = resp.split("\n");
-                        keys.forEach(key => {
-                            ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
-                        })
-                        document.getElementById("gptAnswer").innerHTML = document.getElementById("gptAnswer").innerHTML + ht;
-                        //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
-                        localStorage.removeItem("openAIkey")
-                    },
-                    onerror: (e) => {
-                        localStorage.removeItem("openAIkey")
-                    }
-                });
-            },2000)
-
-            return
-        }
-
-
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: "https://api.aigcfun.com/fc/key",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": `https://aigcfun.com/`,
-                "X-Forwarded-For": generateRandomIP()
-            },
-            onload: function (response) {
+        }else if(!GPTMODE || GPTMODE === "Default"){
+            GM_fetch({
+                method: "GET",
+                url: "https://api.aigcfun.com/fc/key",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": `https://aigcfun.com/`,
+                    "X-Forwarded-For": generateRandomIP()
+                }
+            }).then((response)=> {
                 let resp = response.responseText;
                 let pubkey = JSON.parse(resp).data;
                 if (!pubkey) {
@@ -255,18 +260,17 @@
                 //GM_setValue("pubkey", pubkey)
                 localStorage.setItem("pubkey", pubkey)
                 document.getElementById("gptAnswer").innerText = "pubkey更新成功:" + pubkey
-            }
-        });
+            })
+        }else {
+            showAnserAndHighlightCodeStr("该线路不适用")
+        }
+
     }
 
     function getPubkey() {
         //return GM_getValue("pubkey");
         return localStorage.getItem("pubkey");
     }
-
-
-    //setPubkey()
-    //console.log("GET KEY:" + getPubkey())
 
 
     //enc-start
@@ -1024,7 +1028,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://so.csdn.net/so/search?t=chat">ChitGPT</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.6已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1771,65 +1775,52 @@
         }
         console.log(ops)
         let finalResult = [];
-        abortXml = GM_xmlhttpRequest({
+        GM_httpRequest({
             method: "POST",
-            url: "https://chat.xiami.one/api/chat-process",
+            url: "https://smart-chat.xiami.one/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat.xiami.one/",
+                "Referer": "https://smart-chat.xiami.one/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
                 prompt: your_qus,
-                options: ops
+                options: ops,
+                systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                top_p:1,
+                temperature:0.8
             }),
-            onloadstart: (stream) => {
-                let result = "";
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let charsReceived = 0;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        highlightCodeStr()
-                        return;
+            responseType: "stream"
+        },(stream) => {
+            const reader = stream.response.getReader();
+            //     console.log(reader.read)
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    let nowResult = JSON.parse(decoder.decode(byteArray))
+                    if (nowResult.text) {
+                        console.log(nowResult)
+                        finalResult = nowResult.text
+                        showAnserAndHighlightCodeStr(finalResult)
+                    }
+                    if (nowResult.id) {
+                        parentID_xiami = nowResult.id;
                     }
 
-                    charsReceived += value.length;
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
+                } catch (e) {
+                    console.log(e)
+                }
 
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_xiami = nowResult.id;
-                        }
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onprogress: function (msg) {
-                //console.log(msg) //Todo
-            },
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
+                return reader.read().then(processText);
+            });
         })
-
     }
 
     var parentID_nbai;
@@ -1894,10 +1885,21 @@
 
 
     var pizzaSecret;
-    function setPizzakey() {
-        try{
-            let reqJS = GM_getResourceText("pizzaSource").match("index.*?\.js")[0];
-            GM_xmlhttpRequest({
+    async function setPizzakey() {
+        try {
+
+            let source = await GM_fetch({
+                method: "GET",
+                nocache: true,
+                url: "https://www.pizzagpt.it/",
+                headers: {
+                    "Referer": `www.pizzagpt.it`
+                }
+            })
+            console.log(source)
+            let reqJS = source.responseText.match("index.*?\.js")[0];
+
+            GM_fetch({
                 method: "GET",
                 nocache: true,
                 synchronous: true,
@@ -1905,22 +1907,20 @@
                 headers: {
                     //"Content-Type": "application/json",
                     "Referer": `www.pizzagpt.it`
-                },
-                onload: function (response) {
-                    let resp = response.responseText;
-                    pizzaSecret = resp.match("x=\"(.*?)\"")[1]
-                    console.log("pizzaSecret:",pizzaSecret)
-                },
-                onerror: (e) => {
-                    console.log(e)
                 }
-            });
-        }catch (e) {
+            }).then((response)=> {
+                let resp = response.responseText;
+                pizzaSecret = resp.match("x=\"(.*?)\"")[1]
+                console.log("pizzaSecret:", pizzaSecret)
+            }).catch((e) => {
+                console.log(e)
+            })
+        } catch (e) {
             console.log(e)
         }
 
     }
-    setPizzakey();
+    setTimeout(setPizzakey);
 
     function PIZZA() {
         abortXml = GM_xmlhttpRequest({
