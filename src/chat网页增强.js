@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.6
+// @version      4.7
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -55,7 +55,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.6"
+    var JSVer = "v4.7"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -971,6 +971,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "Referer": "http://38.47.97.76/",
+                "X-Forwarded-For": generateRandomIP(),
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
