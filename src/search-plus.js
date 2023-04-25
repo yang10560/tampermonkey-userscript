@@ -13,8 +13,8 @@
 // @match      *://www.baidu.com/s*
 // @match      https://www.baidu.com/*
 // @match      https://m.baidu.com/*
-// @match      http*://yandex.ru/search*
-// @match      http*://yandex.com/search*
+// @match      *://yandex.ru/search*
+// @match      *://yandex.com/search*
 // @match      https://search.ecnu.cf/search*
 // @match      https://search.aust.cf/search*
 // @match      https://search.*.cf/search*
