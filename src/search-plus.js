@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.7.7
+// @version       1.7.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -93,6 +93,7 @@
 // @connect   gptplus.one
 // @connect   xcbl.cc
 // @connect   hz-it-dev.com
+// @connect   toyaml.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -897,6 +898,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "TOYAML") {
+            console.log("TOYAML")
+            TOYAML();
+
+            return;
+            //end if
         }
 
 
@@ -1025,10 +1032,11 @@
       <option value="CVEOY">CVEOY</option>
       <option value="XCBL">XCBL</option>
       <option value="HZIT">HZIT</option>
+      <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://so.csdn.net/so/search?t=chat">ChitGPT</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -2248,12 +2256,31 @@
 
     var parentID_anzz;
 
+    function authAnzz(){
+        console.log("authANZZ")
+        GM_fetch({
+            method: "POST",
+            url: "https://free.anzz.top/api/session",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": `https://free.anzz.top/`
+            },
+            data: JSON.stringify({})
+        }).then((res)=>{
+            console.log(res)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+    }
+    setTimeout(authAnzz);
     function ANZZ() {
         let ops = {};
         if (parentID_anzz) {
             ops = {parentMessageId: parentID_anzz};
         }
         console.log(ops)
+
+
         abortXml = GM_xmlhttpRequest({
             method: "POST",
             url: "https://free.anzz.top/api/chat-process",
@@ -3381,6 +3408,54 @@
         })
 
     }
+
+    //
+    //23-4-25
+    function TOYAML() {
+
+        GM_fetch({
+            method: "GET",
+            url: "https://toyaml.com/stream?q="+encodeURI(your_qus),
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://toyaml.com/",
+                "accept": "*/*"
+            },
+            responseType: "stream"
+        }).then((stream) => {
+            let finalResult = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    let nowResult = decoder.decode(byteArray)
+                    console.log(nowResult)
+                    if(!nowResult.match(/答案来自/)){
+                        finalResult.push(nowResult)
+                    }
+                    showAnserAndHighlightCodeStr(finalResult.join(""))
+
+                } catch (ex) {
+                    console.log(ex)
+                }
+
+                return reader.read().then(processText);
+            });
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+
+
+
+    }
+
 
 
     var WebsocketCoolAI;

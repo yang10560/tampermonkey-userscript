@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.4
+// @version      4.5
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -43,6 +43,7 @@
 // @connect   gptplus.one
 // @connect   xcbl.cc
 // @connect   hz-it-dev.com
+// @connect   toyaml.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -53,7 +54,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.4"
+    var JSVer = "v4.5"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -74,6 +75,10 @@
     function GM_fillBotResponseAndSave(your_qus, ans) {
         fillBotResponse(ans)
         saveHistory(your_qus,ans)
+    }
+
+    function GM_handleUserInput(InputType){
+        handleUserInput(InputType)
     }
 
 
@@ -244,7 +249,7 @@
             m: your_qus || "",
             pkey: pk
         }).then(sign => {
-            handleUserInput(3)
+            GM_handleUserInput(3)
             console.log(sign)
             GM_xmlhttpRequest({
                 method: "POST",
@@ -344,7 +349,7 @@
 
     function PIZZA(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         GM_xmlhttpRequest({
             method: "POST",
             url: "https://www.pizzagpt.it/api/chat-completion",
@@ -397,7 +402,7 @@
             pkey: pk
         }).then(sign => {
             addMessageChain(messageChain2, {role: "user", content: your_qus})//连续话
-            handleUserInput(3)
+            GM_handleUserInput(3)
             console.log(sign)
             GM_xmlhttpRequest({
                 method: "POST",
@@ -460,7 +465,7 @@
 
     function TDCHAT(question) {
         let your_qus = question;//你的问题
-        handleUserInput(3)
+        GM_handleUserInput(3)
         GM_xmlhttpRequest({
             method: "POST",
             //http://5p2ag.tdchat0.com/
@@ -533,7 +538,7 @@
 
     function QDYMYS(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let ops = {};
         if (parentID_qdymys) {
             ops = {parentMessageId: parentID_qdymys};
@@ -603,7 +608,7 @@
 
     function PHIND(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         GM_xmlhttpRequest({
             method: "POST",
             url: "https://www.phind.com/api/bing/search",
@@ -713,7 +718,7 @@
     function WGK(question) {
         let your_qus = question;//你的问题
         console.log(userId_wgk)
-        handleUserInput(null)
+        GM_handleUserInput(null)
         GM_xmlhttpRequest({
             method: "POST",
             url: "https://chat2.wuguokai.cn/api/chat-process",
@@ -783,7 +788,7 @@
     function AIDUTU(question){
         let your_qus = question;//你的问题
         console.log(parentID_aidutu)
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let _iam = generateRandomString(8)
         let ops = {};
         if(parentID_aidutu){
@@ -874,7 +879,7 @@
 
     function WOBCW(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
 
         GM_xmlhttpRequest({
             url: "https://chat.wobcw.com/chat",
@@ -952,7 +957,7 @@
 
     function LTD68686(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let ops = {};
         if (parentID_68686) {
             ops = {parentMessageId: parentID_68686};
@@ -1014,9 +1019,26 @@
     }
 
     var parentID_anzz;
+    function authAnzz(){
+        console.log("authANZZ")
+        GM_fetch({
+            method: "POST",
+            url: "https://free.anzz.top/api/session",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": `https://free.anzz.top/`
+            },
+            data: JSON.stringify({})
+        }).then((res)=>{
+            console.log(res)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+    }
+    setTimeout(authAnzz);
     function ANZZ(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let ops = {};
         if (parentID_anzz) {
             ops = {parentMessageId: parentID_anzz};
@@ -1083,6 +1105,52 @@
 
     }
 
+    function TOYAML(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        GM_fetch({
+            method: "GET",
+            url: "https://toyaml.com/stream?q="+encodeURI(your_qus),
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://toyaml.com/",
+                "accept": "*/*"
+            },
+            responseType: "stream"
+        }).then((stream) => {
+            let finalResult = [];
+            GM_simulateBotResponse("=====")
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    let nowResult = decoder.decode(byteArray)
+                    console.log(nowResult)
+                    if(!nowResult.match(/答案来自/)){
+                        finalResult.push(nowResult)
+                    }
+                    GM_fillBotResponse(finalResult.join(""))
+
+                } catch (ex) {
+                    console.log(ex)
+                }
+
+                return reader.read().then(processText);
+            });
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+
+
+
+    }
+
 
 
 
@@ -1128,7 +1196,7 @@
 
     function GPTPLUS(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let ops = {};
         if (parentID_gptplus) {
             ops = {parentMessageId: parentID_gptplus};
@@ -1200,7 +1268,7 @@
     var parentID_extkj;
     function EXTKJ(question){
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let ops = {};
         if (parentID_extkj) {
             ops = {parentMessageId: parentID_extkj};
@@ -1269,7 +1337,7 @@
     var messageChain8 = [];
     function SUPREMES(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let now = Date.now();
         let Baseurl = "https://supremes.pro/"
         generateSignatureWithPkey({
@@ -1345,7 +1413,7 @@
 
     function NBAI(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let ops = {};
         if (parentID_nbai) {
             ops = {parentMessageId: parentID_nbai};
@@ -1408,7 +1476,7 @@
     var messageChain9 = [];
     function BNU120(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let now = Date.now();
         let Baseurl = "https://chat.bnu120.space/"
         generateSignatureWithPkey({
@@ -1487,7 +1555,7 @@
 
     function AIFKS(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let Baseurl = "https://chat7.aifks001.online/";
         let padZero = (num) => {
             // 如果数字小于 10，前面补一个 0
@@ -1571,7 +1639,7 @@
     var messageChain10 =[];//FTCL
     function FTCL(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let now = Date.now();
         let Baseurl = "https://www.ftcl.store/"
         generateSignatureWithPkey({
@@ -1645,7 +1713,7 @@
     //https://chat.sunls.me/
     function SUNLE(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let msgobj = {
             message: your_qus,
             stream: true,
@@ -1726,7 +1794,7 @@
     var easyai_ip = generateRandomIP();
     function EASYAI(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         console.log(sessionId_easyai)
          GM_xmlhttpRequest({
             method: "POST",
@@ -1780,7 +1848,7 @@
     var cleandxList = [];
     function CLEANDX(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
 
         let Baseurl = "http://www.chatcleand.xyz/";
         console.log(formatTime())
@@ -1853,7 +1921,7 @@
     //https://gpt.esojourn.org/api/chat-stream
     function ESO(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let baseURL = "https://gpt.esojourn.org/";
         addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
         GM_xmlhttpRequest({
@@ -1913,7 +1981,7 @@
 
     function XCBL(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let baseURL = "https://gpt.xcbl.cc/";
         addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
         GM_xmlhttpRequest({
@@ -1972,7 +2040,7 @@
     //https://ai1.chagpt.fun/
     function CVEOY(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let baseURL = "https://free-api.cveoy.top/";
         GM_xmlhttpRequest({
             method: "POST",
@@ -2026,7 +2094,7 @@
 
     function HZIT(question) {
         let your_qus = question;//你的问题
-        handleUserInput(null)
+        GM_handleUserInput(null)
         let baseURL = "https://chargpt.hz-it-dev.com/";
         addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
         GM_xmlhttpRequest({
@@ -2175,6 +2243,10 @@
                     console.log("HZIT")
                     HZIT(qus);
                     break;
+                case "TOYAML":
+                    console.log("TOYAML")
+                    TOYAML(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2204,6 +2276,7 @@
   <option value="ESO">ESO</option>
   <option value="CVEOY">CVEOY</option>
   <option value="HZIT">HZIT</option>
+  <option value="TOYAML">TOYAML</option>
 `;
 
         document.getElementById('modeSelect').addEventListener('change', () => {
