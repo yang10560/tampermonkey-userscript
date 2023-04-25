@@ -1336,10 +1336,7 @@
                 prompt: your_qus,
                 options: ops
             }),
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
+            responseType: "stream"
         }).then((stream) => {
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
