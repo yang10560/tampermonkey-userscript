@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.7.8
+// @version       1.7.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -94,6 +94,7 @@
 // @connect   xcbl.cc
 // @connect   hz-it-dev.com
 // @connect   toyaml.com
+// @connect   38.47.97.76
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -1036,7 +1037,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.7.9已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1315,6 +1316,7 @@
 
     var parentID_68686;
 
+    //http://chat.68686.ltd/
     function LTD68686() {
         let ops = {};
         if (parentID_68686) {
@@ -1322,35 +1324,33 @@
         }
         console.log(ops)
         let finalResult = [];
-        abortXml = GM_xmlhttpRequest({
+        GM_fetch({
             method: "POST",
-            url: "https://chat.68686.ltd/api/chat-process",
+            url: "http://38.47.97.76/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat.68686.ltd/",
+                "Referer": "http://38.47.97.76/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
                 prompt: your_qus,
                 options: ops
             }),
-            onloadstart: (stream) => {
-                let result = "";
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            }
+        }).then((stream) => {
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
-                let charsReceived = 0;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
                         highlightCodeStr()
                         return;
                     }
-
-                    charsReceived += value.length;
-                    const chunk = value;
-                    result += chunk;
                     try {
                         // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
+                        let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
                         let nowResult = JSON.parse(decoder.decode(byteArray))
 
@@ -1369,12 +1369,12 @@
                     return reader.read().then(processText);
                 });
             },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
+            (reason)=>{
+                console.log(reason)
             }
+        ).catch(ex => {
+            console.log(ex)
         })
-
     }
 
 

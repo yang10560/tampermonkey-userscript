@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.5
+// @version      4.6
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -44,6 +44,7 @@
 // @connect   xcbl.cc
 // @connect   hz-it-dev.com
 // @connect   toyaml.com
+// @connect   38.47.97.76
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -54,7 +55,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.5"
+    var JSVer = "v4.6"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -964,57 +965,51 @@
         }
         console.log(ops)
         let finalResult = [];
-         GM_xmlhttpRequest({
+         GM_fetch({
             method: "POST",
-            url: "https://chat.68686.ltd/api/chat-process",
+            url: "http://38.47.97.76/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat.68686.ltd/",
+                "Referer": "http://38.47.97.76/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
                 prompt: your_qus,
                 options: ops
             }),
-            onloadstart: (stream) => {
-                let result = "";
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_saveHistory(your_qus, finalResult);
-                        return;
-                    }
+            responseType: "stream"
+        }).then((stream) => {
+             GM_simulateBotResponse("请稍后...")
+             const reader = stream.response.getReader();
+             reader.read().then(function processText({done, value}) {
+                 if (done) {
+                     GM_saveHistory(your_qus, finalResult);
+                     return;
+                 }
+                 try {
+                     // console.log(normalArray)
+                     let byteArray = new Uint8Array(value);
+                     let decoder = new TextDecoder('utf-8');
+                     let nowResult = JSON.parse(decoder.decode(byteArray))
 
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
+                     if (nowResult.text) {
+                         console.log(nowResult)
+                         finalResult = nowResult.text
+                         GM_fillBotResponse(finalResult)
+                     }
+                     if (nowResult.id) {
+                         parentID_68686 = nowResult.id;
+                     }
 
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            GM_fillBotResponse(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_68686 = nowResult.id;
-                        }
+                 } catch (ex) {
+                     console.log(ex)
+                 }
 
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        })
+                 return reader.read().then(processText);
+             });
+         }).catch(ex=>{
+             console.log(ex)
+         })
 
     }
 
