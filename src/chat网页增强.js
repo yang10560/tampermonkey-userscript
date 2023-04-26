@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.7
+// @version      4.8
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -45,6 +45,7 @@
 // @connect   hz-it-dev.com
 // @connect   toyaml.com
 // @connect   38.47.97.76
+// @connect   lbb.ai
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -55,7 +56,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.7"
+    var JSVer = "v4.8"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1330,7 +1331,8 @@
     }
 
     //https://supremes.pro/
-    var messageChain8 = [];
+
+    //4-25失效
     function SUPREMES(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
@@ -2144,6 +2146,57 @@
     }
 
 
+    //4-25
+    var messageChain8 = []; //lbb
+    function LBB(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let baseURL = "https://gpt.lbb.ai/";
+        addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain8,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                presence_penalty: 0
+            })
+        }).then((res)=>{
+            if (res.status === 200) {
+                console.log(res.response)
+                let rest = res.response
+                try {
+                    addMessageChain(messageChain8, {
+                        role: "assistant",
+                        content: rest
+                    })
+                    GM_simulateBotResponseAndSave(your_qus, rest);
+
+                } catch (ex) {
+                    console.log(ex)
+                    GM_simulateBotResponse(rest);
+                }
+
+            } else {
+                GM_simulateBotResponse('访问失败了');
+            }
+        },reason => {
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+    }
+
+
     //初始化
     setTimeout(() => {
 
@@ -2205,8 +2258,8 @@
                 case "EXTKJ":
                     EXTKJ(qus);
                     break;
-                case "SUPREMES":
-                    SUPREMES(qus);
+                case "LBB":
+                    LBB(qus);
                     break;
                 case "NBAI":
                     NBAI(qus);
@@ -2261,7 +2314,7 @@
  <option value="ANZZ">ANZZ</option>
  <option value="GPTPLUS">GPTPLUS</option>
  <option value="EXTKJ">EXTKJ</option>
- <option value="SUPREMES">SUPREMES</option>
+ <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
  <option value="AIFKS">AIFKS</option>
  <option value="FTCL">FTCL</option>

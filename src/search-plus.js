@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.8.0
+// @version       1.8.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -95,6 +95,7 @@
 // @connect   hz-it-dev.com
 // @connect   toyaml.com
 // @connect   38.47.97.76
+// @connect   lbb.ai
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -691,7 +692,7 @@
                             console.log(nowResult)
 
 
-                            if (nowResult != "DONE") {//not done
+                            if (nowResult !== "DONE") {//not done
                                 finalResult = nowResult
                                 showAnserAndHighlightCodeStr(finalResult)
                             } else {
@@ -700,7 +701,9 @@
                             }
 
 
-                        } catch (e) {
+                        } catch (ex) {
+                            showAnserAndHighlightCodeStr(ex)
+                            console.log(ex)
                         }
 
 
@@ -708,9 +711,6 @@
                     });
                 },
                 responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
                 onerror: function (err) {
                     console.log(err)
                 },
@@ -827,9 +827,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "SUPREMES") {
-            console.log("SUPREMES")
-            SUPREMES();
+        } else if (GPTMODE && GPTMODE == "LBB") {
+            console.log("LBB")
+            LBB();
 
             return;
             //end if
@@ -1021,7 +1021,7 @@
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
       <option value="GPTPLUS">GPTPLUS</option>
-      <option value="SUPREMES">SUPREMES</option>
+      <option value="LBB">LBB</option>
       <option value="NBAI">NBAI</option>
       <option value="AIFKS">AIFKS</option>
       <option value="USESLESS">USESLESS</option>
@@ -1037,7 +1037,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.0已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.1已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1381,7 +1381,7 @@
     var messageChain4 = [];//ESO
     var messageChain5 = [];//XCBL
     var messageChain6 = [];//HZIT
-    var messageChain8 = [];//SUPREMES
+    var messageChain8 = [];//lbb
     var messageChain9 = [];//bnu120
     var messageChain10 = [];//ftcl
     var messageChain3 = [];//LETSEARCH
@@ -2711,78 +2711,54 @@
         })
     }
 
-    //https://supremes.pro/
-    function SUPREMES() {
 
-        let now = Date.now();
-        let Baseurl = "https://supremes.pro/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: {}.PUBLIC_SECRET_KEY
-        }).then(sign => {
-            addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
+    //4-25
+    function LBB() {
+        let baseURL = "https://gpt.lbb.ai/";
+        addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain8,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                presence_penalty: 0
+            })
+        }).then((res)=>{
+            if (res.status === 200) {
+                console.log(res.response)
+                let rest = res.response
+                try {
+                    addMessageChain(messageChain8, {
+                        role: "assistant",
+                        content: rest
+                    })
+                    showAnserAndHighlightCodeStr(rest);
 
-                    messages: messageChain8,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain8, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
-                        try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        } catch (e) {
-                            console.log(e)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
+                } catch (ex) {
+                    console.log(ex)
+                    showAnserAndHighlightCodeStr(rest);
                 }
-            });
 
-        });
+            } else {
+                showAnserAndHighlightCodeStr('访问失败了');
+            }
+        },reason => {
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
     }
+
 
     // http://easyai.one
     var sessionId_easyai = generateRandomString(20);
@@ -3510,7 +3486,7 @@
 
         });
     }
-    if (localStorage.getItem("GPTMODE") == "COOLAI") {
+    if (localStorage.getItem("GPTMODE") === "COOLAI") {
         setTimeout(initSocket, 1500);
     }
 
