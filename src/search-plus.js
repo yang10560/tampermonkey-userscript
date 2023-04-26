@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.8.1
+// @version       1.8.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -96,6 +96,7 @@
 // @connect   toyaml.com
 // @connect   38.47.97.76
 // @connect   lbb.ai
+// @connect   gamejx.cn
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -307,6 +308,23 @@
         console.log("CURRENT KEY:" + n)
         const a = `${e}:${t}:${n}`;
         return await digestMessage(a);
+    };
+
+    let aesKey = "hj6cdzrhj72x8ht1";
+    const AES_CBC = {
+
+        encrypt: function(e, t) {
+            return CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(e), CryptoJS.enc.Utf8.parse(t), {
+                iv: CryptoJS.enc.Utf8.parse(aesKey),
+                mode: CryptoJS.mode.CBC
+            }).toString()
+        },
+        decrypt: function(e, t) {
+            return CryptoJS.AES.decrypt(e, CryptoJS.enc.Utf8.parse(t), {
+                iv: CryptoJS.enc.Utf8.parse(aesKey),
+                mode: CryptoJS.mode.CBC
+            }).toString(CryptoJS.enc.Utf8)
+        }
     };
     //enc-end
 
@@ -833,9 +851,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "NBAI") {
-            console.log("NBAI")
-            NBAI();
+        } else if (GPTMODE && GPTMODE == "GAMEJX") {
+            console.log("GAMEJX")
+            GAMEJX();
 
             return;
             //end if
@@ -1022,7 +1040,7 @@
       <option value="EXTKJ">EXTKJ</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="LBB">LBB</option>
-      <option value="NBAI">NBAI</option>
+      <option value="GAMEJX">GAMEJX</option>
       <option value="AIFKS">AIFKS</option>
       <option value="USESLESS">USESLESS</option>
       <option value="FTCL">FTCL</option>
@@ -1037,7 +1055,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.1已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.2已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1103,6 +1121,9 @@
 
             if (selectedValue === 'COOLAI') {
                 initSocket();
+            }
+            if (selectedValue === 'GAMEJX') {
+                setTimeout(setGroupid_gamejx)
             }
             document.getElementById('gptAnswer').innerHTML = `切换成功，当前模式:${selectedValue}模式`;
         });
@@ -1886,6 +1907,127 @@
                 console.log(err)
             }
         })
+
+    }
+
+
+    var gamejx_group_id;
+    function setGroupid_gamejx() {
+        GM_fetch({
+            method: "POST",
+            url: "https://chat.gamejx.cn/go/api/group/add",
+            headers: {
+                "Referer": `https://chat.gamejx.cn/`,
+                "Content-Type": "application/json",
+                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+            },
+            data:JSON.stringify({
+                version: "",
+                os: "pc",
+                language: "zh",
+                pars: {
+                    user_id: "594578",
+                    examples_id: "",
+                    examples_describe: "你好"
+                }
+            })
+        }).then((res)=>{
+            if(res){
+                //{"code":200,"data":{"group_id":1292577},"retCode":"ok","retMsg":"success"}
+                console.log(res)
+                let data = eval(res.responseText)
+                gamejx_group_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.group_id;
+                console.log("gamejx_group_id:",gamejx_group_id)
+            }
+        })
+
+    }
+
+
+    let is_first_gamejx = true;
+    async function GAMEJX(){
+        let req1 = await GM_fetch({
+            method: "POST",
+            url: "https://chat.gamejx.cn/go/api/steam/see",
+            headers: {
+                "Referer": `https://chat.gamejx.cn/`,
+                "Content-Type": "application/json",
+                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+            },
+            data:JSON.stringify({
+                "version": "",
+                "os": "pc",
+                "language": "zh",
+                "pars": {
+                    "user_id": "594578",
+                    "question": is_first_gamejx ? "你好" : your_qus,
+                    "group_id": `${gamejx_group_id}`,
+                    "question_id": ""
+                }
+            })
+
+        })
+
+
+        console.log(req1.responseText)
+
+        //{"code":200,"data":{"answer":"","question_id":"91303","type":"answer",
+        // "user_id":"594578"},"retCode":"ok","retMsg":"success"}
+        if(req1.responseText){
+            try {
+                let data = eval(req1.responseText)
+                console.log(JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))))
+                let question_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.question_id;
+                console.log("question_id:",question_id)
+                GM_fetch({
+                    method: "GET",
+                    url: `https://chat.gamejx.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=594578&token=YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0%3D`,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Referer": "https://chat.gamejx.cn/",
+                        "accept": "text/event-stream"
+                    },
+                    responseType: "stream"
+                }).then((stream) => {
+                    let finalResult = [];
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            showAnserAndHighlightCodeStr(finalResult.join(""))
+                            return;
+                        }
+                        try {
+                            let byteArray = new Uint8Array(value);
+                            let decoder = new TextDecoder('utf-8');
+                            let nowResult = decoder.decode(byteArray)
+                            console.log(nowResult)
+                            nowResult.split("\n").forEach(itme=>{
+                               try {
+                                   let chunk = JSON.parse(itme.replace(/data:/,"").trim()).Data;
+                                   finalResult.push(chunk)
+                               }catch (ex){}
+                            })
+                            showAnserAndHighlightCodeStr(finalResult.join(""))
+
+                        } catch (ex) {
+                            console.log(ex)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                }).catch((ex)=>{
+                    console.log(ex)
+                })
+            }catch (ex){
+                console.log(ex)
+            }
+
+        }
+        if(is_first_gamejx === true){
+            is_first_gamejx = false;
+            GAMEJX()
+        }
+
 
     }
 
@@ -3488,6 +3630,9 @@
     }
     if (localStorage.getItem("GPTMODE") === "COOLAI") {
         setTimeout(initSocket, 1500);
+    }
+    if (localStorage.getItem("GPTMODE") === "GAMEJX") {
+        setTimeout(setGroupid_gamejx);
     }
 
 
