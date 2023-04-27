@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.8.2
+// @version       1.8.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
 // @match      https://www.bing.com/*
+// @match      *://*.bing.com/*
 // @match      https://chat.openai.com/chat
 // @match      https://www.google.com/*
 // @match      https://duckduckgo.com/*
@@ -116,15 +117,26 @@
 
 
     //(prefers-color-scheme: light)
-    $("head").append($(
-        '<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: dark)">'
-    ));
-    $("head").append($(
-        '<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-dark.min.css">'
-    ));
-    $("head").append($(
-        '<link href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.css" rel="stylesheet">'
-    ));
+    function addHeadCss() {
+        if(!document.getElementById("github-markdown-link")){
+            $("head").append($(
+                '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: dark)">'
+            ));
+        }
+        if(!document.getElementById("highlight-link")){
+            $("head").append($(
+                '<link id="highlight-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-dark.min.css">'
+            ));
+        }
+        if(!document.getElementById("katex-link")){
+            $("head").append($(
+                '<link id="katex-link" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.css" rel="stylesheet">'
+            ));
+        }
+
+    }
+    setTimeout(addHeadCss)
+    setInterval(addHeadCss,5000)
 
 
     try {
@@ -542,6 +554,10 @@
     #gptCueBox{
         translate: 3px;
     }
+    
+    #gptStatus{
+        margin-left: 10px;
+    }
 
 	 p{white-space: pre-line}
 
@@ -580,8 +596,8 @@
      font-size: 14px;
     }
     #gptStatus{
-        margin-left: 7px;
-        }
+        margin-left: 10px;
+     }
 
 
  p{white-space: pre-line}
@@ -621,7 +637,7 @@
     font-size: 14px;
     }
     #gptStatus{
-        margin-left: 7px;
+        margin-left: 10px;
         }
 
     p{white-space: pre-line}
@@ -1013,6 +1029,7 @@
             var pText = document.createTextNode("chatGPT tools Plus 已启动");
             pE.appendChild(pText);
             divE.appendChild(pE);
+            divE.classList.add("gpt-container")
             divE.innerHTML = `
     <div id="gptInputBox">
     <input id="gptInput" type=text><button class="s_btn" id="button_GPT" >chat一下</button>
@@ -1053,9 +1070,9 @@
       <option value="HZIT">HZIT</option>
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
-	<p id="warn" style="color: green;"  >&nbsp &nbsp 只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<p id="website">&nbsp&nbsp <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.2已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+	<p id="warn" style="color: green;margin-left: 10px"  >只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
+	<p id="website" style="margin-left: 10px"><a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.3已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1164,11 +1181,11 @@
                         break;
                     case 5: //fsoufsou
                         let frow = document.querySelectorAll(".flex-row")[2]
-                        if (frow.children.length == 2) {
+                        if (frow.children!==undefined && frow.children.length === 2) {
                             frow.children.item(1).prepend(divE)
                         } else {
                             frow.innerHTML = frow.innerHTML +
-                                `<div><div class="wiki-container" style="margin-left: 124px;">${divE.innerHTML}</div></div>`
+                                `<div><div class="wiki-container" style="margin-left: 124px!important;padding: 15px!important;">${divE.innerHTML}</div></div>`
                         }
 
                         break;
@@ -1235,6 +1252,19 @@
 
     function addBothStyle() {
         GM_addStyle(`
+    .gpt-container {
+    box-sizing: border-box;
+    height: -webkit-min-content;
+    height: min-content;
+    width: 455px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #dfe1e5;
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 15px;
+}
+
         #dot{
     height: 4px;
     width: 4px;
@@ -2001,9 +2031,9 @@
                             let decoder = new TextDecoder('utf-8');
                             let nowResult = decoder.decode(byteArray)
                             console.log(nowResult)
-                            nowResult.split("\n").forEach(itme=>{
+                            nowResult.split("\n").forEach(item=>{
                                try {
-                                   let chunk = JSON.parse(itme.replace(/data:/,"").trim()).Data;
+                                   let chunk = JSON.parse(item.replace(/data:/,"").trim()).Data;
                                    finalResult.push(chunk)
                                }catch (ex){}
                             })
@@ -2025,7 +2055,7 @@
         }
         if(is_first_gamejx === true){
             is_first_gamejx = false;
-            GAMEJX()
+            await GAMEJX()
         }
 
 
