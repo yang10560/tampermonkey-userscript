@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.8
+// @version      4.11
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -46,6 +46,7 @@
 // @connect   toyaml.com
 // @connect   38.47.97.76
 // @connect   lbb.ai
+// @connect   api.aichatos.cloud
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -56,7 +57,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.8"
+    var JSVer = "v4.11"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2197,6 +2198,62 @@
     }
 
 
+
+    var userId_yqcloud = "#/chat/" + Date.now();
+
+    function YQCLOUD(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        console.log(userId_yqcloud)
+        GM_fetch({
+            method: "POST",
+            url: "https://api.aichatos.cloud/api/generateStream",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://chat6.aichatos.com/",
+                "origin": "https://chat6.aichatos.com",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                apikey: "",
+                system: "",
+                withoutContext: false,
+                userId: userId_yqcloud,
+                network: true
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            GM_simulateBotResponse("...")
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    let finalResult = result.join("")
+                    GM_fillBotResponseAndSave(your_qus, finalResult);
+                    return;
+                }
+                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                result.push(d)
+                try {
+                    console.log(result.join(""))
+                    GM_fillBotResponse(result.join(""))
+                } catch (e) {
+                    console.log(e)
+                }
+                return reader.read().then(processText);
+            })
+        }, (reason)=> {
+                console.log(reason)
+                GM_fillBotResponse("error:", reason);
+            }
+        ).catch((ex)=>{
+            console.log(ex)
+        })
+
+    }
+
+
     //初始化
     setTimeout(() => {
 
@@ -2296,6 +2353,10 @@
                     console.log("TOYAML")
                     TOYAML(qus);
                     break;
+                case "YQCLOUD":
+                    console.log("YQCLOUD")
+                    YQCLOUD(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2304,6 +2365,7 @@
 
         document.getElementById("modeSelect").innerHTML = `<option selected value="Defalut">默认</option>
  <option value="PIZZA">PIZZA</option>
+ <option value="YQCLOUD">YQCLOUD</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
@@ -2338,7 +2400,7 @@
             const selectEl = document.getElementById('modeSelect');
             let optionElements = selectEl.querySelectorAll("option");
             for (let op in optionElements) {
-                if(optionElements[op].value == localStorage.getItem('mymode')){
+                if(optionElements[op].value === localStorage.getItem('mymode')){
                     optionElements[op].setAttribute("selected", "selected");
                     break;
                 }
