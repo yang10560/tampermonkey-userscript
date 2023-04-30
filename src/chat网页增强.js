@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.12
+// @version      4.13
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -48,6 +48,8 @@
 // @connect   lbb.ai
 // @connect   api.aichatos.cloud
 // @connect   gamejx.cn
+// @connect   ai001.live
+// @connect   promptboom.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -58,7 +60,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.12"
+    var JSVer = "v4.13"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1294,10 +1296,10 @@
         console.log("aes:" + pt)
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://mirrorchat.extkj.cn/api/chat-stream",
+            url: "https://chat.extkj.cn/api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://mirrorchat.extkj.cn/",
+                "Referer": "https://chat.extkj.cn/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -1653,79 +1655,7 @@
 
 
 
-    var messageChain10 =[];//FTCL
-    function FTCL(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let now = Date.now();
-        let Baseurl = "https://www.ftcl.store/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: {}.PUBLIC_SECRET_KEY
-        }).then(sign => {
-            addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
 
-                    messages: messageChain10,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    GM_simulateBotResponse("请稍后...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain10, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                GM_fillBotResponseAndSave(your_qus,finalResult)
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
-                        try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            GM_fillBotResponse(result.join(""))
-                        } catch (e) {
-                            console.log(e)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            });
-
-        });
-    }
 
     //https://chat.sunls.me/
     function SUNLE(question) {
@@ -1997,9 +1927,10 @@
     }
 
     function XCBL(question) {
+        //同LBB
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
-        let baseURL = "https://gpt.xcbl.cc/";
+        let baseURL = "https://132122401530.ai001.live/";
         addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
         GM_xmlhttpRequest({
             method: "POST",
@@ -2053,6 +1984,97 @@
         });
 
     }
+
+
+    var promptboom_did = generateRandomString(32)
+    var messageChain10 = []
+    async function PRTBOOM(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
+
+        const t = Date.now()
+        const r = t + ":" + your_qus + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
+        const sign = CryptoJS.SHA256(r).toString();
+        console.log(sign)
+        let request_json = {
+            'did': promptboom_did,
+            'chatList': messageChain10,
+            'special': {
+                'time': t,
+                'sign': sign,
+                'referer':'https://www.promptboom.com/',
+                'path':'https://www.promptboom.com/'
+            }
+        };
+        let raw_requst_json = {
+            'data': btoa(unescape(encodeURIComponent(JSON.stringify(request_json))))
+        };
+
+        console.log(raw_requst_json)
+        let rootDomain = "promptboom.com";
+
+        let apiList = [`https://api2.${rootDomain}/cfdoctetstream`, `https://api2.${rootDomain}/cfdoctetstream2`, `https://api2.${rootDomain}/cfdoctetstream3`]
+        apiList.sort(() => Math.random() - 0.5);
+        let apiListBackup = [`https://api2.${rootDomain}/cfdoctetstream4`, `https://api2.${rootDomain}/cfdoctetstream5`, `https://api2.${rootDomain}/cfdoctetstream6`]
+
+        let finalApiList = apiList.concat(apiListBackup)
+
+
+        for (let cfdoctetstream_url of finalApiList) {
+            console.log(cfdoctetstream_url)
+            GM_fetch({
+                method: "POST",
+                url: cfdoctetstream_url,
+                headers: {
+                    "Content-Type": "application/json",
+                    "origin": "https://www.promptboom.com",
+                    "Referer": "https://www.promptboom.com/",
+                    "accept": "*/*"
+                },
+                data: JSON.stringify(raw_requst_json),
+                responseType: "stream"
+            }).then((stream) => {
+                GM_simulateBotResponse("请稍后...")
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain10, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            GM_fillBotResponseAndSave(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        GM_fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },(reason)=>{
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            });
+            break;
+        }
+
+
+
+    }
+
 
     //https://ai1.chagpt.fun/
     function CVEOY(question) {
@@ -2170,7 +2192,7 @@
     function LBB(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
-        let baseURL = "https://gpt.lbb.ai/";
+        let baseURL = "https://132122401530.ai001.live/";
         addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
@@ -2469,9 +2491,6 @@
                case "SUNLE":
                    SUNLE(qus);
                     break;
-                case "FTCL":
-                    FTCL(qus);
-                    break;
                 case "EASYAI":
                     EASYAI(qus);
                     break;
@@ -2503,6 +2522,10 @@
                     console.log("GAMEJX")
                     GAMEJX(qus);
                     break;
+                case "PRTBOOM":
+                    console.log("PRTBOOM")
+                    PRTBOOM(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2526,7 +2549,7 @@
  <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
  <option value="AIFKS">AIFKS</option>
- <option value="FTCL">FTCL</option>
+ <option value="PRTBOOM">PRTBOOM</option>
  <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
  <option value="XCBL">XCBL</option>

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.8.3
+// @version       1.8.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -98,6 +98,8 @@
 // @connect   38.47.97.76
 // @connect   lbb.ai
 // @connect   gamejx.cn
+// @connect   ai001.live
+// @connect   promptboom.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -885,9 +887,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "FTCL") {
-            console.log("FTCL")
-            FTCL();
+        } else if (GPTMODE && GPTMODE == "PRTBOOM") {
+            console.log("PRTBOOM")
+            PRTBOOM();
 
             return;
             //end if
@@ -936,6 +938,12 @@
         }else if (GPTMODE && GPTMODE == "TOYAML") {
             console.log("TOYAML")
             TOYAML();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE == "NBAI") {
+            console.log("NBAI")
+            NBAI();
 
             return;
             //end if
@@ -1048,6 +1056,7 @@
       <option value="TDCHAT">TDCHAT</option>
       <option value="QDYMYS">QDYMYS</option>
       <option value="WGK">WGK</option>
+      <option value="NBAI">NBAI</option>
       <option value="LTD68686">LTD68686</option>
       <option value="AILS">AILS</option>
       <option value="LERSEARCH">LERSEARCH</option>
@@ -1060,7 +1069,7 @@
       <option value="GAMEJX">GAMEJX</option>
       <option value="AIFKS">AIFKS</option>
       <option value="USESLESS">USESLESS</option>
-      <option value="FTCL">FTCL</option>
+      <option value="PRTBOOM">PRTBOOM</option>
       <option value="SUNLE">SUNLE</option>
       <option value="EASYAI">EASYAI</option>
       <option value="CLEANDX">CLEANDX</option>
@@ -1072,7 +1081,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;margin-left: 10px"  >只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website" style="margin-left: 10px"><a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.3已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.4已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1434,7 +1443,7 @@
     var messageChain6 = [];//HZIT
     var messageChain8 = [];//lbb
     var messageChain9 = [];//bnu120
-    var messageChain10 = [];//ftcl
+    var messageChain10 = [];//PRTBOOM
     var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
@@ -1450,6 +1459,7 @@
         }
         messageChain.push(element);
         console.log(messageChain,maxLength)
+        return messageChain;
     }
 
     function AILS() {
@@ -1888,7 +1898,7 @@
             ops = {parentMessageId: parentID_nbai};
         }
         console.log(ops)
-        abortXml = GM_xmlhttpRequest({
+        GM_fetch({
             method: "POST",
             url: "https://154.40.59.105:3006/api/chat-process",
             headers: {
@@ -1900,42 +1910,42 @@
                 prompt: your_qus,
                 options: ops
              }),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult = "";
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        highlightCodeStr()
-                        return;
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            const reader = stream.response.getReader();
+            //     console.log(reader.read)
+            let finalResult = "";
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+
+                try {
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    let dstr = decoder.decode(byteArray)
+                    if(dstr.includes("role")){
+                        parentID_nbai =  /\"parentMessageId\":\"(.*?)\"/gi.exec(dstr)[1]
+                    }else{
+                        console.log(dstr)
+                        result.push(dstr)
+                        finalResult = result.join("")
+                        showAnserAndHighlightCodeStr(finalResult)
                     }
 
-                    try {
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let dstr = decoder.decode(byteArray)
-                        if(dstr.includes("role")){
-                            parentID_nbai =  /\"parentMessageId\":\"(.*?)\"/gi.exec(dstr)[1]
-                        }else{
-                            console.log(dstr)
-                            result.push(dstr)
-                            finalResult = result.join("")
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
 
+                } catch (e) {
+                    console.log(e)
+                }
 
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
+                return reader.read().then(processText);
+            },(err)=> {
                 console.log(err)
-            }
+            }).catch((ex)=>{
+                console.log(ex)
+            })
         })
 
     }
@@ -2708,10 +2718,10 @@
     }
 
     function XCBL() {
-
-        let baseURL = "https://gpt.xcbl.cc/";
+        //同LBB
+        let baseURL = "https://132122401530.ai001.live/";
         addMessageChain(messageChain5, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
+        GM_fetch({
             method: "POST",
             url: baseURL + "api/chat-stream",
             headers: {
@@ -2726,40 +2736,40 @@
                 temperature: 1,
                 presence_penalty: 0
             }),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain5, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            showAnserAndHighlightCodeStr(finalResult)
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    let finalResult = result.join("")
                     try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        showAnserAndHighlightCodeStr(result.join(""))
+                        console.log(finalResult)
+                        addMessageChain(messageChain5, {
+                            role: "assistant",
+                            content: finalResult
+                        })
+                        showAnserAndHighlightCodeStr(finalResult)
                     } catch (e) {
                         console.log(e)
                     }
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    result.push(d)
+                    showAnserAndHighlightCodeStr(result.join(""))
+                } catch (e) {
+                    console.log(e)
+                }
 
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        });
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
 
     }
 
@@ -2829,10 +2839,10 @@
         console.log("aes:" + pt)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "https://mirrorchat.extkj.cn/api/chat-stream",
+            url: "https://chat.extkj.cn/api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://mirrorchat.extkj.cn/",
+                "Referer": "https://chat.extkj.cn/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -2886,7 +2896,7 @@
 
     //4-25
     function LBB() {
-        let baseURL = "https://gpt.lbb.ai/";
+        let baseURL = "https://gpt.ai001.live/";
         addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
@@ -3284,76 +3294,93 @@
     }
 
 
-    function FTCL() {
 
-        let now = Date.now();
-        let Baseurl = "https://www.ftcl.store/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: {}.PUBLIC_SECRET_KEY
-        }).then(sign => {
-            addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
-            console.log(sign)
-            GM_xmlhttpRequest({
+    //https://www.promptboom.com/
+
+    var promptboom_did = generateRandomString(32)
+    async function PRTBOOM() {
+
+        addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
+
+        const t = Date.now()
+        const r = t + ":" + your_qus + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
+        const sign = CryptoJS.SHA256(r).toString();
+        console.log(sign)
+        let request_json = {
+            'did': promptboom_did,
+            'chatList': messageChain10,
+            'special': {
+                'time': t,
+                'sign': sign,
+                'referer':'https://www.promptboom.com/',
+                'path':'https://www.promptboom.com/'
+            }
+        };
+        let raw_requst_json = {
+            'data': btoa(unescape(encodeURIComponent(JSON.stringify(request_json))))
+        };
+
+        console.log(raw_requst_json)
+        let rootDomain = "promptboom.com";
+
+        let apiList = [`https://api2.${rootDomain}/cfdoctetstream`, `https://api2.${rootDomain}/cfdoctetstream2`, `https://api2.${rootDomain}/cfdoctetstream3`]
+        apiList.sort(() => Math.random() - 0.5);
+        let apiListBackup = [`https://api2.${rootDomain}/cfdoctetstream4`, `https://api2.${rootDomain}/cfdoctetstream5`, `https://api2.${rootDomain}/cfdoctetstream6`]
+
+        let finalApiList = apiList.concat(apiListBackup)
+
+
+        for (let cfdoctetstream_url of finalApiList) {
+            console.log(cfdoctetstream_url)
+            GM_fetch({
                 method: "POST",
-                url: Baseurl + "api/generate",
+                url: cfdoctetstream_url,
                 headers: {
                     "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
+                    "origin": "https://www.promptboom.com",
+                    "Referer": "https://www.promptboom.com/",
+                    "accept": "*/*"
                 },
-                data: JSON.stringify({
-
-                    messages: messageChain10,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain10, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
+                data: JSON.stringify(raw_requst_json),
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
                         try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            showAnserAndHighlightCodeStr(result.join(""))
+                            console.log(finalResult)
+                            addMessageChain(messageChain10, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
                         } catch (e) {
                             console.log(e)
                         }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
 
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
+                    return reader.read().then(processText);
+                });
+            },(reason)=>{
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
             });
+            break;
+        }
 
-        });
+
+
     }
 
     //https://chat.sunls.me/
@@ -3664,6 +3691,19 @@
     if (localStorage.getItem("GPTMODE") === "GAMEJX") {
         setTimeout(setGroupid_gamejx);
     }
+
+    setTimeout(()=>{
+        if(localStorage.getItem('GPTMODE')){
+            const selectEl = document.getElementById('modeSelect');
+            let optionElements = selectEl.querySelectorAll("option");
+            for (let op in optionElements) {
+                if(optionElements[op].value === localStorage.getItem('GPTMODE')){
+                    optionElements[op].setAttribute("selected", "selected");
+                    break;
+                }
+            }
+        }
+    },1000)
 
 
 })();
