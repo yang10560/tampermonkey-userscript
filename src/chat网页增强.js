@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.11
+// @version      4.12
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -47,6 +47,7 @@
 // @connect   38.47.97.76
 // @connect   lbb.ai
 // @connect   api.aichatos.cloud
+// @connect   gamejx.cn
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -57,7 +58,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.11"
+    var JSVer = "v4.12"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -132,6 +133,23 @@
 
         const a = `${e}:${t}:${n}`;
         return await digestMessage(a);
+    };
+
+    let aesKey = "hj6cdzrhj72x8ht1";
+    const AES_CBC = {
+
+        encrypt: function(e, t) {
+            return CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(e), CryptoJS.enc.Utf8.parse(t), {
+                iv: CryptoJS.enc.Utf8.parse(aesKey),
+                mode: CryptoJS.mode.CBC
+            }).toString()
+        },
+        decrypt: function(e, t) {
+            return CryptoJS.AES.decrypt(e, CryptoJS.enc.Utf8.parse(t), {
+                iv: CryptoJS.enc.Utf8.parse(aesKey),
+                mode: CryptoJS.mode.CBC
+            }).toString(CryptoJS.enc.Utf8)
+        }
     };
 //enc-end
     var messageChain0 = []//chatai
@@ -2254,6 +2272,130 @@
     }
 
 
+    var gamejx_group_id;
+    function setGroupid_gamejx() {
+        GM_fetch({
+            method: "POST",
+            url: "https://chat.gamejx.cn/go/api/group/add",
+            headers: {
+                "Referer": `https://chat.gamejx.cn/`,
+                "Content-Type": "application/json",
+                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+            },
+            data:JSON.stringify({
+                version: "",
+                os: "pc",
+                language: "zh",
+                pars: {
+                    user_id: "594578",
+                    examples_id: "",
+                    examples_describe: "你好"
+                }
+            })
+        }).then((res)=>{
+            if(res){
+                //{"code":200,"data":{"group_id":1292577},"retCode":"ok","retMsg":"success"}
+                console.log(res)
+                let data = eval(res.responseText)
+                gamejx_group_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.group_id;
+                console.log("gamejx_group_id:",gamejx_group_id)
+            }
+        })
+
+    }
+
+    setTimeout(setGroupid_gamejx)
+
+    let is_first_gamejx = true;
+    async function GAMEJX(question){
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let req1 = await GM_fetch({
+            method: "POST",
+            url: "https://chat.gamejx.cn/go/api/steam/see",
+            headers: {
+                "Referer": `https://chat.gamejx.cn/`,
+                "Content-Type": "application/json",
+                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+            },
+            data:JSON.stringify({
+                "version": "",
+                "os": "pc",
+                "language": "zh",
+                "pars": {
+                    "user_id": "594578",
+                    "question": is_first_gamejx ? "你好" : your_qus,
+                    "group_id": `${gamejx_group_id}`,
+                    "question_id": ""
+                }
+            })
+
+        })
+
+
+        console.log(req1.responseText)
+
+        //{"code":200,"data":{"answer":"","question_id":"91303","type":"answer",
+        // "user_id":"594578"},"retCode":"ok","retMsg":"success"}
+        if(req1.responseText){
+            try {
+                let data = eval(req1.responseText)
+                console.log(JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))))
+                let question_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.question_id;
+                console.log("question_id:",question_id)
+                GM_fetch({
+                    method: "GET",
+                    url: `https://chat.gamejx.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=594578&token=YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0%3D`,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Referer": "https://chat.gamejx.cn/",
+                        "accept": "text/event-stream"
+                    },
+                    responseType: "stream"
+                }).then((stream) => {
+                    let finalResult = [];
+                    GM_simulateBotResponse("...")
+                    const reader = stream.response.getReader();
+                    reader.read().then(function processText({done, value}) {
+                        if (done) {
+                            GM_fillBotResponseAndSave(finalResult.join(""))
+                            return;
+                        }
+                        try {
+                            let byteArray = new Uint8Array(value);
+                            let decoder = new TextDecoder('utf-8');
+                            let nowResult = decoder.decode(byteArray)
+                            console.log(nowResult)
+                            nowResult.split("\n").forEach(item=>{
+                                try {
+                                    let chunk = JSON.parse(item.replace(/data:/,"").trim()).Data;
+                                    finalResult.push(chunk)
+                                }catch (ex){}
+                            })
+                            GM_fillBotResponse(finalResult.join(""))
+
+                        } catch (ex) {
+                            console.log(ex)
+                        }
+
+                        return reader.read().then(processText);
+                    });
+                }).catch((ex)=>{
+                    console.log(ex)
+                })
+            }catch (ex){
+                console.log(ex)
+            }
+
+        }
+        if(is_first_gamejx === true){
+            is_first_gamejx = false;
+            await GAMEJX()
+        }
+
+
+    }
+
     //初始化
     setTimeout(() => {
 
@@ -2357,6 +2499,10 @@
                     console.log("YQCLOUD")
                     YQCLOUD(qus);
                     break;
+                case "GAMEJX":
+                    console.log("GAMEJX")
+                    GAMEJX(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2366,6 +2512,7 @@
         document.getElementById("modeSelect").innerHTML = `<option selected value="Defalut">默认</option>
  <option value="PIZZA">PIZZA</option>
  <option value="YQCLOUD">YQCLOUD</option>
+ <option value="GAMEJX">GAMEJX</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
