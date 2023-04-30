@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.8.4
+// @version       1.8.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -56,7 +56,7 @@
 // @connect    mirrorchat.extkj.cn
 // @connect    api.tdchat0.com
 // @connect    bxgav.tdchat0.com
-// @connect    chat6.xeasy.me
+// @connect    xeasy.me
 // @connect   chat.wuguokai.cn
 // @connect   ai5.wuguokai.top
 // @connect   chat.aidutu.cn
@@ -100,6 +100,8 @@
 // @connect   gamejx.cn
 // @connect   ai001.live
 // @connect   promptboom.com
+// @connect   hehanwang.com
+// @connect   caipacity.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -851,9 +853,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "GPTPLUS") {
-            console.log("GPTPLUS")
-            GPTPLUS();
+        } else if (GPTMODE && GPTMODE == "HEHANWANG") {
+            console.log("HEHANWANG")
+            HEHANWANG();
 
             return;
             //end if
@@ -947,10 +949,16 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "XEASY") {
+            console.log("XEASY")
+            XEASY();
+
+            return;
+            //end if
         }
 
 
-        console.log("defualt:")
+        console.log("Defualt:")
         const now = Date.now();
         console.log(now);
 
@@ -1058,20 +1066,21 @@
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI</option>
       <option value="LTD68686">LTD68686</option>
+      <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
-      <option value="LERSEARCH">LERSEARCH</option>
+      <option value="LERSEARCH">LERSEARCH[挂]</option>
       <option value="COOLAI">COOLAI</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
-      <option value="GPTPLUS">GPTPLUS</option>
+      <option value="HEHANWANG">HEHANWANG</option>
       <option value="LBB">LBB</option>
       <option value="GAMEJX">GAMEJX</option>
       <option value="AIFKS">AIFKS</option>
       <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
-      <option value="SUNLE">SUNLE</option>
-      <option value="EASYAI">EASYAI</option>
+      <option value="SUNLE">SUNLE[挂]</option>
+      <option value="EASYAI">EASYAI[挂]</option>
       <option value="CLEANDX">CLEANDX</option>
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
@@ -1081,7 +1090,7 @@
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;margin-left: 10px"  >只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
 	<p id="website" style="margin-left: 10px"><a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.4已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1462,11 +1471,32 @@
         return messageChain;
     }
 
+    function formattedDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+
+        const formattedMonth = month < 10 ? `0${month}` : month;
+        const formattedDay = day < 10 ? `0${day}` : day;
+
+        return `${year}-${formattedMonth}-${formattedDay}`;
+    }
+
+
+
     function AILS() {
 
-        let now = Date.now();
-        const pk = `Na3dx_(?qx32l}ep?#:8:mo44;7W\\2W.:nxm:${your_qus.length}`;//查看js的generateSignature函数中的key
-        let Baseurl = "https://ai.ls/"
+        let vtime = function converTimestamp(t) {
+            const e = parseInt(t)
+                , n = e % 10
+                , r = n % 2 === 0 ? n + 1 : n;
+            return (e - n + r).toString()
+        }
+
+        let now = vtime(new Date().getTime());
+        const pk = `OVbi[TPN{S#)c{36%9?g;usl)CL:${your_qus.length}`;//查看js的generateSignature函数中的key
+        let Baseurl = "https://api.caipacity.com/"
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
@@ -1474,7 +1504,86 @@
         }).then(sign => {
             addMessageChain(messageChain2, {role: "user", content: your_qus})//连续话
             console.log(sign)
-            GM_xmlhttpRequest({
+            GM_fetch({
+                method: "POST",
+                url: Baseurl + "v1/chat/completions",
+                headers: {
+                    "Content-Type": "application/json",
+                    "authorization": "Bearer free",
+                    "Referer": Baseurl,
+                    "origin": "https://ai.ls",
+                    "X-Forwarded-For": generateRandomIP(),
+                    "accept": "application/json"
+                },
+                data: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: messageChain2,
+                    stream: true,
+                    t: `${now}`,
+                    d: formattedDate(),
+                    s: sign,
+                    temperature:0.6
+                }),
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                let finalResult;
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain2, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        d.split("\n").forEach(item=>{
+                            try {
+                                let chunk = JSON.parse(item.replace(/data:/,"").trim())
+                                    .choices[0].delta.content;
+                                result.push(chunk)
+                            }catch (ex){}
+                        })
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },(reason)=>{
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            });
+
+        });
+    }
+
+
+    var messageChain11 = []//xeasy
+    function XEASY() {
+
+        let now = Date.now();
+        const pk = {}.PUBLIC_SECRET_KEY;//查看js的generateSignature函数中的key
+        let Baseurl = "https://chat19.xeasy.me/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: pk
+        }).then(sign => {
+            addMessageChain(messageChain11, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_fetch({
                 method: "POST",
                 url: Baseurl + "api/generate",
                 headers: {
@@ -1484,52 +1593,45 @@
                     "accept": "application/json, text/plain, */*"
                 },
                 data: JSON.stringify({
-
-                    messages: messageChain2,
+                    messages: messageChain11,
                     time: now,
                     pass: null,
                     sign: sign,
-                    key: ""
+                    key: null
                 }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain2, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
+                responseType: "stream",
+            }).then((stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
                         try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            showAnserAndHighlightCodeStr(result.join(""))
+                            console.log(finalResult)
+                            addMessageChain(messageChain11, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
                         } catch (e) {
                             console.log(e)
                         }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
 
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
+                    return reader.read().then(processText);
+                });
+            },(reason)=>{
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
             });
 
         });
@@ -2521,21 +2623,20 @@
 
     }
 
-    var parentID_gptplus;
-
-    function GPTPLUS() {
+    var parentID_hhw;
+    function HEHANWANG() {
         let ops = {};
-        if (parentID_gptplus) {
-            ops = {parentMessageId: parentID_gptplus};
+        if (parentID_hhw) {
+            ops = {parentMessageId: parentID_hhw};
         }
         console.log(ops)
-
-        abortXml = GM_xmlhttpRequest({
+        GM_fetch({
             method: "POST",
-            url: "https://api.gptplus.one/chat-process",
+            url: "https://chat.hehanwang.com/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "http://www.cutim.cn/",
+                "Referer": "https://chat.hehanwang.com/",
+                "Authorization": "Bearer 293426",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -2545,49 +2646,48 @@
                 temperature: 0.8,
                 options: ops
             }),
-            onloadstart: (stream) => {
-                let result = "";
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        highlightCodeStr()
-                        return;
+            responseType: "stream"
+        }).then((stream) => {
+            let result = "";
+            const reader = stream.response.getReader();
+            //     console.log(reader.read)
+            let finalResult;
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+
+                const chunk = value;
+                result += chunk;
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(chunk);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    var jsonLines = decoder.decode(byteArray).split("\n");
+                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                    if (nowResult.text) {
+                        console.log(nowResult)
+                        finalResult = nowResult.text
+                        showAnserAndHighlightCodeStr(finalResult)
+                    }
+                    if (nowResult.id) {
+                        parentID_hhw = nowResult.id;
                     }
 
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
-                        var jsonLines = decoder.decode(byteArray).split("\n");
-                        let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+                } catch (e) {
 
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_gptplus = nowResult.id;
-                        }
+                }
 
-                    } catch (e) {
-
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
-            }
-        })
+                return reader.read().then(processText);
+            });
+        },(reason)=>{
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
 
     }
 

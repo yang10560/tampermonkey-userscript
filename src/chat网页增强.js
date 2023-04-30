@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.13
+// @version      4.14
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -13,7 +13,7 @@
 // @connect    luntianxia.uk
 // @connect    api.tdchat0.com
 // @connect    bxgav.tdchat0.com
-// @connect    chat6.xeasy.me
+// @connect    xeasy.me
 // @connect    api.aigcfun.com
 // @connect    ai5.wuguokai.top
 // @connect    chat.aidutu.cn
@@ -50,6 +50,7 @@
 // @connect   gamejx.cn
 // @connect   ai001.live
 // @connect   promptboom.com
+// @connect   caipacity.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -60,7 +61,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.13"
+    var JSVer = "v4.14"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -413,78 +414,171 @@
         });
     }
 
-    function AILS(question) {
+    function formattedDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
 
+        const formattedMonth = month < 10 ? `0${month}` : month;
+        const formattedDay = day < 10 ? `0${day}` : day;
+
+        return `${year}-${formattedMonth}-${formattedDay}`;
+    }
+    function AILS(question) {
         let your_qus = question;//你的问题
-        let now = Date.now();
-        const pk = `Na3dx_(?qx32l}ep?#:8:mo44;7W\\2W.:nxm:${your_qus.length}`;//查看js的generateSignature函数中的key
-        let Baseurl = "https://ai.ls/"
+        let vtime = function converTimestamp(t) {
+            const e = parseInt(t)
+                , n = e % 10
+                , r = n % 2 === 0 ? n + 1 : n;
+            return (e - n + r).toString()
+        }
+
+        let now = vtime(new Date().getTime());
+        const pk = `OVbi[TPN{S#)c{36%9?g;usl)CL:${your_qus.length}`;//查看js的generateSignature函数中的key
+        let Baseurl = "https://api.caipacity.com/"
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
             pkey: pk
         }).then(sign => {
             addMessageChain(messageChain2, {role: "user", content: your_qus})//连续话
-            GM_handleUserInput(3)
             console.log(sign)
-            GM_xmlhttpRequest({
+            GM_fetch({
+                method: "POST",
+                url: Baseurl + "v1/chat/completions",
+                headers: {
+                    "Content-Type": "application/json",
+                    "authorization": "Bearer free",
+                    "Referer": Baseurl,
+                    "origin": "https://ai.ls",
+                    "X-Forwarded-For": generateRandomIP(),
+                    "accept": "application/json"
+                },
+                data: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: messageChain2,
+                    stream: true,
+                    t: `${now}`,
+                    d: formattedDate(),
+                    s: sign,
+                    temperature:0.6
+                }),
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                let finalResult;
+                GM_simulateBotResponse("...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain2, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            GM_fillBotResponseAndSave(finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        d.split("\n").forEach(item=>{
+                            try {
+                                let chunk = JSON.parse(item.replace(/data:/,"").trim())
+                                    .choices[0].delta.content;
+                                result.push(chunk)
+                            }catch (ex){}
+                        })
+                        GM_fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },(reason)=>{
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            });
+
+        });
+    }
+
+
+    var messageChain11 = []//xeasy
+    function XEASY(question) {
+        let your_qus = question
+        let now = Date.now();
+        const pk = {}.PUBLIC_SECRET_KEY;//查看js的generateSignature函数中的key
+        let Baseurl = "https://chat19.xeasy.me/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: pk
+        }).then(sign => {
+            addMessageChain(messageChain11, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_fetch({
                 method: "POST",
                 url: Baseurl + "api/generate",
                 headers: {
                     "Content-Type": "application/json",
                     // "Authorization": "Bearer null",
                     "Referer": Baseurl,
-                    //"Host":"www.aiai.zone",
                     "accept": "application/json, text/plain, */*"
                 },
                 data: JSON.stringify({
-
-                    messages: messageChain2,
+                    messages: messageChain11,
                     time: now,
                     pass: null,
                     sign: sign,
-                    key: ""
+                    key: null
                 }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    GM_simulateBotResponse("...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                GM_saveHistory(your_qus, finalResult);
-                                addMessageChain(messageChain2, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                            } catch (e) {
-                                //TODO handle the exception
-                            }
-                            GM_fillBotResponse(finalResult)
-                            return;
+                responseType: "stream",
+            }).then((stream) => {
+                let result = [];
+                GM_simulateBotResponse("...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain11, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            GM_fillBotResponseAndSave(finalResult)
+                        } catch (e) {
+                            console.log(e)
                         }
+                        return;
+                    }
+                    try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
                         GM_fillBotResponse(result.join(""))
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },(reason)=>{
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
             });
 
         });
     }
+
 
     function TDCHAT(question) {
         let your_qus = question;//你的问题
@@ -1210,23 +1304,20 @@
     }
 
 
-    var parentID_gptplus;
-
-    function GPTPLUS(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
+    var parentID_hhw;
+    function HEHANWANG() {
         let ops = {};
-        if (parentID_gptplus) {
-            ops = {parentMessageId: parentID_gptplus};
+        if (parentID_hhw) {
+            ops = {parentMessageId: parentID_hhw};
         }
         console.log(ops)
-
-        GM_xmlhttpRequest({
+        GM_fetch({
             method: "POST",
-            url: "https://api.gptplus.one/chat-process",
+            url: "https://chat.hehanwang.com/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "http://www.cutim.cn/",
+                "Referer": "https://chat.hehanwang.com/",
+                "Authorization": "Bearer 293426",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -1236,49 +1327,48 @@
                 temperature: 0.8,
                 options: ops
             }),
-            onloadstart: (stream) => {
-                let result = "";
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_fillBotResponseAndSave(your_qus, finalResult);
-                        return;
+            responseType: "stream"
+        }).then((stream) => {
+            let result = "";
+            const reader = stream.response.getReader();
+            //     console.log(reader.read)
+            let finalResult;
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+
+                const chunk = value;
+                result += chunk;
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(chunk);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    var jsonLines = decoder.decode(byteArray).split("\n");
+                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                    if (nowResult.text) {
+                        console.log(nowResult)
+                        finalResult = nowResult.text
+                        showAnserAndHighlightCodeStr(finalResult)
+                    }
+                    if (nowResult.id) {
+                        parentID_hhw = nowResult.id;
                     }
 
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
-                        var jsonLines = decoder.decode(byteArray).split("\n");
-                        let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+                } catch (e) {
 
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            GM_fillBotResponse(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_gptplus = nowResult.id;
-                        }
+                }
 
-                    } catch (e) {
-
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        })
+                return reader.read().then(processText);
+            });
+        },(reason)=>{
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
 
     }
 
@@ -2473,8 +2563,8 @@
                  case "ANZZ":
                      ANZZ(qus);
                     break;
-                case "GPTPLUS":
-                    GPTPLUS(qus);
+                case "HEHANWANG":
+                    HEHANWANG(qus);
                     break;
                 case "EXTKJ":
                     EXTKJ(qus);
@@ -2526,6 +2616,10 @@
                     console.log("PRTBOOM")
                     PRTBOOM(qus);
                     break;
+               case "XEASY":
+                    console.log("XEASY")
+                    XEASY(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2544,20 +2638,21 @@
  <option value="WOBCW">WOBCW</option>
  <option value="LTD68686">LTD68686</option>
  <option value="ANZZ">ANZZ</option>
- <option value="GPTPLUS">GPTPLUS</option>
+ <option value="HEHANWANG">HEHANWANG</option>
  <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
  <option value="AIFKS">AIFKS</option>
  <option value="PRTBOOM">PRTBOOM</option>
- <option value="SUNLE">SUNLE</option>
- <option value="EASYAI">EASYAI</option>
+ <option value="SUNLE">SUNLE[挂]</option>
+ <option value="EASYAI">EASYAI[挂]</option>
  <option value="XCBL">XCBL</option>
  <option value="CLEANDX">CLEANDX</option>
   <option value="ESO">ESO</option>
   <option value="CVEOY">CVEOY</option>
   <option value="HZIT">HZIT</option>
   <option value="TOYAML">TOYAML</option>
+  <option value="XEASY">XEASY</option>
 `;
 
         document.getElementById('modeSelect').addEventListener('change', () => {
