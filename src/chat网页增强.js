@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.14
+// @version      4.15
 // @description  网页增强
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -26,7 +26,8 @@
 // @connect   supremes.pro
 // @connect   chat.bnu120.space
 // @connect   chat7.aifks001.online
-// @connect   chat.sunls.me
+// @connect   sunls.me
+// @connect   theb.ai
 // @connect   www.ftcl.store
 // @connect   chat.wobcw.com
 // @connect   chatgpt.qdymys.cn
@@ -61,7 +62,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.14"
+    var JSVer = "v4.15"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1764,11 +1765,11 @@
         console.log(msgobj)
          GM_xmlhttpRequest({
             method: "POST",
-            url: "https://chat.sunls.me/conversation",
+            url: "https://chat1.sunls.me/conversation",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat.sunls.me/",
-                "origin": "https://chat.sunls.me",
+                "Referer": "https://chat1.sunls.me/",
+                "origin": "https://chat1.sunls.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify(msgobj),
@@ -2508,6 +2509,71 @@
 
     }
 
+    var parentID_thebai;
+
+    function THEBAI(question) {
+        let your_qus = question;
+        GM_handleUserInput(null)
+        let ops = {};
+        if (parentID_thebai) {
+            ops = {parentMessageId: parentID_thebai};
+        }
+        console.log(ops)
+
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://chatbot.theb.ai/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://chatbot.theb.ai/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops
+            }),
+            onloadstart: (stream) => {
+                let finalResult = [];
+                GM_simulateBotResponse("...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        GM_fillBotResponseAndSave(your_qus,finalResult)
+                        return;
+                    }
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            GM_fillBotResponse(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_thebai = nowResult.id;
+                        }
+
+                    } catch (ex) {
+                        console.log(ex)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        })
+
+    }
+
     //初始化
     setTimeout(() => {
 
@@ -2620,6 +2686,10 @@
                     console.log("XEASY")
                     XEASY(qus);
                     break;
+               case "THEBAI":
+                    console.log("THEBAI")
+                   THEBAI(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2630,6 +2700,7 @@
  <option value="PIZZA">PIZZA</option>
  <option value="YQCLOUD">YQCLOUD</option>
  <option value="GAMEJX">GAMEJX</option>
+ <option value="THEBAI">THEBAI</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
@@ -2644,8 +2715,8 @@
  <option value="NBAI">NBAI</option>
  <option value="AIFKS">AIFKS</option>
  <option value="PRTBOOM">PRTBOOM</option>
- <option value="SUNLE">SUNLE[挂]</option>
- <option value="EASYAI">EASYAI[挂]</option>
+ <option value="SUNLE">SUNLE</option>
+ <option value="EASYAI">EASYAI</option>
  <option value="XCBL">XCBL</option>
  <option value="CLEANDX">CLEANDX</option>
   <option value="ESO">ESO</option>

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.8.7
+// @version       1.8.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -76,7 +76,7 @@
 // @connect   chat7.aifks001.online
 // @connect   ai.usesless.com
 // @connect   www.ftcl.store
-// @connect   chat.sunls.me
+// @connect   sunls.me
 // @connect   chat.wobcw.com
 // @connect   www.pizzagpt.it
 // @connect   www.phind.com
@@ -102,6 +102,7 @@
 // @connect   promptboom.com
 // @connect   hehanwang.com
 // @connect   caipacity.com
+// @connect   chat.fdkang.top
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -823,9 +824,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "LERSEARCH") {
-            console.log("LERSEARCH")
-            LERSEARCH()
+        } else if (GPTMODE && GPTMODE == "FDKANG") {
+            console.log("FDKANG")
+            FDKANG()
 
             return;
             //end if
@@ -1068,7 +1069,7 @@
       <option value="LTD68686">LTD68686</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
-      <option value="LERSEARCH">LERSEARCH[挂]</option>
+      <option value="FDKANG">FDKANG</option>
       <option value="COOLAI">COOLAI</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
@@ -1079,8 +1080,8 @@
       <option value="AIFKS">AIFKS</option>
       <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
-      <option value="SUNLE">SUNLE[挂]</option>
-      <option value="EASYAI">EASYAI[挂]</option>
+      <option value="SUNLE">SUNLE</option>
+      <option value="EASYAI">EASYAI</option>
       <option value="CLEANDX">CLEANDX</option>
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
@@ -1089,8 +1090,17 @@
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
 	<p id="warn" style="color: green;margin-left: 10px"  >只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<p id="website" style="margin-left: 10px"><a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=><a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=><a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=><a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=><a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=><a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a></p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.7已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+	<div id="website" style="margin-left: 10px; ">
+        <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
+        <a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=>
+        <a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=>
+        <a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=>
+        <a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=>
+        <a target="_blank" style="color: #3083e3;" href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>=>
+        <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
+        <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
+	</div>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1638,67 +1648,65 @@
     }
 
 
-    function LERSEARCH() {
+    async function FDKANG() {
 
-        let baseURL = "https://chatgpt.letsearches.com/";
-        addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
+
+        await GM_fetch({
             method: "POST",
-            url: baseURL + "api/chat-stream",
+            url: "http://chat.fdkang.top/setsession.php",
             headers: {
-                "Content-Type": "application/json",
-                "access-code": "",
-                "path": "v1/chat/completions",
-                "Referer": baseURL
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                "Referer": "http://chat.fdkang.top/"
             },
-            data: JSON.stringify({
-                messages: messageChain3,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                max_tokens: 2000,
-                presence_penalty: 0
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain3, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            showAnserAndHighlightCodeStr(finalResult)
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        showAnserAndHighlightCodeStr(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
+            data: `message=${encodeURI(your_qus)}&context=%5B%5D&key=`
+        })
 
-                    return reader.read().then(processText);
-                });
+        GM_fetch({
+            method: "POST",
+            url: "http://chat.fdkang.top/stream.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                "Referer": "http://chat.fdkang.top/",
+                "accept": "text/event-stream"
             },
-            responseType: "stream",
-            onprogress: function (msg) {
-                //console.log(msg)
-            },
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
-        });
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            let finalResult;
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    finalResult = result.join("")
+                    showAnserAndHighlightCodeStr(finalResult)
+                    return;
+                }
+
+                try {
+
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log("raw:",d)
+                    let dd = d.replace(/data: /g, "").split("\n\n")
+                    console.log("dd:",dd)
+                    dd.forEach(item=>{
+                        try {
+                            let delta = JSON.parse(item).choices[0].delta.content
+                            result.push(delta)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }catch (e) {
+
+                        }
+                    })
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
 
     }
 
@@ -3498,11 +3506,11 @@
         console.log(msgobj)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "https://chat.sunls.me/conversation",
+            url: "https://chat1.sunls.me/conversation",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat.sunls.me/",
-                "origin": "https://chat.sunls.me",
+                "Referer": "https://chat1.sunls.me/",
+                "origin": "https://chat1.sunls.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify(msgobj),
