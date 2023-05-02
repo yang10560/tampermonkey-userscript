@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.8.8
+// @version       1.9.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -103,6 +103,7 @@
 // @connect   hehanwang.com
 // @connect   caipacity.com
 // @connect   chat.fdkang.top
+// @connect   darricks.net
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -518,6 +519,7 @@
     }
 
     function GM_add_box_style(case_web) {
+        case_web = 2;
         switch (case_web) {
             case 0: //bing
                 GM_addStyle(`
@@ -613,40 +615,77 @@
             case 2:
                 GM_addStyle(`
     #gptAnswer{
-   margin: 15px;
-   border-top: solid;
-    border-bottom: solid;
+       margin: 10px;
+       border-top: solid;
+       border-bottom: solid;
     }
     #gptInput{
-    border-radius: 4px;
-    width: 68%;
+        border-radius: 20px;
+        flex: 1;
+        padding-left: 10px;
+        height: 35px;
+        border:0;
+        background-color: transparent;
+        font-size: 15px;
+        font-weight: 500;
     }
     #button_GPT:hover{
-    background:#4e6ef2;
+        cursor: pointer;
     }
     #gptDiv{
-	 width:452px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: fit-content;
-
+        width:452px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: fit-content;
     }
     #gptInputBox{
-    display:flex;
-    justify-content: space-around;
+        display:flex;
+        justify-content: space-around;
+        border-radius: 20px;
+        border: 1px solid #c4c7ce;
+        margin-left: 10px;
     }
     #button_GPT{
-    background: #4460d4;
-    border-radius: 3px;
-    font-size: 14px;
+        border: 0;
+        background-color: transparent;
+        font-size: 14px;
+        padding: 5px;
     }
     #gptStatus{
         margin-left: 10px;
-        }
+    }
+    #modeSelect {
+        border: 1px solid #c4c7ce;
+        border-radius: 10px;
+        margin: 3px;
+        margin-left: -1px;
+    }
+    
+    .chatSetting{
+        display: block;
+        text-align: right;
+        margin-top: 10px;
+        margin-right: 8px;
+        margin-bottom: 1px;
+    }
+    .chatHide{
+         display: none;
+    }
+    
+    
+    
+    #chatSetting{
+       text-decoration: none !important;
+    }
+    #chatSetting:hover{
+       cursor: pointer;
+       text-decoration: underline !important;
+    }
 
-    p{white-space: pre-line}
-
+    gptDiv p{
+        white-space: pre-line
+    }
     `)
                 break;
             default:
@@ -956,6 +995,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "DARRICKS") {
+            console.log("DARRICKS")
+            DARRICKS();
+
+            return;
+            //end if
         }
 
 
@@ -1049,10 +1094,11 @@
             divE.classList.add("gpt-container")
             divE.innerHTML = `
     <div id="gptInputBox">
-    <input id="gptInput" type=text><button class="s_btn" id="button_GPT" >chat一下</button>
+        <input id="gptInput" type=text><button id="button_GPT" ><svg width="15px" height="15px" focusable="false" viewBox="0 0 24 24"><path fill="#34a853" d="M10 2v2a6 6 0 0 1 6 6h2a8 8 0 0 0-8-8"></path><path fill="#ea4335" d="M10 4V2a8 8 0 0 0-8 8h2c0-3.3 2.7-6 6-6"></path><path fill="#fbbc04" d="M4 10H2a8 8 0 0 0 8 8v-2c-3.3 0-6-2.69-6-6"></path><path fill="#4285f4" d="M22 20.59l-5.69-5.69A7.96 7.96 0 0 0 18 10h-2a6 6 0 0 1-6 6v2c1.85 0 3.52-.64 4.88-1.68l5.69 5.69L22 20.59"></path></svg>搜索</button>
     </div>
+    <div class="chatSetting"><a id="chatSetting"><svg width="15px" height="15px" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.85 22.25h-3.7c-.74 0-1.36-.54-1.45-1.27l-.27-1.89c-.27-.14-.53-.29-.79-.46l-1.8.72c-.7.26-1.47-.03-1.81-.65L2.2 15.53c-.35-.66-.2-1.44.36-1.88l1.53-1.19c-.01-.15-.02-.3-.02-.46 0-.15.01-.31.02-.46l-1.52-1.19c-.59-.45-.74-1.26-.37-1.88l1.85-3.19c.34-.62 1.11-.9 1.79-.63l1.81.73c.26-.17.52-.32.78-.46l.27-1.91c.09-.7.71-1.25 1.44-1.25h3.7c.74 0 1.36.54 1.45 1.27l.27 1.89c.27.14.53.29.79.46l1.8-.72c.71-.26 1.48.03 1.82.65l1.84 3.18c.36.66.2 1.44-.36 1.88l-1.52 1.19c.01.15.02.3.02.46s-.01.31-.02.46l1.52 1.19c.56.45.72 1.23.37 1.86l-1.86 3.22c-.34.62-1.11.9-1.8.63l-1.8-.72c-.26.17-.52.32-.78.46l-.27 1.91c-.1.68-.72 1.22-1.46 1.22zm-3.23-2h2.76l.37-2.55.53-.22c.44-.18.88-.44 1.34-.78l.45-.34 2.38.96 1.38-2.4-2.03-1.58.07-.56c.03-.26.06-.51.06-.78s-.03-.53-.06-.78l-.07-.56 2.03-1.58-1.39-2.4-2.39.96-.45-.35c-.42-.32-.87-.58-1.33-.77l-.52-.22-.37-2.55h-2.76l-.37 2.55-.53.21c-.44.19-.88.44-1.34.79l-.45.33-2.38-.95-1.39 2.39 2.03 1.58-.07.56a7 7 0 0 0-.06.79c0 .26.02.53.06.78l.07.56-2.03 1.58 1.38 2.4 2.39-.96.45.35c.43.33.86.58 1.33.77l.53.22.38 2.55z"></path><circle cx="12" cy="12" r="3.5"></circle></svg>设置</a></div>
     <div id=gptCueBox>
-    <p id="gptStatus">&nbsp&nbsp
+    <p class="chatHide" id="gptStatus">
    <select id="modeSelect">
       <option value="Default">默认线路</option>
       <option value="CHATGPT">CHATGPT</option>
@@ -1088,9 +1134,10 @@
       <option value="XCBL">XCBL</option>
       <option value="HZIT">HZIT</option>
       <option value="TOYAML">TOYAML</option>
+      <option value="DARRICKS">DARRICKS</option>
     </select> 部分线路需要科学上网</p>
-	<p id="warn" style="color: green;margin-left: 10px"  >只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
-	<div id="website" style="margin-left: 10px; ">
+	<p class="chatHide" id="warn" style="color: green;margin-left: 10px"  >只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
+	<div class="chatHide" id="website" style="margin-left: 10px; ">
         <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
         <a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=>
         <a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=>
@@ -1100,7 +1147,7 @@
         <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.8.8已启动,部分需要魔法。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.0 已启动,部分线路需要科学上网。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1170,9 +1217,33 @@
             if (selectedValue === 'GAMEJX') {
                 setTimeout(setGroupid_gamejx)
             }
-            document.getElementById('gptAnswer').innerHTML = `切换成功，当前模式:${selectedValue}模式`;
+            document.getElementById('gptAnswer').innerHTML = `切换成功，当前线路:${selectedValue}`;
         });
 
+        let chatSetting = false;
+        document.getElementById('chatSetting').addEventListener('click', () => {
+          if(!chatSetting){
+             //显示内容
+             try{
+                 document.querySelector("#gptStatus").classList.remove("chatHide")
+                 document.querySelector("#warn").classList.remove("chatHide")
+                 document.querySelector("#website").classList.remove("chatHide")
+             }catch (e) {
+                 console.log(e)
+             }
+              chatSetting = true;
+          }else{
+              //隐藏
+              try{
+                  document.querySelector("#gptStatus").classList.add("chatHide")
+                  document.querySelector("#warn").classList.add("chatHide")
+                  document.querySelector("#website").classList.add("chatHide")
+              }catch (e) {
+                  console.log(e)
+              }
+              chatSetting = false;
+          }
+        })
 
     }
 
@@ -1224,8 +1295,8 @@
                             try {
                                 document.querySelector("#gptDiv").style.setProperty("width",
                                     "100%")
-                                document.querySelector("#gptInput").setAttribute("class",
-                                    "se-input adjust-input")
+                                /*document.querySelector("#gptInput").setAttribute("class",
+                                    "se-input adjust-input")*/
                             } catch (e) {
                                 //TODO handle the exception
                             }
@@ -1291,6 +1362,7 @@
     border-radius: 8px;
     overflow: hidden;
     padding: 15px;
+    background-color:#fcfcfc
 }
 
         #dot{
@@ -1463,7 +1535,6 @@
     var messageChain8 = [];//lbb
     var messageChain9 = [];//bnu120
     var messageChain10 = [];//PRTBOOM
-    var messageChain3 = [];//LETSEARCH
     var messageChain1 = [
         {
             role: "system",
@@ -1760,6 +1831,55 @@
             onerror: function (err) {
                 console.log(err)
             }
+        });
+
+    }
+
+    var messageChain3 = [];//DARRICKS
+    function DARRICKS() {
+
+        let baseURL = "https://chat.darricks.net/";
+        addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "access-code": "j-2004",
+                "X-Forwarded-For": generateRandomIP(),
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain3,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                presence_penalty: 0
+            })
+        }).then((res)=>{
+            if (res.status === 200) {
+                console.log(res.response)
+                let rest = res.response;
+                console.log(rest)
+                try {
+                    showAnserAndHighlightCodeStr(rest);
+                    addMessageChain(messageChain3, {
+                        role: "assistant",
+                        content: rest
+                    })
+                } catch (ex) {
+                    console.log(ex)
+                }
+
+            } else {
+                showAnserAndHighlightCodeStr(`访问失败了${res}`)
+            }
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
         });
 
     }
@@ -2069,14 +2189,14 @@
             headers: {
                 "Referer": `https://chat.gamejx.cn/`,
                 "Content-Type": "application/json",
-                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+                "Authorization": "C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4="
             },
             data:JSON.stringify({
                 version: "",
                 os: "pc",
                 language: "zh",
                 pars: {
-                    user_id: "594578",
+                    user_id: "615933",
                     examples_id: "",
                     examples_describe: "你好"
                 }
@@ -2102,14 +2222,14 @@
             headers: {
                 "Referer": `https://chat.gamejx.cn/`,
                 "Content-Type": "application/json",
-                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+                "Authorization": "C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4="
             },
             data:JSON.stringify({
                 "version": "",
                 "os": "pc",
                 "language": "zh",
                 "pars": {
-                    "user_id": "594578",
+                    "user_id": "615933",
                     "question": is_first_gamejx ? "你好" : your_qus,
                     "group_id": `${gamejx_group_id}`,
                     "question_id": ""
@@ -2131,7 +2251,7 @@
                 console.log("question_id:",question_id)
                 GM_fetch({
                     method: "GET",
-                    url: `https://chat.gamejx.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=594578&token=YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0%3D`,
+                    url: `https://chat.gamejx.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=615933&token=C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4%3D`,
                     headers: {
                         "Content-Type": "application/json",
                         "Referer": "https://chat.gamejx.cn/",
