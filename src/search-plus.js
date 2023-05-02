@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.0
+// @version       1.9.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -72,7 +72,7 @@
 // @connect   chat.ohtoai.com
 // @connect   freeopenai.xyz
 // @connect   supremes.pro
-// @connect   chat.bnu120.space
+// @connect   bnu120.space
 // @connect   chat7.aifks001.online
 // @connect   ai.usesless.com
 // @connect   www.ftcl.store
@@ -1001,6 +1001,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE == "BNU120") {
+            console.log("BNU120")
+            BNU120();
+
+            return;
+            //end if
         }
 
 
@@ -1106,6 +1112,7 @@
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="XIAMI">XIAMI</option>
+      <option value="BNU120">BNU120</option>
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
@@ -1147,7 +1154,7 @@
         <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.0 已启动,部分线路需要科学上网。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.1 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -3225,70 +3232,61 @@
     function BNU120() {
 
         let now = Date.now();
-        let Baseurl = "https://chat.bnu120.space/"
+        let Baseurl = "https://chat.0.bnu120.space/"
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
-            pkey: "sksksk"
+            pkey: "contact_me_at_admin@muspimerol.site!"
         }).then(sign => {
             addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
             console.log(sign)
-            GM_xmlhttpRequest({
+            GM_fetch({
                 method: "POST",
                 url: Baseurl + "api/generate",
                 headers: {
                     "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
                     "Referer": Baseurl,
                     "accept": "application/json, text/plain, */*"
                 },
                 data: JSON.stringify({
-
                     messages: messageChain9,
                     time: now,
                     pass: null,
-                    sign: sign,
-                    key: ""
+                    sign: sign
                 }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain9, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
                         try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            showAnserAndHighlightCodeStr(result.join(""))
+                            console.log(finalResult)
+                            addMessageChain(messageChain9, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
                         } catch (e) {
                             console.log(e)
                         }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
 
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
+                    return reader.read().then(processText);
+                });
+            },function (reason) {
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
             });
 
         });
