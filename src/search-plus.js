@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.1
+// @version       1.9.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -104,6 +104,7 @@
 // @connect   caipacity.com
 // @connect   chat.fdkang.top
 // @connect   darricks.net
+// @connect   51mskd.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -154,7 +155,7 @@
             GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
         }, "updateChat");
         const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
-            alert("交流群6：792365186\n交流群4：745163513\n交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992")
+            alert("交流群7：817298021\n交流群6：792365186\n交流群4：745163513\n交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992")
         }, "groupNum");
 
         const menu_pubkey_id = GM_registerMenuCommand("更新key", function (event) {
@@ -1007,6 +1008,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "DOG2") {
+            console.log("DOG2")
+            DOG2();
+
+            return;
+            //end if
         }
 
 
@@ -1113,6 +1120,7 @@
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="XIAMI">XIAMI</option>
       <option value="BNU120">BNU120</option>
+      <option value="DOG2">DOG2</option>
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
@@ -1154,7 +1162,7 @@
         <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.1 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.2 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`
             resolve(divE)
         })
@@ -1657,6 +1665,75 @@
         });
     }
 
+
+    //23.5.2
+    function DOG2() {
+
+        GM_fetch({
+            method: "POST",
+            url: "https://2dog.51mskd.com/doggy/guest-test",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer null",
+                "X-Forwarded-For": generateRandomIP(),
+                "Referer": "https://2dog.51mskd.com/",
+                "origin": "https://2dog.51mskd.com",
+                "accept": "application/json"
+            },
+            data: JSON.stringify({
+                "question": your_qus,
+                "type": "chat",
+                "is_guest": true,
+                "model": "gpt-3.5-turbo"
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            let finalResult;
+            let errorStr;
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    finalResult = result.join("")
+                    try {
+                        if(result.length === 0){
+                            showAnserAndHighlightCodeStr(errorStr)
+                        }else{
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log(d)
+                    d.split("\n").forEach(item=>{
+                        try {
+                            let chunk = JSON.parse(item.replace(/data:/,"").trim())
+                                .choices[0].delta.content;
+                            result.push(chunk)
+                        }catch (ex){
+
+                        }
+                    })
+                    showAnserAndHighlightCodeStr(result.join(""))
+                    if(d.includes("error#")){
+                        errorStr = d
+                    }
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },(reason)=>{
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
+    }
 
     var messageChain11 = []//xeasy
     function XEASY() {
