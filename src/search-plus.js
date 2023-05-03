@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.2
+// @version       1.9.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -165,7 +165,7 @@
     } catch (e) {
         console.log(e)
     }
-    
+
     //封装GM_xmlhttpRequest ---start---
     async function GM_fetch(details) {
        return new Promise((resolve, reject) =>{
@@ -703,7 +703,7 @@
 
         //CHATGPT模式
         let GPTMODE = localStorage.getItem("GPTMODE")
-        if (GPTMODE && GPTMODE == "CHATGPT") {
+        if (GPTMODE && GPTMODE === "CHATGPT") {
             console.log("当前模式CHATGPT")
             if (!localStorage.getItem("openAIkey")) {
                 let manualInput = confirm("openAIkey不存在 请更新,或者使用你自己的key");
@@ -800,77 +800,77 @@
 
 
             return;
-        } else if (GPTMODE && GPTMODE == "ANZZ") {
+        } else if (GPTMODE && GPTMODE === "ANZZ") {
             console.log("当前模式ANZZ")
             ANZZ();
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "THEBAI") {
+        } else if (GPTMODE && GPTMODE === "THEBAI") {
             console.log("当前模式THEBAI")
             THEBAI()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "YQCLOUD") {
+        } else if (GPTMODE && GPTMODE === "YQCLOUD") {
             console.log("当前模式YQCLOUD")
             YQCLOUD()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "XIAMI") {
+        } else if (GPTMODE && GPTMODE === "XIAMI") {
             console.log("XIAMI")
 
             XIAMI();
 
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "PIZZA") {
+        } else if (GPTMODE && GPTMODE === "PIZZA") {
             console.log("当前模式PIZZA")
             PIZZA();
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "AITIANHU") {
+        } else if (GPTMODE && GPTMODE === "AITIANHU") {
             console.log("当前模式AITIANHU")
             AITIANHU()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "TDCHAT") {
+        } else if (GPTMODE && GPTMODE === "TDCHAT") {
             console.log("当前模式TDCHAT")
             TDCHAT()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "QDYMYS") {
+        } else if (GPTMODE && GPTMODE === "QDYMYS") {
             console.log("当前模式QDYMYS")
             QDYMYS();
 
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "WGK") {
+        } else if (GPTMODE && GPTMODE === "WGK") {
             console.log("当前模式WGK")
 
             WGK();
 
             //end if
             return;
-        } else if (GPTMODE && GPTMODE == "LTD68686") {
+        } else if (GPTMODE && GPTMODE === "LTD68686") {
 
             console.log("LTD68686")
             LTD68686()
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "AILS") {
+        } else if (GPTMODE && GPTMODE === "AILS") {
 
             console.log("AILS")
             AILS()
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "FDKANG") {
+        } else if (GPTMODE && GPTMODE === "FDKANG") {
             console.log("FDKANG")
             FDKANG()
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "COOLAI") {
+        } else if (GPTMODE && GPTMODE === "COOLAI") {
             console.log("COOLAI")
             try {
                 resultCoolAI = [];
@@ -881,128 +881,128 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "PHIND") {
+        } else if (GPTMODE && GPTMODE === "PHIND") {
             console.log("PHIND")
             PHIND();
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "WOBCW") {
+        } else if (GPTMODE && GPTMODE === "WOBCW") {
             console.log("WOBCW")
             WOBCW();
 
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "HEHANWANG") {
+        } else if (GPTMODE && GPTMODE === "HEHANWANG") {
             console.log("HEHANWANG")
             HEHANWANG();
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "EXTKJ") {
+        } else if (GPTMODE && GPTMODE === "EXTKJ") {
             console.log("EXTKJ")
             EXTKJ();
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "LBB") {
+        } else if (GPTMODE && GPTMODE === "LBB") {
             console.log("LBB")
             LBB();
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "GAMEJX") {
+        } else if (GPTMODE && GPTMODE === "GAMEJX") {
             console.log("GAMEJX")
             GAMEJX();
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "AIFKS") {
+        } else if (GPTMODE && GPTMODE === "AIFKS") {
             console.log("AIFKS")
             AIFKS();
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "USESLESS") {
+        } else if (GPTMODE && GPTMODE === "USESLESS") {
             console.log("USESLESS")
             USESLESS();
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE == "PRTBOOM") {
+        } else if (GPTMODE && GPTMODE === "PRTBOOM") {
             console.log("PRTBOOM")
             PRTBOOM();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "SUNLE") {
+        }else if (GPTMODE && GPTMODE === "SUNLE") {
             console.log("SUNLE")
             SUNLE();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "EASYAI") {
+        }else if (GPTMODE && GPTMODE === "EASYAI") {
             console.log("EASYAI")
             EASYAI();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "CLEANDX") {
+        }else if (GPTMODE && GPTMODE === "CLEANDX") {
             console.log("CLEANDX")
             CLEANDX();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "ESO") {
+        }else if (GPTMODE && GPTMODE === "ESO") {
             console.log("ESO")
             ESO();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "CVEOY") {
+        }else if (GPTMODE && GPTMODE === "CVEOY") {
             console.log("CVEOY")
             CVEOY();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "XCBL") {
+        }else if (GPTMODE && GPTMODE === "XCBL") {
             console.log("XCBL")
             XCBL();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "HZIT") {
+        }else if (GPTMODE && GPTMODE === "HZIT") {
             console.log("HZIT")
             HZIT();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "TOYAML") {
+        }else if (GPTMODE && GPTMODE === "TOYAML") {
             console.log("TOYAML")
             TOYAML();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "NBAI") {
+        }else if (GPTMODE && GPTMODE === "NBAI") {
             console.log("NBAI")
             NBAI();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "XEASY") {
+        }else if (GPTMODE && GPTMODE === "XEASY") {
             console.log("XEASY")
             XEASY();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "DARRICKS") {
+        }else if (GPTMODE && GPTMODE === "DARRICKS") {
             console.log("DARRICKS")
             DARRICKS();
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE == "BNU120") {
+        }else if (GPTMODE && GPTMODE === "BNU120") {
             console.log("BNU120")
             BNU120();
 
@@ -1093,18 +1093,18 @@
 
     function creatBox() {
         return new Promise((resolve) => {
-            var divE = document.createElement('div');
-            var divId = document.createAttribute("id"); //创建属性
+            let divE = document.createElement('div');
+            let divId = document.createAttribute("id"); //创建属性
             divId.value = 'gptDiv'; //设置属性值
             divE.setAttributeNode(divId); //给div添加属性
-            var pE = document.createElement('p');
-            var pClass = document.createAttribute('class');
+            let pE = document.createElement('p');
+            let pClass = document.createAttribute('class');
             pClass.value = 'textClass';
             pE.setAttributeNode(pClass)
-            var pText = document.createTextNode("chatGPT tools Plus 已启动");
+            let pText = document.createTextNode("chatGPT tools Plus 已启动");
             pE.appendChild(pText);
             divE.appendChild(pE);
-            divE.classList.add("gpt-container")
+            divE.classList.add("gpt-container");
             divE.innerHTML = `
     <div id="gptInputBox">
         <input id="gptInput" type=text><button id="button_GPT" ><svg width="15px" height="15px" focusable="false" viewBox="0 0 24 24"><path fill="#34a853" d="M10 2v2a6 6 0 0 1 6 6h2a8 8 0 0 0-8-8"></path><path fill="#ea4335" d="M10 4V2a8 8 0 0 0-8 8h2c0-3.3 2.7-6 6-6"></path><path fill="#fbbc04" d="M4 10H2a8 8 0 0 0 8 8v-2c-3.3 0-6-2.69-6-6"></path><path fill="#4285f4" d="M22 20.59l-5.69-5.69A7.96 7.96 0 0 0 18 10h-2a6 6 0 0 1-6 6v2c1.85 0 3.52-.64 4.88-1.68l5.69 5.69L22 20.59"></path></svg>搜索</button>
@@ -1162,14 +1162,14 @@
         <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.2 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
-    </div><p></p>`
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.3 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+    </div><p></p>`;
             resolve(divE)
         })
     }
 
     async function pivElemAddEventAndValue(append_case) {
-        var search_content
+        let search_content
 
         try {
             if (append_case === 7) {
@@ -1340,8 +1340,8 @@
 
     //焦点函数
     function isBlur() {
-        var myInput = document.getElementById('gptInput');
-        if (myInput == document.activeElement) {
+        let myInput = document.getElementById('gptInput');
+        if (myInput === document.activeElement) {
             return 1
         } else {
             return 0
@@ -1350,8 +1350,8 @@
 
     function keyEvent() {
         document.onkeydown = function (e) {
-            var keyNum = window.event ? e.keyCode : e.which;
-            if (13 == keyNum) {
+            let keyNum = window.event ? e.keyCode : e.which;
+            if (13 === keyNum) {
                 if (isBlur()) {
                     document.getElementById('button_GPT').click()
                 } else {
@@ -1367,61 +1367,58 @@
     function addBothStyle() {
         GM_addStyle(`
     .gpt-container {
-    box-sizing: border-box;
-    height: -webkit-min-content;
-    height: min-content;
-    width: 455px;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    border: 1px solid #dfe1e5;
-    border-radius: 8px;
-    overflow: hidden;
-    padding: 15px;
-    background-color:#fcfcfc
-}
-
-        #dot{
-    height: 4px;
-    width: 4px;
-    display: inline-block;
-    border-radius: 2px;
-    animation: dotting 2.4s  infinite step-start;
-}
-  @keyframes dotting {
-    25%{
-        box-shadow: 4px 0 0 #71777D;
-    }
-    50%{
-        box-shadow: 4px 0 0 #71777D ,14px 0 0 #71777D;
-    }
-    75%{
-        box-shadow: 4px 0 0 #71777D ,14px 0 0 #71777D, 24px 0 0 #71777D;
-    }
-}
- pre{
-     overflow-x: scroll;
-      overflow-y: hidden;
-     background: #fffaec;
-    border-radius: 4px;
-    padding: 14px 3px;
- }
- pre::-webkit-scrollbar {
- }
-    `)
+        box-sizing: border-box;
+        height: -webkit-min-content;
+        height: min-content;
+        width: 455px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        border: 1px solid #dfe1e5;
+        border-radius: 8px;
+        overflow: hidden;
+        padding: 15px;
+        background-color:#fcfcfc
     }
 
-
-    function log(a) {
-        console.log(a)
+    #dot{
+        height: 4px;
+        width: 4px;
+        display: inline-block;
+        border-radius: 2px;
+        animation: dotting 2.4s  infinite step-start;
     }
+   @keyframes dotting {
+        25%{
+            box-shadow: 4px 0 0 #71777D;
+        }
+        50%{
+            box-shadow: 4px 0 0 #71777D ,14px 0 0 #71777D;
+        }
+        75%{
+            box-shadow: 4px 0 0 #71777D ,14px 0 0 #71777D, 24px 0 0 #71777D;
+        }
+    }
+    pre{
+        overflow-x: scroll;
+        overflow-y: hidden;
+        background: #fffaec;
+        border-radius: 4px;
+        padding: 14px 3px;
+    }
+    pre::-webkit-scrollbar {
+     
+    }`);
+    }
+
+
 
     function Uint8ArrayToString(fileData) {
-        var dataString = "";
-        for (var i = 0; i < fileData.length; i++) {
+        let dataString = "";
+        for (let i = 0; i < fileData.length; i++) {
             dataString += String.fromCharCode(fileData[i]);
         }
 
-        return dataString
+        return dataString;
     }
 
     function decodeUnicode(str) {
@@ -1436,7 +1433,7 @@
     }
 
     function mdConverter(rawData) {
-        var converter = new showdown.Converter(); //增加拓展table
+        let converter = new showdown.Converter(); //增加拓展table
         converter.setOption('tables',
             true); //启用表格选项。从showdown 1.2.0版开始，表支持已作为可选功能移入核心拓展，showdown.table.min.js扩展已被弃用
         return converter.makeHtml(rawData);
@@ -1470,10 +1467,10 @@
 
 
     function generateRandomString(length) {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
+        let result = '';
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;
@@ -3305,6 +3302,39 @@
 
 
 
+
+    //获取A类网站key 2023年5月3日
+    async function setNormalKey(url) {
+       let response = await GM_fetch({
+            method: "GET",
+            url: url + "/?" + Math.random()
+        });
+        let resp = response.responseText;
+        let regex = /component-url="(.*?)"/i;
+        let match = resp.match(regex);
+        let jsurl = match[1];
+        console.log("js url:" + jsurl);
+        if (!jsurl) {
+            //错误
+            console.log(resp)
+            return
+        }
+       let rr = await GM_fetch({
+            method: "GET",
+            url: url + jsurl + "?" + Math.random()
+        });
+        resp = rr.responseText;
+        regex = /\`\$\{\w\}:\$\{\w\}:(.*?)\`/i;
+        match = resp.match(regex);
+        let key = match[1];
+        console.log(url+":key:",key)
+        return key
+    }
+
+    var bnuKey;
+    setTimeout(async () => {
+        bnuKey = await setNormalKey("https://chat.0.bnu120.space");
+    });
     //https://chat.bnu120.space/
     function BNU120() {
 
@@ -3313,7 +3343,7 @@
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
-            pkey: "contact_me_at_admin@muspimerol.site!"
+            pkey: bnuKey
         }).then(sign => {
             addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
             console.log(sign)
