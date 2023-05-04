@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.3
+// @version       1.9.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -64,7 +64,7 @@
 // @connect   chat.gptservice.xyz
 // @connect   gpt66.cn
 // @connect   ai.ls
-// @connect   chatgpt.letsearches.com
+// @connect   letsearches.com
 // @connect   gpt.wobcw.com
 // @connect   chat.68686.ltd
 // @connect   www.aitianhu.com
@@ -105,6 +105,9 @@
 // @connect   chat.fdkang.top
 // @connect   darricks.net
 // @connect   51mskd.com
+// @connect   forwardminded.xyz
+// @connect   s320.cn
+// @connect   cytsee.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -284,6 +287,15 @@
                 localStorage.setItem("pubkey", pubkey)
                 document.getElementById("gptAnswer").innerText = "pubkey更新成功:" + pubkey
             })
+        }else if(GPTMODE === "BNU120"){
+            setTimeout(async () => {
+                bnuKey = await setNormalKey("https://chat.0.bnu120.space");
+                if(bnuKey){
+                    showAnserAndHighlightCodeStr(`BNU120：更新成功,KEY:${bnuKey}`)
+                }else {
+                    showAnserAndHighlightCodeStr("BNU120：更新失败")
+                }
+            });
         }else {
             showAnserAndHighlightCodeStr("该线路不适用")
         }
@@ -295,6 +307,12 @@
         return localStorage.getItem("pubkey");
     }
 
+    //update AIGCFUN key.
+    setTimeout(()=>{
+        if (!getPubkey()){
+            setPubkey();
+        }
+    })
 
     //enc-start
     async function digestMessage(r) {
@@ -1014,6 +1032,30 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "LERSEARCH") {
+            console.log("LERSEARCH")
+            LERSEARCH();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE === "MINDED") {
+            console.log("MINDED")
+            MINDED();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE === "S320") {
+            console.log("S320")
+            S320();
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE === "CYTSEE") {
+            console.log("CYTSEE")
+            CYTSEE();
+
+            return;
+            //end if
         }
 
 
@@ -1124,6 +1166,10 @@
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
+      <option value="LERSEARCH">LERSEARCH</option>
+      <option value="S320">S320[挂]</option>
+      <option value="MINDED">MINDED</option>
+      <option value="CYTSEE">CYTSEE</option>
       <option value="QDYMYS">QDYMYS</option>
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI</option>
@@ -1151,7 +1197,7 @@
       <option value="TOYAML">TOYAML</option>
       <option value="DARRICKS">DARRICKS</option>
     </select> 部分线路需要科学上网</p>
-	<p class="chatHide" id="warn" style="color: green;margin-left: 10px"  >只针对默认和CHATGPT线路:<a id="updatePubkey" style="color: red;" href="javascript:void(0)">更新KEY</a></p>
+	<p class="chatHide" id="warn" style="color: green;margin-left: 10px"  ><a id="updatePubkey" style="color: red;" href="javascript:void(0)">[更新KEY]</a>:适用于默认、CHATGPT、BNU120线路</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
         <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
         <a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=>
@@ -1162,7 +1208,7 @@
         <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.3 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.5 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`;
             resolve(divE)
         })
@@ -1965,6 +2011,124 @@
 
     }
 
+    var messageChain_LERSEARCH = []
+    function LERSEARCH() {
+
+        let baseURL = "https://sensundyaceleant.letsearches.com/";
+        addMessageChain(messageChain_LERSEARCH, {role: "user", content: your_qus})//连续话
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "api/chat-stream",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "access-code": "j-2004",
+                "X-Forwarded-For": generateRandomIP(),
+                "path": "v1/chat/completions",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain_LERSEARCH,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                presence_penalty: 0
+            }),
+            responseType: "stream"
+        }).then((stream)=>{
+            const reader = stream.response.getReader();
+            let result = [];
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    addMessageChain(messageChain_LERSEARCH, {
+                        role: "assistant",
+                        content: result.join("")
+                    });
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    result.push(decoder.decode(byteArray))
+                    showAnserAndHighlightCodeStr(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
+
+    }
+
+
+    //2023年5月4日 https://chatgpt.cytsee.com/
+    var messageChain_cytsee = []
+    function CYTSEE() {
+
+        let baseURL = "https://www.cytsee.com/";
+        addMessageChain(messageChain_cytsee, {role: "user", content: your_qus})//连续话
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "api/generateStream",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "Referer": baseURL
+            },
+            data: JSON.stringify({
+                messages: messageChain_cytsee,
+                justStream: true,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                presence_penalty: 0
+            }),
+            responseType: "stream"
+        }).then((stream)=>{
+
+            const reader = stream.response.getReader();
+            let result = [];
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    addMessageChain(messageChain_cytsee, {
+                        role: "assistant",
+                        content: result.join("")
+                    });
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    result.push(decoder.decode(byteArray))
+                    showAnserAndHighlightCodeStr(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
+
+    }
+
 
     var userId_wgk = "#/chat/" + Date.now();
 
@@ -2200,6 +2364,130 @@
             });
         })
     }
+
+
+
+    var parentID_minded;
+    //http://forwardminded.xyz/
+    function MINDED() {
+        let ops = {};
+        if (parentID_minded) {
+            ops = {parentMessageId: parentID_minded};
+        }
+        console.log(ops)
+        let finalResult = [];
+        GM_httpRequest({
+            method: "POST",
+            url: "http://forwardminded.xyz/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "http://forwardminded.xyz/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops,
+                systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                top_p:1,
+                temperature:0.8
+            }),
+            responseType: "stream"
+        },(stream) => {
+            const reader = stream.response.getReader();
+            //     console.log(reader.read)
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    let jsonLines = decoder.decode(byteArray).split("\n");
+                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                    if (nowResult.text) {
+                        console.log(nowResult)
+                        finalResult = nowResult.text
+                        showAnserAndHighlightCodeStr(finalResult)
+                    }
+                    if (nowResult.id) {
+                        parentID_minded = nowResult.id;
+                    }
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        })
+    }
+
+
+    var parentID_s320;
+    //https://s320.cn/
+    function S320() {
+        let ops = {};
+        if (parentID_s320) {
+            ops = {parentMessageId: parentID_s320};
+        }
+        console.log(ops)
+        let finalResult = [];
+        GM_httpRequest({
+            method: "POST",
+            url: "https://s320.cn/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://s320.cn/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops,
+                systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                top_p:1,
+                temperature:0.8
+            }),
+            responseType: "stream"
+        },(stream) => {
+            const reader = stream.response.getReader();
+            //     console.log(reader.read)
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    let jsonLines = decoder.decode(byteArray).split("\n");
+                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+                    if (nowResult.text) {
+                        console.log(nowResult)
+                        finalResult = nowResult.text
+                        showAnserAndHighlightCodeStr(finalResult)
+                    }
+                    if (nowResult.id) {
+                        parentID_s320 = nowResult.id;
+                    }
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        })
+    }
+
+
+
+
 
     var parentID_nbai;
 
@@ -2874,7 +3162,7 @@
                     let byteArray = new Uint8Array(chunk);
                     let decoder = new TextDecoder('utf-8');
                     console.log(decoder.decode(byteArray))
-                    var jsonLines = decoder.decode(byteArray).split("\n");
+                    let jsonLines = decoder.decode(byteArray).split("\n");
                     let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
 
                     if (nowResult.text) {
@@ -3307,7 +3595,11 @@
     async function setNormalKey(url) {
        let response = await GM_fetch({
             method: "GET",
-            url: url + "/?" + Math.random()
+            url: url,
+           headers: {
+               "Referer": url,
+               "origin": url
+           }
         });
         let resp = response.responseText;
         let regex = /component-url="(.*?)"/i;
@@ -3321,7 +3613,11 @@
         }
        let rr = await GM_fetch({
             method: "GET",
-            url: url + jsurl + "?" + Math.random()
+            url: url + jsurl,
+            headers: {
+               "Referer": url,
+               "origin": url
+            }
         });
         resp = rr.responseText;
         regex = /\`\$\{\w\}:\$\{\w\}:(.*?)\`/i;
