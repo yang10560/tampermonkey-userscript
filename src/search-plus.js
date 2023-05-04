@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.5
+// @version       1.9.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -108,6 +108,7 @@
 // @connect   forwardminded.xyz
 // @connect   s320.cn
 // @connect   cytsee.com
+// @connect   hanji051.cn
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -1056,7 +1057,14 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "HANJI") {
+            console.log("HANJI")
+            HANJI()
+
+            return;
+            //end if
         }
+
 
 
         console.log("Defualt:")
@@ -1168,6 +1176,7 @@
       <option value="TDCHAT">TDCHAT</option>
       <option value="LERSEARCH">LERSEARCH</option>
       <option value="S320">S320[挂]</option>
+      <option value="HANJI">HANJI</option>
       <option value="MINDED">MINDED</option>
       <option value="CYTSEE">CYTSEE</option>
       <option value="QDYMYS">QDYMYS</option>
@@ -1208,7 +1217,7 @@
         <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.5 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.6 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`;
             resolve(divE)
         })
@@ -1865,6 +1874,85 @@
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
                 "Referer": "http://chat.fdkang.top/",
+                "accept": "text/event-stream"
+            },
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            let finalResult;
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    finalResult = result.join("")
+                    showAnserAndHighlightCodeStr(finalResult)
+                    return;
+                }
+
+                try {
+
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log("raw:",d)
+                    let dd = d.replace(/data: /g, "").split("\n\n")
+                    console.log("dd:",dd)
+                    dd.forEach(item=>{
+                        try {
+                            let delta = JSON.parse(item).choices[0].delta.content
+                            result.push(delta)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }catch (e) {
+
+                        }
+                    })
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+    }
+
+
+    let hanji_key;
+    setTimeout(()=>{
+        GM_fetch({
+            method: "GET",
+            url: "http://vip.hanji051.cn/index.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                "Referer": "http://vip.hanji051.cn/"
+            }
+        }).then(res=>{
+            console.log("vip.hanji051.cn",res.responseHeaders);
+            hanji_key = res.responseHeaders.match(/key=(.*?);/)[1];
+            console.log("hanji_key",hanji_key)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+    })
+
+    async function HANJI() {
+        await GM_fetch({
+            method: "POST",
+            url: "http://vip.hanji051.cn/setsession.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                "Referer": "http://vip.hanji051.cn/"
+            },
+            data: `message=+${encodeURI(your_qus)}&context=%5B%5D&key=${hanji_key}`
+        })
+
+        GM_fetch({
+            method: "POST",
+            url: "http://vip.hanji051.cn/stream.php",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                "Referer": "http://vip.hanji051.cn/",
                 "accept": "text/event-stream"
             },
             responseType: "stream"
