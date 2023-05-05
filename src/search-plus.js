@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.6
+// @version       1.9.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -106,7 +106,7 @@
 // @connect   darricks.net
 // @connect   51mskd.com
 // @connect   forwardminded.xyz
-// @connect   s320.cn
+// @connect   1chat.cc
 // @connect   cytsee.com
 // @connect   hanji051.cn
 // @license    MIT
@@ -693,14 +693,20 @@
          display: none;
     }
     
-    
-    
     #chatSetting{
        text-decoration: none !important;
     }
     #chatSetting:hover{
        cursor: pointer;
        text-decoration: underline !important;
+    }
+    
+    #website a:nth-child(odd){
+        color: #ffbb00;
+    }
+    
+    #website a:nth-child(even){
+        color: #0bbbac;
     }
 
     gptDiv p{
@@ -1045,9 +1051,9 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "S320") {
-            console.log("S320")
-            S320();
+        }else if (GPTMODE && GPTMODE === "CHAT1") {
+            console.log("CHAT1")
+            CHAT1();
 
             return;
             //end if
@@ -1157,7 +1163,7 @@
             divE.classList.add("gpt-container");
             divE.innerHTML = `
     <div id="gptInputBox">
-        <input id="gptInput" type=text><button id="button_GPT" ><svg width="15px" height="15px" focusable="false" viewBox="0 0 24 24"><path fill="#34a853" d="M10 2v2a6 6 0 0 1 6 6h2a8 8 0 0 0-8-8"></path><path fill="#ea4335" d="M10 4V2a8 8 0 0 0-8 8h2c0-3.3 2.7-6 6-6"></path><path fill="#fbbc04" d="M4 10H2a8 8 0 0 0 8 8v-2c-3.3 0-6-2.69-6-6"></path><path fill="#4285f4" d="M22 20.59l-5.69-5.69A7.96 7.96 0 0 0 18 10h-2a6 6 0 0 1-6 6v2c1.85 0 3.52-.64 4.88-1.68l5.69 5.69L22 20.59"></path></svg>搜索</button>
+        <input placeholder="若用不了,请更新KEY或切换线路" id="gptInput" type=text><button id="button_GPT" ><svg width="15px" height="15px" focusable="false" viewBox="0 0 24 24"><path fill="#34a853" d="M10 2v2a6 6 0 0 1 6 6h2a8 8 0 0 0-8-8"></path><path fill="#ea4335" d="M10 4V2a8 8 0 0 0-8 8h2c0-3.3 2.7-6 6-6"></path><path fill="#fbbc04" d="M4 10H2a8 8 0 0 0 8 8v-2c-3.3 0-6-2.69-6-6"></path><path fill="#4285f4" d="M22 20.59l-5.69-5.69A7.96 7.96 0 0 0 18 10h-2a6 6 0 0 1-6 6v2c1.85 0 3.52-.64 4.88-1.68l5.69 5.69L22 20.59"></path></svg>搜索</button>
     </div>
     <div class="chatSetting"><a id="chatSetting"><svg width="15px" height="15px" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.85 22.25h-3.7c-.74 0-1.36-.54-1.45-1.27l-.27-1.89c-.27-.14-.53-.29-.79-.46l-1.8.72c-.7.26-1.47-.03-1.81-.65L2.2 15.53c-.35-.66-.2-1.44.36-1.88l1.53-1.19c-.01-.15-.02-.3-.02-.46 0-.15.01-.31.02-.46l-1.52-1.19c-.59-.45-.74-1.26-.37-1.88l1.85-3.19c.34-.62 1.11-.9 1.79-.63l1.81.73c.26-.17.52-.32.78-.46l.27-1.91c.09-.7.71-1.25 1.44-1.25h3.7c.74 0 1.36.54 1.45 1.27l.27 1.89c.27.14.53.29.79.46l1.8-.72c.71-.26 1.48.03 1.82.65l1.84 3.18c.36.66.2 1.44-.36 1.88l-1.52 1.19c.01.15.02.3.02.46s-.01.31-.02.46l1.52 1.19c.56.45.72 1.23.37 1.86l-1.86 3.22c-.34.62-1.11.9-1.8.63l-1.8-.72c-.26.17-.52.32-.78.46l-.27 1.91c-.1.68-.72 1.22-1.46 1.22zm-3.23-2h2.76l.37-2.55.53-.22c.44-.18.88-.44 1.34-.78l.45-.34 2.38.96 1.38-2.4-2.03-1.58.07-.56c.03-.26.06-.51.06-.78s-.03-.53-.06-.78l-.07-.56 2.03-1.58-1.39-2.4-2.39.96-.45-.35c-.42-.32-.87-.58-1.33-.77l-.52-.22-.37-2.55h-2.76l-.37 2.55-.53.21c-.44.19-.88.44-1.34.79l-.45.33-2.38-.95-1.39 2.39 2.03 1.58-.07.56a7 7 0 0 0-.06.79c0 .26.02.53.06.78l.07.56-2.03 1.58 1.38 2.4 2.39-.96.45.35c.43.33.86.58 1.33.77l.53.22.38 2.55z"></path><circle cx="12" cy="12" r="3.5"></circle></svg>设置</a></div>
     <div id=gptCueBox>
@@ -1175,7 +1181,7 @@
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
       <option value="LERSEARCH">LERSEARCH</option>
-      <option value="S320">S320[挂]</option>
+      <option value="CHAT1">CHAT1</option>
       <option value="HANJI">HANJI</option>
       <option value="MINDED">MINDED</option>
       <option value="CYTSEE">CYTSEE</option>
@@ -1185,7 +1191,7 @@
       <option value="LTD68686">LTD68686</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
-      <option value="FDKANG">FDKANG</option>
+      <option value="FDKANG">FDKANG[挂]</option>
       <option value="COOLAI">COOLAI</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
@@ -1206,18 +1212,18 @@
       <option value="TOYAML">TOYAML</option>
       <option value="DARRICKS">DARRICKS</option>
     </select> 部分线路需要科学上网</p>
-	<p class="chatHide" id="warn" style="color: green;margin-left: 10px"  ><a id="updatePubkey" style="color: red;" href="javascript:void(0)">[更新KEY]</a>:适用于默认、CHATGPT、BNU120线路</p>
+	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
-        <a target="_blank" style="color: #a749e4;" href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
-        <a target="_blank" style="color: #ffbb00;" href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=>
-        <a target="_blank" style="color: #c14ad4;" href="https://tongyi.aliyun.com/">通义</a>=>
-        <a target="_blank" style="color: #0bbbac;" href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=>
-        <a target="_blank" style="color: yellowgreen;" href="https://bard.google.com/">Bard</a>=>
-        <a target="_blank" style="color: #3083e3;" href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>=>
-        <a target="_blank" style="color: #f1503f;" href="https://xinghuo.xfyun.cn/">星火</a>=>
-        <a target="_blank" style="color: indianred;" href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
+        <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
+        <a target="_blank"  href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=>
+        <a target="_blank"  href="https://tongyi.aliyun.com/">通义</a>=>
+        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=>
+        <a target="_blank"  href="https://bard.google.com/">Bard</a>=>
+        <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>=>
+        <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
+        <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.6 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.7 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
     </div><p></p>`;
             resolve(divE)
         })
@@ -2515,26 +2521,28 @@
     }
 
 
-    var parentID_s320;
-    //https://s320.cn/
-    function S320() {
+    var parentID_chat1;
+    function CHAT1() {
         let ops = {};
-        if (parentID_s320) {
-            ops = {parentMessageId: parentID_s320};
+        if (parentID_chat1) {
+            ops = {parentMessageId: parentID_chat1};
         }
         console.log(ops)
         let finalResult = [];
         GM_httpRequest({
             method: "POST",
-            url: "https://s320.cn/api/chat-process",
+            url: "https://1chat.cc/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://s320.cn/",
+                "Referer": "https://1chat.cc/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
                 prompt: your_qus,
                 options: ops,
+                regenerate: false,
+                roomId: 1002,
+                uuid: Date.now(),
                 systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
                 top_p:1,
                 temperature:0.8
@@ -2561,7 +2569,7 @@
                         showAnserAndHighlightCodeStr(finalResult)
                     }
                     if (nowResult.id) {
-                        parentID_s320 = nowResult.id;
+                        parentID_chat1 = nowResult.id;
                     }
 
                 } catch (e) {
