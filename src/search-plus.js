@@ -389,9 +389,9 @@
     }
 
     function isMobile() {
-        var userAgentInfo = navigator.userAgent.toLowerCase();
-        var mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
-        var mobile_flag = false;
+        let userAgentInfo = navigator.userAgent.toLowerCase();
+        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+        let mobile_flag = false;
         //根据userAgent判断是否是手机
         for (let v = 0; v < mobileAgents.length; v++) {
             if (userAgentInfo.indexOf(mobileAgents[v].toLowerCase()) > -1) {
@@ -537,9 +537,9 @@
 
     //顶级函数
     function uuid() { //uuid 产生
-        var s = [];
-        var hexDigits = "0123456789abcdef";
-        for (var i = 0; i < 36; i++) {
+        let s = [];
+        let hexDigits = "0123456789abcdef";
+        for (let i = 0; i < 36; i++) {
             s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
         }
         s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
@@ -1235,7 +1235,7 @@
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.8 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.8 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div><p></p>`;
             resolve(divE)
         })
@@ -1303,8 +1303,8 @@
                 autoClick = undefined;
                 showAnserAndHighlightCodeStr("自动点击已经关闭")
             }else{
-                localStorage.setItem("autoClick", "T")
-                autoClick = "T"
+                localStorage.setItem("autoClick", "开启")
+                autoClick = "开启"
                 showAnserAndHighlightCodeStr("自动点击已经开启")
             }
         })
@@ -1428,7 +1428,7 @@
                 if(autoClick){
                     setTimeout(() => {
                         document.getElementById("button_GPT").click(); //自动点击
-                    }, 1000)
+                    }, 1500)
                 }
             })
 
