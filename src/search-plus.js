@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.8
+// @version       1.9.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -1227,7 +1227,8 @@
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
-        <a target="_blank"  href="https://chat.openai.com/chat">CHATGPT</a>=><a target="_blank" style="color: #a515d4;" href="https://yiyan.baidu.com/">文心</a>=>
+        <a target="_blank"  href="https://chat.openai.com/chat">CHATGPT</a>=>
+        <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>=>
         <a target="_blank"  href="https://tongyi.aliyun.com/">通义</a>=>
         <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=>
         <a target="_blank"  href="https://bard.google.com/">Bard</a>=>
@@ -1235,7 +1236,7 @@
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.8 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.9 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div><p></p>`;
             resolve(divE)
         })
@@ -2039,16 +2040,21 @@
 
     }
 
-    function HZIT() {
+    async function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
-        let baseURL = "https://chargpt.hz-it-dev.com/";
+   async function HZIT() {
+
+        let baseURL = "https://chatgpt3.hz-it-dev.com/";
         addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
+        let res = await GM_fetch({
             method: "POST",
-            url: baseURL + "send2",
+            url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
+                "origin": "https://chatgpt3.hz-it-dev.com",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -2059,37 +2065,52 @@
                 temperature: 1,
                 text: your_qus,
                 presence_penalty: 0
-            }),
-
-            onload:(res)=>{
-
-                if (res.status === 200) {
-                    console.log('成功....')
-                    console.log(res.response)
-                    let rest = JSON.parse(res.response).data;
-                    console.log(rest)
-
-                    try {
-                        showAnserAndHighlightCodeStr(rest);
-                        addMessageChain(messageChain6, {
-                            role: "assistant",
-                            content: rest
-                        })
-                    } catch (e) {
-                        //TODO handle the exception
-                        document.getElementById('gptAnswer').innerHTML = `${rest}`
-                    }
-
-                    highlightCodeStr()
-                } else {
-                    console.log(res)
-                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
-                }
-            },
-            onerror: function (err) {
-                console.log(err)
-            }
+            })
         });
+       if (res.status === 200) {
+           console.log('成功....')
+           console.log(res.response)
+           let rest = JSON.parse(res.response).data;
+           console.log(rest)
+           for (let i = 0; i < 25; i++) {
+               console.log("hzit",i)
+               let rr = await GM_fetch({
+                   method: "POST",
+                   url: baseURL + "api/getOne",
+                   headers: {
+                       "Content-Type": "application/json",
+                       "accept": "*/*",
+                       "origin": "https://chatgpt3.hz-it-dev.com",
+                       "path": "v1/chat/completions",
+                       "Referer": baseURL
+                   },
+                   data: JSON.stringify({
+                       id: rest
+                   })
+               });
+               if (rr.status === 200) {
+                   console.log(rr)
+                   let result = JSON.parse(rr.response).data;
+                   if(!result) {
+                       await delay(3000)
+                       continue;
+                   }
+                   showAnserAndHighlightCodeStr(result)
+                   addMessageChain(messageChain6, {
+                       role: "assistant",
+                       content: result
+                   })
+                   break;
+               }else {
+                   console.log(res)
+                   showAnserAndHighlightCodeStr('访问失败了')
+               }
+           }
+
+       } else {
+           console.log(res)
+           showAnserAndHighlightCodeStr('访问失败了')
+       }
 
     }
 
