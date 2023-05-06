@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version       1.9.9
+// @version      2.0.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -33,6 +33,7 @@
 // @grant      GM_setValue
 // @grant      GM_getValue
 // @grant      GM_getResourceText
+// @grant      GM_setClipboard
 // @run-at     document-end
 // @require    https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
 // @require    https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js
@@ -128,17 +129,35 @@
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
 
+    var darkTheme = localStorage.getItem("darkTheme")
+    console.log(darkTheme)
     //(prefers-color-scheme: light)
     function addHeadCss() {
         if(!document.getElementById("github-markdown-link")){
-            $("head").append($(
-                '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: dark)">'
-            ));
+            if(!darkTheme) {
+                //暗黑
+                $("head").append($(
+                    '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: dark)">'
+                ));
+            }else{
+                $("head").append($(
+                    '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: light)">'
+                ));
+            }
+
         }
         if(!document.getElementById("highlight-link")){
-            $("head").append($(
-                '<link id="highlight-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-dark.min.css">'
-            ));
+            if(!darkTheme) {
+                //暗黑
+                $("head").append($(
+                    '<link id="highlight-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-dark.min.css">'
+                ));
+            }else{
+                $("head").append($(
+                    '<link id="highlight-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/styles/base16/default-light.min.css">'
+                ));
+            }
+
         }
         if(!document.getElementById("katex-link")){
             $("head").append($(
@@ -421,16 +440,49 @@
 
     //显示答案并高亮代码函数
     function showAnserAndHighlightCodeStr(codeStr) {
+        if(!codeStr) return
         try {
             document.getElementById('gptAnswer').innerHTML = `${katexTohtml(mdConverter(codeStr.replace(/\\n+/g, "\n")))}`
         } catch (e) {
-            document.getElementById('gptAnswer').innerHTML = `${mdConverter(codeStr.replace(/\\n+/g, "\n"))}`
+            try {
+                document.getElementById('gptAnswer').innerHTML = `${mdConverter(codeStr.replace(/\\n+/g, "\n"))}`
+            }catch (e) {
+                console.log(e)
+            }
         }
         for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
             document.getElementsByTagName("code")[i].setAttribute("class",
                 "hljs");
             hljs.highlightAll()
         }
+        //添加代码复制按钮 start
+        let preList =  document.querySelectorAll("#gptAnswer pre")
+        preList.forEach((pre)=>{
+            try{
+                if(!pre.querySelector(".btn-pre-copy")){
+                    //<span class=\"btn-pre-copy\" onclick='preCopy(this)'>复制代码</span>
+                    let copyBtn = document.createElement("span");
+                    copyBtn.setAttribute("class","btn-pre-copy");
+                    copyBtn.addEventListener("click",(event)=>{
+                        let _this = event.target
+                        console.log(_this)
+                       let pre = _this.parentNode;
+                       console.log(pre.innerText)
+                       _this.innerText = '';
+                       GM_setClipboard(pre.innerText, "text");
+                        _this.innerText = '复制成功'
+                       setTimeout(() =>{
+                           _this.innerText = '复制代码'
+                       },2000)
+                    })
+                    copyBtn.innerText = '复制代码'
+                    pre.insertBefore(copyBtn, pre.firstChild)
+                }
+            }catch (e) {
+                console.log(e)
+            }
+        })
+        //添加代码复制按钮 end
     }
 
     //高亮代码函数
@@ -721,8 +773,19 @@
     }
 
     gptDiv p{
-        white-space: pre-line
+        white-space: pre-line;
     }
+    
+    pre .btn-pre-copy{
+        text-align: right;
+        display: block;
+    }
+    
+    pre .btn-pre-copy:hover{
+        cursor: pointer;
+    }
+    
+    
     `)
                 break;
             default:
@@ -1225,6 +1288,7 @@
     </select> 部分线路需要科学上网</p>
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
+	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
         <a target="_blank"  href="https://chat.openai.com/chat">CHATGPT</a>=>
@@ -1236,7 +1300,7 @@
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 1.9.9 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.0 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div><p></p>`;
             resolve(divE)
         })
@@ -1310,6 +1374,18 @@
             }
         })
 
+        document.getElementById('darkTheme').addEventListener('click', () => {
+            if(darkTheme){
+                localStorage.removeItem("darkTheme")
+                darkTheme = undefined;
+                showAnserAndHighlightCodeStr("暗黑已经开启")
+            }else{
+                localStorage.setItem("darkTheme", "关闭")
+                darkTheme = "关闭"
+                showAnserAndHighlightCodeStr("暗黑已经关闭")
+            }
+        })
+
         document.getElementById('modeSelect').addEventListener('change', () => {
             const selectEl = document.getElementById('modeSelect');
             const selectedValue = selectEl.options[selectEl.selectedIndex].value;
@@ -1332,6 +1408,7 @@
                  document.querySelector("#gptStatus").classList.remove("chatHide")
                  document.querySelector("#warn").classList.remove("chatHide")
                  document.querySelector("#autoClickP").classList.remove("chatHide")
+                 document.querySelector("#darkThemeP").classList.remove("chatHide")
                  document.querySelector("#website").classList.remove("chatHide")
              }catch (e) {
                  console.log(e)
@@ -1343,6 +1420,7 @@
                   document.querySelector("#gptStatus").classList.add("chatHide")
                   document.querySelector("#warn").classList.add("chatHide")
                   document.querySelector("#autoClickP").classList.add("chatHide")
+                  document.querySelector("#darkThemeP").classList.add("chatHide")
                   document.querySelector("#website").classList.add("chatHide")
               }catch (e) {
                   console.log(e)
@@ -2095,10 +2173,15 @@
                        await delay(3000)
                        continue;
                    }
-                   showAnserAndHighlightCodeStr(result)
+                   if(!result.resTime){
+                       showAnserAndHighlightCodeStr(result.res || result)
+                       await delay(3000)
+                       continue
+                   }
+                   showAnserAndHighlightCodeStr(result.res || result)
                    addMessageChain(messageChain6, {
                        role: "assistant",
-                       content: result
+                       content: result.res || result
                    })
                    break;
                }else {
