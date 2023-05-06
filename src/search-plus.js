@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.1
+// @version      2.0.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -1326,10 +1326,18 @@
         <a target="_blank"  href="https://bard.google.com/">Bard</a>=>
         <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>=>
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
+        <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.1 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
-    </div><p></p>`;
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.2 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+    </div>
+    <span class="speak" style="margin-right: 10px;text-align: right">
+    <a id="speakAnser" style="cursor: pointer" href="javascript:void(0)" >
+       <svg width="20" height="20" viewBox="0 0 17 16">
+          <path d="M9 16.5v-9l6 4.5-6 4.5z"></path>
+          <path d="M0 0h24v24H0z" fill="none"></path>
+    </svg>朗读</a>
+</span>`;
             resolve(divE)
         })
     }
@@ -1412,6 +1420,14 @@
                 darkTheme = "关闭"
                 showAnserAndHighlightCodeStr("暗黑已经关闭")
             }
+        })
+        //朗读
+        document.getElementById('speakAnser').addEventListener('click', () => {
+           let ans = document.querySelector("#gptAnswer");
+           if(ans){
+               let speakText = encodeURIComponent(ans.innerText);
+               new Audio(`https://fanyi.sogou.com/reventondc/synthesis?text=${speakText}&speed=1&lang=zh-CHS&from=translateweb&speaker=5`).play();
+           }
         })
 
         document.getElementById('modeSelect').addEventListener('change', () => {
