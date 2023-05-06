@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.0
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
+// @version      2.0.1
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
 // @match      https://www.bing.com/*
@@ -76,6 +76,7 @@
 // @connect   supremes.pro
 // @connect   bnu120.space
 // @connect   chat7.aifks001.online
+// @connect   officechat.top
 // @connect   ai.usesless.com
 // @connect   www.ftcl.store
 // @connect   sunls.me
@@ -111,6 +112,8 @@
 // @connect   1chat.cc
 // @connect   cytsee.com
 // @connect   hanji051.cn
+// @connect   121.201.123.162
+// @connect   alllinkai1.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -171,6 +174,10 @@
 
 
     try {
+        console.log(
+            `%c【chatGPT tools Plus】已加载`,
+            'color: yellow;font-size: large;font-weight: bold;background-color: darkblue;'
+        );
         //禁用console 未转义警告
         hljs.configure({
             ignoreUnescapedHTML: true
@@ -1143,6 +1150,24 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "OFFICECHAT") {
+            console.log("OFFICECHAT")
+            OFFICECHAT()
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE === "CHATWEB1") {
+            console.log("CHATWEB1")
+            CHATWEB1()
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE === "LINKAI") {
+            console.log("LINKAI")
+            LINKAI()
+
+            return;
+            //end if
         }
 
 
@@ -1256,6 +1281,9 @@
       <option value="TDCHAT">TDCHAT</option>
       <option value="LERSEARCH">LERSEARCH</option>
       <option value="CHAT1">CHAT1</option>
+      <option value="OFFICECHAT">OFFICECHAT</option>
+      <option value="CHATWEB1">CHATWEB1</option>
+      <option value="LINKAI">LINKAI</option>
       <option value="HANJI">HANJI</option>
       <option value="MINDED">MINDED</option>
       <option value="CYTSEE">CYTSEE</option>
@@ -1300,7 +1328,7 @@
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.0 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.1 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div><p></p>`;
             resolve(divE)
         })
@@ -1714,6 +1742,68 @@
             console.log(ex)
         })
     }
+
+
+    //2023年5月6日
+    var parentID_chatWeb1;
+    function CHATWEB1() {
+        let ops = {};
+        if (parentID_chatWeb1) {
+            ops = {parentMessageId: parentID_chatWeb1};
+        }
+        console.log(ops)
+        let finalResult = [];
+        GM_fetch({
+            method: "POST",
+            url: "http://121.201.123.162:8888/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "http://121.201.123.162:8888/",
+                "X-Forwarded-For": generateRandomIP(),
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                prompt: your_qus,
+                options: ops
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        highlightCodeStr()
+                        return;
+                    }
+                    try {
+                        // console.log(normalArray)
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let nowResult = JSON.parse(decoder.decode(byteArray))
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
+                        }
+                        if (nowResult.id) {
+                            parentID_chatWeb1 = nowResult.id;
+                        }
+
+                    } catch (e) {
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            (reason)=>{
+                console.log(reason)
+            }
+        ).catch(ex => {
+            console.log(ex)
+        })
+    }
+
 
 
     var messageChain2 = [];//AILS
@@ -4017,6 +4107,148 @@
         });
 
     }
+
+
+    //2023年5月6日
+    var officeChatList = [];
+    var officeChaid = generateRandomString(21);
+    function OFFICECHAT() {
+        let Baseurl = "https://officechat.top/";
+
+        console.log(formatTime())
+        officeChatList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
+        officeChatList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        if (officeChatList.length > 10){
+            officeChatList = officeChatList.shift();
+        }
+        GM_fetch({
+            method: "POST",
+            url: Baseurl + "v1/chat/gpt/",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": Baseurl,
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                "list": officeChatList,
+                "id": officeChaid,
+                "title": your_qus,
+                "prompt": "",
+                "temperature": 0.5,
+                "models": "0",
+                "continuous": true
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    let finalResult = result.join("")
+                    try {
+                        console.log(finalResult)
+                        officeChatList[officeChatList.length - 1] = {
+                            "content": finalResult,
+                            "role": "assistant",
+                            "nickname": "AI",
+                            "time": formatTime(),
+                            "isMe": false
+                        };
+                        showAnserAndHighlightCodeStr(finalResult)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log(d)
+                    result.push(d)
+                    showAnserAndHighlightCodeStr(result.join(""))
+                } catch (e) {
+                    console.log(e)
+                }
+                return reader.read().then(processText);
+            });
+        },function (reason) {
+            console.log(reason)
+        }).finally((ex)=>{
+            console.log(ex)
+        });
+
+    }
+
+    var linkaiList = [];
+    var linkaiId = generateRandomString(21);
+    function LINKAI() {
+        let Baseurl = "https://alllinkai1.com/";
+
+        console.log(formatTime())
+        linkaiList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
+        linkaiList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        if (linkaiList.length > 10){
+            linkaiList = linkaiList.shift();
+        }
+        GM_fetch({
+            method: "POST",
+            url: Baseurl + "v1/chat/gpt/",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": Baseurl,
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                "list": linkaiList,
+                "id": linkaiId,
+                "title": your_qus,
+                "prompt": "",
+                "temperature": 0.5,
+                "models": "0",
+                "continuous": true
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    let finalResult = result.join("")
+                    try {
+                        console.log(finalResult)
+                        linkaiList[linkaiList.length - 1] = {
+                            "content": finalResult,
+                            "role": "assistant",
+                            "nickname": "AI",
+                            "time": formatTime(),
+                            "isMe": false
+                        };
+                        showAnserAndHighlightCodeStr(finalResult)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log(d)
+                    result.push(d)
+                    showAnserAndHighlightCodeStr(result.join(""))
+                } catch (e) {
+                    console.log(e)
+                }
+                return reader.read().then(processText);
+            });
+        },function (reason) {
+            console.log(reason)
+        }).finally((ex)=>{
+            console.log(ex)
+        });
+
+    }
+
+
 
     //http://www.gtpcleandx.xyz/#/home/chat
     var cleandxid = generateRandomString(21);
