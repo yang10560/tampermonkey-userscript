@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         百度文心一言去水印
 // @namespace    http://tampermonkey.net/
-// @version      1.3
-// @description  去文心一言水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制
+// @version      1.4
+// @description  去文心一言水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。去星火水印
 // @author       夜雨
 // @match        *://yiyan.baidu.com/*
 // @match        *://so.csdn.net/so/search*
+// @match        *://xinghuo.xfyun.cn/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=baidu.com
 // @grant        none
 // @license      MIT
@@ -15,13 +16,15 @@
 (function () {
     'use strict';
 
-    var hideWater = function () {
-        let divMask = document.querySelector('div[style^="pointer-events"]') || document.querySelector('#mask')
+    const hideWater = function () {
+        let divMask = document.querySelector('div[style^="pointer-events"]')
+            || document.querySelector('#mask') || document.querySelector("#watermark-wrapper")
         if (divMask) {
             let hideMask = document.createElement("style");
             hideMask.setAttribute("id", "hideStyle")
             hideMask.innerHTML = `div[style^="pointer-events"]{height:0 !important;width:0 !important;transform: rotate(90deg);}`
             if (location.href.indexOf("csdn.net") > -1) hideMask.innerHTML = `#mask {height:0 !important;width:0 !important;transform: rotate(90deg);}`
+            if (location.href.indexOf("xinghuo") > -1) hideMask.innerHTML = `#watermark-wrapper div {height:0 !important;width:0 !important;transform: rotate(90deg);}`
             let divId = divMask.getAttribute("id")
             let v = document.querySelector("#hideStyle")
             if (v) {
@@ -33,14 +36,14 @@
             }
 
         }
-    }
+    };
 
 
-    var vv = () => {
+    const vv = () => {
         //来源 https://greasyfork.org/zh-CN/scripts/462166
 
 
-        var old = null;
+        let old = null;
         try {
             old = MutationObserver.prototype.observe;
             MutationObserver.prototype.observe = function (target, options) {
@@ -72,11 +75,11 @@
             }
         } catch (e) {
         }
-    }
+    };
 
 
-    setTimeout(hideWater, 500)
-    setTimeout(vv, 1000)
+    setTimeout(hideWater, 2000)
+    setTimeout(vv, 1500)
 
 
     //去超时弹窗。去AI画图水印
