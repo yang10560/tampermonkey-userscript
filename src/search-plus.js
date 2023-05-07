@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.7
+// @version      2.0.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -446,9 +446,12 @@
         return renderedHtml;
     }
 
+    let rawAns = undefined;
+    let isShowRaw = false;
     //显示答案并高亮代码函数
     function showAnserAndHighlightCodeStr(codeStr) {
         if(!codeStr) return
+        rawAns = codeStr;//记录原文
         try {
             document.getElementById('gptAnswer').innerHTML = `${katexTohtml(mdConverter(codeStr.replace(/\\n+/g, "\n")))}`
         } catch (e) {
@@ -805,7 +808,10 @@
     function do_it() {
         let finalResult
         let normalArray
-        let nowResult
+
+        isShowRaw = false; //设置显示原文
+        rawAns = undefined;//设置显示原文
+
         document.getElementById('gptAnswer').innerHTML = `<div>加载中<span id="dot"></span></div>`;
 
         //CHATGPT模式
@@ -1331,14 +1337,25 @@
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.7 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.8 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div>
     <span class="speak" style="margin-right: 10px;text-align: right">
     <a id="speakAnser" style="cursor: pointer" href="javascript:void(0)" >
        <svg width="20" height="20" viewBox="0 0 17 16">
           <path d="M9 16.5v-9l6 4.5-6 4.5z"></path>
           <path d="M0 0h24v24H0z" fill="none"></path>
-    </svg>朗读</a>
+    </svg>朗读答案</a>
+    
+    <a id="copyAns" style="cursor: pointer" href="javascript:void(0)" >
+       <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="8" stroke="black" stroke-width="4" fill="none"></circle>
+    </svg>复制答案</a>
+    
+    <a id="rawAns" style="cursor: pointer" href="javascript:void(0)" >
+       <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="8" stroke="black" stroke-width="4" fill="none"></circle>
+    </svg>原文切换</a>
+
 </span>`;
             resolve(divE)
         })
@@ -1429,6 +1446,30 @@
            if(ans){
                let speakText = encodeURIComponent(ans.innerText);
                new Audio(`https://fanyi.sogou.com/reventondc/synthesis?text=${speakText}&speed=1&lang=zh-CHS&from=translateweb&speaker=5`).play();
+           }
+        })
+
+        //原文切换
+        document.getElementById('rawAns').addEventListener('click', (ev) => {
+           let ans = document.querySelector("#gptAnswer");
+           if(!rawAns) return;
+           if(!isShowRaw){
+               ans.innerText = rawAns;
+               isShowRaw = true;
+           }else{
+               showAnserAndHighlightCodeStr(rawAns)
+               isShowRaw = false;
+           }
+
+        })
+
+        //复制答案
+        document.getElementById('copyAns').addEventListener('click', (ev) => {
+           let ans = document.querySelector("#gptAnswer");
+           if(isShowRaw){
+               GM_setClipboard(rawAns, "text");
+           }else{
+               GM_setClipboard(ans.innerText, "text");
            }
         })
 
