@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.16
+// @version      4.17
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -49,6 +49,7 @@
 // @connect   api.aichatos.cloud
 // @connect   gamejx.cn
 // @connect   ai001.live
+// @connect   ai003.live
 // @connect   promptboom.com
 // @connect   caipacity.com
 // @license    MIT
@@ -61,7 +62,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.16"
+    var JSVer = "v4.17"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1771,11 +1772,11 @@
         console.log(msgobj)
          GM_xmlhttpRequest({
             method: "POST",
-            url: "https://chat1.sunls.me/conversation",
+            url: "https://chat2.sunls.me/conversation",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat1.sunls.me/",
-                "origin": "https://chat1.sunls.me",
+                "Referer": "https://chat2.sunls.me/",
+                "origin": "https://chat2.sunls.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify(msgobj),
@@ -1973,7 +1974,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "pub04-23Xs67AErn454",
+                "access-code": "586-481-525B",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -2027,7 +2028,7 @@
         //同LBB
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
-        let baseURL = "https://132122401530.ai001.live/";
+        let baseURL = "https://52221239187007.ai003.live/";
         addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
         GM_xmlhttpRequest({
             method: "POST",
@@ -2035,7 +2036,8 @@
             headers: {
                 "Content-Type": "application/json",
                 "path": "v1/chat/completions",
-                "Referer": baseURL
+                "Referer": baseURL,
+                "orgin":"https://52221239187007.ai003.live"
             },
             data: JSON.stringify({
                 messages: messageChain3,
@@ -2286,7 +2288,10 @@
 
     //4-25
     var messageChain8 = []; //lbb
+
     function LBB(question) {
+        XCBL(question);//同
+        return;
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
         let baseURL = "https://132122401530.ai001.live/";

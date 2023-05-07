@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.3
+// @version      2.0.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -102,6 +102,7 @@
 // @connect   lbb.ai
 // @connect   gamejx.cn
 // @connect   ai001.live
+// @connect   ai003.live
 // @connect   promptboom.com
 // @connect   hehanwang.com
 // @connect   caipacity.com
@@ -1305,14 +1306,14 @@
       <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
       <option value="SUNLE">SUNLE</option>
-      <option value="EASYAI">EASYAI</option>
+      <option value="EASYAI">EASYAI[挂]</option>
       <option value="CLEANDX">CLEANDX</option>
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
       <option value="XCBL">XCBL</option>
       <option value="HZIT">HZIT</option>
       <option value="TOYAML">TOYAML</option>
-      <option value="DARRICKS">DARRICKS</option>
+      <option value="DARRICKS">DARRICKS[挂]</option>
     </select> 部分线路需要科学上网</p>
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
@@ -1329,7 +1330,7 @@
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.3 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.4 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div>
     <span class="speak" style="margin-right: 10px;text-align: right">
     <a id="speakAnser" style="cursor: pointer" href="javascript:void(0)" >
@@ -3616,7 +3617,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "pub04-23Xs67AErn454",
+                "access-code": "586-481-525B",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -3667,7 +3668,7 @@
 
     function XCBL() {
         //同LBB
-        let baseURL = "https://132122401530.ai001.live/";
+        let baseURL = "https://52221239187007.ai003.live/";
         addMessageChain(messageChain5, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
@@ -3675,7 +3676,8 @@
             headers: {
                 "Content-Type": "application/json",
                 "path": "v1/chat/completions",
-                "Referer": baseURL
+                "Referer": baseURL,
+                "origin": "https://52221239187007.ai003.live"
             },
             data: JSON.stringify({
                 messages: messageChain5,
@@ -4520,11 +4522,11 @@
         console.log(msgobj)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "https://chat1.sunls.me/conversation",
+            url: "https://chat2.sunls.me/conversation",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat1.sunls.me/",
-                "origin": "https://chat1.sunls.me",
+                "Referer": "https://chat2.sunls.me/",
+                "origin": "https://chat2.sunls.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify(msgobj),
