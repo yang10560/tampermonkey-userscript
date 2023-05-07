@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.8
+// @version      2.0.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -132,6 +132,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
+    let JSver = '2.0.9';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -782,6 +783,18 @@
     #website a:nth-child(even){
         color: #0bbbac;
     }
+    
+    #website a {
+        border: 1px solid;
+        border-radius: 3px;
+        margin-right: 9px;
+        margin-bottom: 5px;
+    }
+    #website hr {
+        border: none;
+        border-top: 1px dashed #999;
+        margin: 5px 0px 5px 0px;
+    }
 
     gptDiv p{
         white-space: pre-line;
@@ -1321,23 +1334,27 @@
       <option value="TOYAML">TOYAML</option>
       <option value="DARRICKS">DARRICKS[挂]</option>
     </select> 部分线路需要科学上网</p>
-	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
-	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
-	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
+	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
+	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
+	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
-        <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
-        <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>=>
-        <a target="_blank"  href="https://tongyi.aliyun.com/">通义</a>=>
-        <a target="_blank"  href="https://www.tiangong.cn/">天工</a>=>
-        <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
-        <a target="_blank"  href="https://chat.openai.com/chat">OPENAI</a>=>
-        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=>
-        <a target="_blank"  href="https://bard.google.com/">Bard</a>=>
-        <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>=>
-        <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>=>
-        <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
+	    <hr>
+        <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
+        <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>
+        <a target="_blank"  href="https://tongyi.aliyun.com/">通义</a>
+        <a target="_blank"  href="https://www.tiangong.cn/">天工</a>
+        <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>
+        <a target="_blank"  href="https://chat.openai.com/chat">OPENAI</a>
+        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">Bing AI</a>
+        <hr>
+        <a target="_blank"  href="https://bard.google.com/">Google Bard</a>
+        <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>
+        <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>
+        <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">用爱发电</a>
+        <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">支付宝红包</a>
+        <hr>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.8 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: ${JSver} 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div>
     <span class="speak" style="margin-right: 10px;text-align: right">
     <a id="speakAnser" style="cursor: pointer" href="javascript:void(0)" >
@@ -1347,9 +1364,8 @@
     </svg>朗读答案</a>
     
     <a id="copyAns" style="cursor: pointer" href="javascript:void(0)" >
-       <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="8" stroke="black" stroke-width="4" fill="none"></circle>
-    </svg>复制答案</a>
+       <svg width="12" height="12" data-v-13fede38="" t="1679666016648" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6241" class="icon"><path data-v-13fede38="" d="M661.333333 234.666667A64 64 0 0 1 725.333333 298.666667v597.333333a64 64 0 0 1-64 64h-469.333333A64 64 0 0 1 128 896V298.666667a64 64 0 0 1 64-64z m-21.333333 85.333333H213.333333v554.666667h426.666667v-554.666667z m191.829333-256a64 64 0 0 1 63.744 57.856l0.256 6.144v575.701333a42.666667 42.666667 0 0 1-85.034666 4.992l-0.298667-4.992V149.333333H384a42.666667 42.666667 0 0 1-42.368-37.674666L341.333333 106.666667a42.666667 42.666667 0 0 1 37.674667-42.368L384 64h447.829333z" fill="#909399" p-id="6242"></path></svg>
+       复制答案</a>
     
     <a id="rawAns" style="cursor: pointer" href="javascript:void(0)" >
        <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
