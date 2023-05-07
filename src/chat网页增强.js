@@ -1390,7 +1390,7 @@
             ops = {parentMessageId: parentID_extkj};
         }
         console.log(ops)
-        let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__").toString()
+        let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__I>EO)$__M*&.fsee").toString()
         console.log("aes:" + pt)
         GM_xmlhttpRequest({
             method: "POST",
@@ -1403,7 +1403,7 @@
             data: JSON.stringify({
                 prompt: pt,
                 options: ops,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-" + new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()
+                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
             }),
             onloadstart: (stream) => {
                 let result = "";
