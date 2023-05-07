@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.17
+// @version      4.19
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -62,7 +62,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.17"
+    var JSVer = "v4.19"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -874,7 +874,7 @@
                         let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
                         let nowResult = decoder.decode(byteArray)
-                        finalResult.push(nowResult)
+                        finalResult.push(nowResult.replace(/fxopenai\.win/gi,""))
                         GM_fillBotResponse(finalResult.join(""))
                     } catch (e) {
                         console.log(e)
@@ -2085,7 +2085,8 @@
     }
 
 
-    var promptboom_did = generateRandomString(32)
+    //var promptboom_did = generateRandomString(32)
+    var promptboom_did = 'dd633043916550bea93f56e1af08debd'
     var messageChain10 = []
     async function PRTBOOM(question) {
         let your_qus = question;//你的问题
@@ -2093,7 +2094,7 @@
         addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
 
         const t = Date.now()
-        const r = t + ":" + your_qus + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
+        const r = t + ":" + "question" + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
         const sign = CryptoJS.SHA256(r).toString();
         console.log(sign)
         let request_json = {
@@ -2154,7 +2155,7 @@
                     }
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
+                        result.push(d.replace(/<strong.*?<\/strong>/gi,''))
                         GM_fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)

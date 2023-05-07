@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.4
+// @version      2.0.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -1285,7 +1285,7 @@
       <option value="OFFICECHAT">OFFICECHAT</option>
       <option value="CHATWEB1">CHATWEB1</option>
       <option value="LINKAI">LINKAI</option>
-      <option value="HANJI">HANJI</option>
+      <option value="HANJI">HANJI[挂]</option>
       <option value="MINDED">MINDED</option>
       <option value="CYTSEE">CYTSEE</option>
       <option value="QDYMYS">QDYMYS</option>
@@ -1320,17 +1320,18 @@
 	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg width="15" height="15" focusable="false" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1zm14.5 2H5a3 3 0 0 1-3-3V4.4A2.4 2.4 0 0 1 4.4 2h15.2A2.4 2.4 0 0 1 22 4.4v15.1a2.5 2.5 0 0 1-2.5 2.5"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js">网页版</a>=>
-        <a target="_blank"  href="https://chat.openai.com/chat">CHATGPT</a>=>
         <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>=>
         <a target="_blank"  href="https://tongyi.aliyun.com/">通义</a>=>
+        <a target="_blank"  href="https://www.tiangong.cn/">天工</a>=>
+        <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
+        <a target="_blank"  href="https://chat.openai.com/chat">OPENAI</a>=>
         <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">BingAI</a>=>
         <a target="_blank"  href="https://bard.google.com/">Bard</a>=>
         <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>=>
-        <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>=>
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.4 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.5 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div>
     <span class="speak" style="margin-right: 10px;text-align: right">
     <a id="speakAnser" style="cursor: pointer" href="javascript:void(0)" >
@@ -2513,7 +2514,7 @@
                         let decoder = new TextDecoder('utf-8');
                         let nowResult = decoder.decode(byteArray)
 
-                        finalResult.push(nowResult)
+                        finalResult.push(nowResult.replace(/fxopenai\.win/gi,""))
                         showAnserAndHighlightCodeStr(finalResult.join(""))
 
 
@@ -4421,13 +4422,14 @@
 
     //https://www.promptboom.com/
 
-    var promptboom_did = generateRandomString(32)
+    //var promptboom_did = generateRandomString(32)
+    var promptboom_did = 'dd633043916550bea93f56e1af08debd'
     async function PRTBOOM() {
 
         addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
 
         const t = Date.now()
-        const r = t + ":" + your_qus + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
+        const r = t + ":" + "question" + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
         const sign = CryptoJS.SHA256(r).toString();
         console.log(sign)
         let request_json = {
@@ -4487,7 +4489,7 @@
                     }
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
+                        result.push(d.replace(/<strong.*?<\/strong>/gi,''))
                         showAnserAndHighlightCodeStr(result.join(""))
                     } catch (e) {
                         console.log(e)
