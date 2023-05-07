@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.6
+// @version      2.0.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -85,6 +85,7 @@
 // @connect   chat.bushiai.com
 // @connect   chatgpt.qdymys.cn
 // @connect   easyai.one
+// @connect   pp2pdf.com
 // @connect   api.aichatos.cloud
 // @connect   xiami.one
 // @connect   chat2.wuguokai.cn
@@ -112,7 +113,7 @@
 // @connect   1chat.cc
 // @connect   cytsee.com
 // @connect   hanji051.cn
-// @connect   121.201.123.162
+// @connect   skybyte.me
 // @connect   alllinkai1.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
@@ -1330,7 +1331,7 @@
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>=>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js">支付宝红包</a>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.6 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: 2.0.7 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div>
     <span class="speak" style="margin-right: 10px;text-align: right">
     <a id="speakAnser" style="cursor: pointer" href="javascript:void(0)" >
@@ -1773,18 +1774,19 @@
     var parentID_chatWeb1;
     function CHATWEB1() {
         let ops = {};
-        if (parentID_chatWeb1) {
+        /*if (parentID_chatWeb1) {
             ops = {parentMessageId: parentID_chatWeb1};
-        }
+        }*/
+
         console.log(ops)
         let finalResult = [];
         GM_fetch({
             method: "POST",
-            url: "http://121.201.123.162:8888/api/chat-process",
+            url: "https://chatbot.skybyte.me/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "http://121.201.123.162:8888/",
-                "X-Forwarded-For": generateRandomIP(),
+                "Referer": "https://chatbot.skybyte.me/",
+                "origin": "https://chatbot.skybyte.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -3900,10 +3902,11 @@
         console.log(sessionId_easyai)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: `http://easyai.one/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
+            url: `https://ai.pp2pdf.com/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
             headers: {
-                "Referer": "http://easyai.one/chat",
+                "Referer": "https://ai.pp2pdf.com/chat",
                 "X-Forwarded-For": easyai_ip,
+                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV3cl9OQVluSEtFM1RfblhJZEtOdFdBIiwiZXhwIjoxNjgzODA4NTE5LCJ1c2VySWQiOjEwODJ9.PaiHuDC88oEZ5pI7ubPvV_D21IgtNfxc5O2Ly_Sfjv0",
                 "accept": "text/event-stream"
             },
             onloadstart: (stream) => {
