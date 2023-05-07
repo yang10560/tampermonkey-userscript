@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.15
-// @description  网页增强
+// @version      4.16
+// @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
-// @match        http://127.0.0.1:8088/chatxc/AI1.html*
 // @match        *://yeyu1024.xyz/gpt.html*
 // @grant       GM_xmlhttpRequest
 // @grant      GM_getResourceText
@@ -62,7 +61,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.15"
+    var JSVer = "v4.16"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1105,19 +1104,26 @@
                      return;
                  }
                  try {
-                     // console.log(normalArray)
+
                      let byteArray = new Uint8Array(value);
                      let decoder = new TextDecoder('utf-8');
-                     let nowResult = JSON.parse(decoder.decode(byteArray))
+                     console.log(decoder.decode(byteArray))
+                     let d = decoder.decode(byteArray);
+                     let dd = d.split("-^&^-");
+                     if(dd.length === 2){
+                         let nowResult = JSON.parse(dd[0])
+                         if (nowResult.text) {
+                             finalResult.push(dd[1])
+                             GM_fillBotResponse(finalResult.join(""))
+                         }
+                         if (nowResult.id) {
+                             parentID_68686 = nowResult.id;
+                         }
+                     }else{
+                         finalResult.push(d)
+                         GM_fillBotResponse(finalResult.join(""))
+                     }
 
-                     if (nowResult.text) {
-                         console.log(nowResult)
-                         finalResult = nowResult.text
-                         GM_fillBotResponse(finalResult)
-                     }
-                     if (nowResult.id) {
-                         parentID_68686 = nowResult.id;
-                     }
 
                  } catch (ex) {
                      console.log(ex)
