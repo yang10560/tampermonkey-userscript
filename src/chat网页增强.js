@@ -516,6 +516,7 @@
     var messageChain11 = []//xeasy
     function XEASY(question) {
         let your_qus = question
+        GM_handleUserInput(null)
         let now = Date.now();
         const pk = {}.PUBLIC_SECRET_KEY;//查看js的generateSignature函数中的key
         let Baseurl = "https://chat19.xeasy.me/"
