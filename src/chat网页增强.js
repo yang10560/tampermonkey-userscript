@@ -428,6 +428,7 @@
     }
     function AILS(question) {
         let your_qus = question;//你的问题
+        GM_handleUserInput(null)
         let vtime = function converTimestamp(t) {
             const e = parseInt(t)
                 , n = e % 10
