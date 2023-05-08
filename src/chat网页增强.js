@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.22
+// @version      4.23
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -63,7 +63,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.22"
+    var JSVer = "v4.23"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2296,7 +2296,7 @@
                         await delay(3000)
                         continue
                     }
-                    GM_fillBotResponseAndSave(result.res || result)
+                    GM_fillBotResponseAndSave(your_qus, result.res || result)
                     addMessageChain(messageChain6, {
                         role: "assistant",
                         content: result.res || result
