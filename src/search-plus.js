@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.0.9
+// @version      2.1.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -97,6 +97,7 @@
 // @connect   gptplus.one
 // @connect   xcbl.cc
 // @connect   hz-it-dev.com
+// @connect   6bbs.cn
 // @connect   toyaml.com
 // @connect   38.47.97.76
 // @connect   lbb.ai
@@ -132,7 +133,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.0.9';
+    let JSver = '2.1.0';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -2298,7 +2299,7 @@
 
    async function HZIT() {
 
-        let baseURL = "https://chatgpt3.hz-it-dev.com/";
+        let baseURL = "https://20220507.6bbs.cn/";
         addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
         let res = await GM_fetch({
             method: "POST",
@@ -2306,7 +2307,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
-                "origin": "https://chatgpt3.hz-it-dev.com",
+                "origin": "https://20220507.6bbs.cn",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -2332,7 +2333,7 @@
                    headers: {
                        "Content-Type": "application/json",
                        "accept": "*/*",
-                       "origin": "https://chatgpt3.hz-it-dev.com",
+                       "origin": "https://20220507.6bbs.cn",
                        "path": "v1/chat/completions",
                        "Referer": baseURL
                    },

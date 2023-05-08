@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.20
+// @version      4.22
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -52,6 +52,7 @@
 // @connect   ai003.live
 // @connect   promptboom.com
 // @connect   caipacity.com
+// @connect   6bbs.cn
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -62,7 +63,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.20"
+    var JSVer = "v4.22"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2233,17 +2234,22 @@
 
     }
 
-    function HZIT(question) {
+
+    async function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    async function HZIT(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
-        let baseURL = "https://chargpt.hz-it-dev.com/";
+        let baseURL = "https://20220507.6bbs.cn/";
         addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
+        let res = await GM_fetch({
             method: "POST",
-            url: baseURL + "send2",
+            url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
+                "origin": "https://20220507.6bbs.cn",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -2254,37 +2260,58 @@
                 temperature: 1,
                 text: your_qus,
                 presence_penalty: 0
-            }),
-
-            onload:(res)=>{
-
-                if (res.status === 200) {
-                    console.log('成功....')
-                    console.log(res.response)
-                    let rest = JSON.parse(res.response).data;
-                    console.log(rest)
-
-                    try {
-                        addMessageChain(messageChain6, {
-                            role: "assistant",
-                            content: rest
-                        })
-                        GM_simulateBotResponseAndSave(your_qus, rest);
-
-                    } catch (e) {
-                        //TODO handle the exception
-                        GM_simulateBotResponse(rest);
-                    }
-
-                } else {
-                    GM_simulateBotResponse('访问失败了');
-                }
-            },
-            onerror: function (err) {
-                console.log(err)
-                GM_simulateBotResponse('访问出错');
-            }
+            })
         });
+        if (res.status === 200) {
+            GM_simulateBotResponse("...")
+            console.log('成功....')
+            console.log(res.response)
+            let rest = JSON.parse(res.response).data;
+            console.log(rest)
+            for (let i = 0; i < 25; i++) {
+                console.log("hzit",i)
+                let rr = await GM_fetch({
+                    method: "POST",
+                    url: baseURL + "api/getOne",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "accept": "*/*",
+                        "origin": "https://20220507.6bbs.cn",
+                        "path": "v1/chat/completions",
+                        "Referer": baseURL
+                    },
+                    data: JSON.stringify({
+                        id: rest
+                    })
+                });
+                if (rr.status === 200) {
+                    console.log(rr)
+                    let result = JSON.parse(rr.response).data;
+                    if(!result) {
+                        await delay(3000)
+                        continue;
+                    }
+                    if(!result.resTime){
+                        GM_fillBotResponse(result.res || result)
+                        await delay(3000)
+                        continue
+                    }
+                    GM_fillBotResponseAndSave(result.res || result)
+                    addMessageChain(messageChain6, {
+                        role: "assistant",
+                        content: result.res || result
+                    })
+                    break;
+                }else {
+                    console.log(res)
+                    GM_fillBotResponse('访问失败了')
+                }
+            }
+
+        } else {
+            console.log(res)
+            GM_simulateBotResponse('访问失败了')
+        }
 
     }
 
