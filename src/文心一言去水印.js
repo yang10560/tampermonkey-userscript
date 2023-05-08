@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         百度文心一言去水印
 // @namespace    http://tampermonkey.net/
-// @version      1.4
-// @description  去文心一言水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。去星火水印
+// @version      1.5
+// @description  去文心一言水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。去星火水印。去天工水印
 // @author       夜雨
 // @match        *://yiyan.baidu.com/*
 // @match        *://so.csdn.net/so/search*
 // @match        *://xinghuo.xfyun.cn/*
+// @match        *://neice.tiangong.cn/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=baidu.com
 // @grant        none
 // @license      MIT
@@ -19,12 +20,15 @@
     const hideWater = function () {
         let divMask = document.querySelector('div[style^="pointer-events"]')
             || document.querySelector('#mask') || document.querySelector("#watermark-wrapper")
+            || document.querySelector("div[style*='pointer-events']")
         if (divMask) {
             let hideMask = document.createElement("style");
             hideMask.setAttribute("id", "hideStyle")
             hideMask.innerHTML = `div[style^="pointer-events"]{height:0 !important;width:0 !important;transform: rotate(90deg);}`
             if (location.href.indexOf("csdn.net") > -1) hideMask.innerHTML = `#mask {height:0 !important;width:0 !important;transform: rotate(90deg);}`
             if (location.href.indexOf("xinghuo") > -1) hideMask.innerHTML = `#watermark-wrapper div {height:0 !important;width:0 !important;transform: rotate(90deg);}`
+            if (location.href.indexOf("tiangong") > -1) hideMask.innerHTML = `div[style*='pointer-events'] {height:0 !important;width:0 !important;transform: rotate(90deg);}`
+
             let divId = divMask.getAttribute("id")
             let v = document.querySelector("#hideStyle")
             if (v) {
