@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.23
+// @version      4.24
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -23,7 +23,7 @@
 // @connect    mirrorchat.extkj.cn
 // @connect    free.anzz.top
 // @connect   supremes.pro
-// @connect   chat.bnu120.space
+// @connect   bnu120.space
 // @connect   chat7.aifks001.online
 // @connect   sunls.me
 // @connect   theb.ai
@@ -63,7 +63,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.23"
+    var JSVer = "v4.24"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1315,74 +1315,114 @@
     }
 
 
-    var parentID_hhw;
-    function HEHANWANG() {
-        let ops = {};
-        if (parentID_hhw) {
-            ops = {parentMessageId: parentID_hhw};
-        }
-        console.log(ops)
-        GM_fetch({
-            method: "POST",
-            url: "https://chat.hehanwang.com/api/chat-process",
+
+
+    //获取A类网站key 2023年5月3日
+    async function setNormalKey(url) {
+        let response = await GM_fetch({
+            method: "GET",
+            url: url,
             headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://chat.hehanwang.com/",
-                "Authorization": "Bearer 293426",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                top_p: 1,
-                prompt: your_qus,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                temperature: 0.8,
-                options: ops
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = "";
-            const reader = stream.response.getReader();
-            //     console.log(reader.read)
-            let finalResult;
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    highlightCodeStr()
-                    return;
-                }
-
-                const chunk = value;
-                result += chunk;
-                try {
-                    // console.log(normalArray)
-                    let byteArray = new Uint8Array(chunk);
-                    let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    var jsonLines = decoder.decode(byteArray).split("\n");
-                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-
-                    if (nowResult.text) {
-                        console.log(nowResult)
-                        finalResult = nowResult.text
-                        showAnserAndHighlightCodeStr(finalResult)
-                    }
-                    if (nowResult.id) {
-                        parentID_hhw = nowResult.id;
-                    }
-
-                } catch (e) {
-
-                }
-
-                return reader.read().then(processText);
-            });
-        },(reason)=>{
-            console.log(reason)
-        }).catch((ex)=>{
-            console.log(ex)
+                "Referer": url,
+                "origin": url
+            }
         });
-
+        let resp = response.responseText;
+        let regex = /component-url="(.*?)"/i;
+        let match = resp.match(regex);
+        let jsurl = match[1];
+        console.log("js url:" + jsurl);
+        if (!jsurl) {
+            //错误
+            console.log(resp)
+            return
+        }
+        let rr = await GM_fetch({
+            method: "GET",
+            url: url + jsurl,
+            headers: {
+                "Referer": url,
+                "origin": url
+            }
+        });
+        resp = rr.responseText;
+        regex = /\`\$\{\w\}:\$\{\w\}:(.*?)\`/i;
+        match = resp.match(regex);
+        let key = match[1];
+        console.log(url+":key:",key)
+        return key
     }
 
+    var bnuKey;
+    setTimeout(async () => {
+        bnuKey = await setNormalKey("https://chat.0.bnu120.space");
+    });
+    let messageChain9 = []
+    //https://chat.bnu120.space/
+    function BNU120(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let now = Date.now();
+        let Baseurl = "https://chat.0.bnu120.space/"
+        generateSignatureWithPkey({
+            t: now,
+            m: your_qus || "",
+            pkey: bnuKey
+        }).then(sign => {
+            addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_fetch({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+                    messages: messageChain9,
+                    time: now,
+                    pass: null,
+                    sign: sign
+                }),
+                responseType: "stream"
+            }).then((stream) => {
+                GM_simulateBotResponse("...")
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain9, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            GM_fillBotResponseAndSave(your_qus,finalResult)
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        GM_fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },function (reason) {
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            });
+
+        });
+    }
 
     var parentID_extkj;
     function EXTKJ(question){
@@ -1592,81 +1632,7 @@
     }
 
 
-    //https://chat.bnu120.space/
-    var messageChain9 = [];
-    function BNU120(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let now = Date.now();
-        let Baseurl = "https://chat.bnu120.space/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: "sksksk"
-        }).then(sign => {
-            addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
 
-                    messages: messageChain9,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    GM_simulateBotResponse("请稍后...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain9, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                GM_fillBotResponseAndSave(your_qus, finalResult);
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
-                        try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            GM_fillBotResponse(result.join(""))
-                        } catch (e) {
-                            console.log(e)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            });
-
-        });
-    }
 
 
     //https://chat7.aifks001.online/v1/chat/gpt/
@@ -2670,8 +2636,8 @@
                  case "ANZZ":
                      ANZZ(qus);
                     break;
-                case "HEHANWANG":
-                    HEHANWANG(qus);
+                case "BNU120":
+                    BNU120(qus);
                     break;
                 case "EXTKJ":
                     EXTKJ(qus);
@@ -2750,7 +2716,7 @@
  <option value="WOBCW">WOBCW</option>
  <option value="LTD68686">LTD68686</option>
  <option value="ANZZ">ANZZ</option>
- <option value="HEHANWANG">HEHANWANG</option>
+ <option value="BNU120">BNU120</option>
  <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
