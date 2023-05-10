@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.24
+// @version      4.25
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -63,7 +63,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.24"
+    var JSVer = "v4.25"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2207,7 +2207,7 @@
     async function HZIT(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
-        let baseURL = "https://20220507.6bbs.cn/";
+        let baseURL = "https://20220508.6bbs.cn/";
         addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
         let res = await GM_fetch({
             method: "POST",
@@ -2215,7 +2215,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
-                "origin": "https://20220507.6bbs.cn",
+                "origin": "https://20220508.6bbs.cn",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -2242,7 +2242,7 @@
                     headers: {
                         "Content-Type": "application/json",
                         "accept": "*/*",
-                        "origin": "https://20220507.6bbs.cn",
+                        "origin": "https://20220508.6bbs.cn",
                         "path": "v1/chat/completions",
                         "Referer": baseURL
                     },

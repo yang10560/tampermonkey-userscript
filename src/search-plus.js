@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.1.4
+// @version      2.1.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -136,7 +136,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.1.4';
+    let JSver = '2.1.5';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -2342,7 +2342,7 @@
 
    async function HZIT() {
 
-        let baseURL = "https://20220507.6bbs.cn/";
+        let baseURL = "https://20220508.6bbs.cn/";
         addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
         let res = await GM_fetch({
             method: "POST",
@@ -2350,7 +2350,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
-                "origin": "https://20220507.6bbs.cn",
+                "origin": "https://20220508.6bbs.cn",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -2376,7 +2376,7 @@
                    headers: {
                        "Content-Type": "application/json",
                        "accept": "*/*",
-                       "origin": "https://20220507.6bbs.cn",
+                       "origin": "https://20220508.6bbs.cn",
                        "path": "v1/chat/completions",
                        "Referer": baseURL
                    },
