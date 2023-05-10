@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.1.0
+// @version      2.1.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -102,8 +102,10 @@
 // @connect   38.47.97.76
 // @connect   lbb.ai
 // @connect   gamejx.cn
+// @connect   chat86.cn
 // @connect   ai001.live
 // @connect   ai003.live
+// @connect   ai006.live
 // @connect   promptboom.com
 // @connect   hehanwang.com
 // @connect   caipacity.com
@@ -133,7 +135,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.1.0';
+    let JSver = '2.1.1';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -1838,13 +1840,13 @@
 
         console.log(ops)
         let finalResult = [];
-        GM_fetch({
+       GM_fetch({
             method: "POST",
-            url: "https://chatbot.skybyte.me/api/chat-process",
+            url: "https://cbot1.skybyte.me/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chatbot.skybyte.me/",
-                "origin": "https://chatbot.skybyte.me",
+                "Referer": "https://cbot1.skybyte.me/",
+                "origin": "https://cbot1.skybyte.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -2964,11 +2966,12 @@
 
     var gamejx_group_id;
     function setGroupid_gamejx() {
+
         GM_fetch({
             method: "POST",
-            url: "https://chat.gamejx.cn/go/api/group/add",
+            url: "https://chatapi.chat86.cn/go/api/group/add",
             headers: {
-                "Referer": `https://chat.gamejx.cn/`,
+                "Referer": `https://chatapi.chat86.cn/`,
                 "Content-Type": "application/json",
                 "Authorization": "C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4="
             },
@@ -2999,9 +3002,9 @@
     async function GAMEJX(){
         let req1 = await GM_fetch({
             method: "POST",
-            url: "https://chat.gamejx.cn/go/api/steam/see",
+            url: "https://chatapi.chat86.cn/go/api/steam/see",
             headers: {
-                "Referer": `https://chat.gamejx.cn/`,
+                "Referer": `https://chatapi.chat86.cn/`,
                 "Content-Type": "application/json",
                 "Authorization": "C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4="
             },
@@ -3032,10 +3035,10 @@
                 console.log("question_id:",question_id)
                 GM_fetch({
                     method: "GET",
-                    url: `https://chat.gamejx.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=615933&token=C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4%3D`,
+                    url: `https://chatapi.chat86.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=615933&token=C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4%3D`,
                     headers: {
                         "Content-Type": "application/json",
-                        "Referer": "https://chat.gamejx.cn/",
+                        "Referer": "https://chatapi.chat86.cn/",
                         "accept": "text/event-stream"
                     },
                     responseType: "stream"
@@ -3907,7 +3910,7 @@
 
     //4-25
     function LBB() {
-        let baseURL = "https://gpt.ai001.live/";
+        let baseURL = "https://43207713129.ai006.live/";
         addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
