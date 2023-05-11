@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.1.6
+// @version      2.1.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -120,6 +120,7 @@
 // @connect   skybyte.me
 // @connect   alllinkai1.com
 // @connect   baidu.com
+// @connect   geekr.dev
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -137,7 +138,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.1.6';
+    let JSver = '2.1.7';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -1193,6 +1194,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "GEEKR") {
+            console.log("GEEKR")
+            GEEKR()
+
+            return;
+            //end if
         }
 
 
@@ -1307,6 +1314,7 @@
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
+      <option value="GEEKR">GEEKR</option>
       <option value="LERSEARCH">LERSEARCH[挂]</option>
       <option value="CHAT1">CHAT1</option>
       <option value="OFFICECHAT">OFFICECHAT[挂]</option>
@@ -2440,6 +2448,79 @@
            console.log(res)
            showAnserAndHighlightCodeStr('访问失败了')
        }
+
+    }
+
+    //https://chat.geekr.dev/ 2023年5月11日
+    async function GEEKR() {
+
+        let baseURL = "https://chat.geekr.dev/";
+        let res = await GM_fetch({
+            method: "POST",
+            url: baseURL + "chat",
+            headers: {
+                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryunS2PBTi514UmKrN",
+                "accept": "*/*",
+                "Referer": baseURL
+            },
+            data:  `------WebKitFormBoundaryunS2PBTi514UmKrN\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundaryunS2PBTi514UmKrN\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundaryunS2PBTi514UmKrN--\r\n`
+        });
+        if (res.status === 200) {
+            console.log('成功....')
+            console.log(res.response)
+            let chat_id = JSON.parse(res.response).chat_id;
+            console.log("chat_id",chat_id)
+            GM_fetch({
+                method: "GET",
+                url: `https://chat.geekr.dev/stream?chat_id=${chat_id}&api_key=`,
+                headers: {
+                    "Referer": "https://chat.geekr.dev/",
+                    "accept": "text/event-stream"
+                },
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                let finalResult;
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        finalResult = result.join("")
+                        showAnserAndHighlightCodeStr(finalResult)
+                        return;
+                    }
+
+                    try {
+
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        console.log("raw:",d)
+                        let dd = d.replace(/data: /g, "").split("\n")
+                        console.log("dd:",dd)
+                        dd.forEach(item=>{
+                            try {
+                                let delta = JSON.parse(item).choices[0].delta.content
+                                result.push(delta)
+                                showAnserAndHighlightCodeStr(result.join(""))
+                            }catch (e) {
+
+                            }
+                        })
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },function (err) {
+                console.log(err)
+            }).catch((ex)=>{
+                console.log(ex)
+            })
+
+
+        } else {
+            console.log(res)
+            showAnserAndHighlightCodeStr('访问失败了')
+        }
 
     }
 

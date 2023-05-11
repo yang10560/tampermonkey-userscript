@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.26
+// @version      4.27
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -28,6 +28,7 @@
 // @connect   supremes.pro
 // @connect   bnu120.space
 // @connect   chat7.aifks001.online
+// @connect   geekr.dev
 // @connect   sunls.me
 // @connect   theb.ai
 // @connect   www.ftcl.store
@@ -66,7 +67,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.26"
+    var JSVer = "v4.27"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1654,6 +1655,7 @@
     var aifskList = [];
     var aifsid = generateRandomString(21);
 
+    //失效
     function AIFKS(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
@@ -1735,6 +1737,81 @@
 
     }
 
+
+    //https://chat.geekr.dev/ 2023年5月11日
+    async function GEEKR(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let baseURL = "https://chat.geekr.dev/";
+        let res = await GM_fetch({
+            method: "POST",
+            url: baseURL + "chat",
+            headers: {
+                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryunS2PBTi514UmKrN",
+                "accept": "*/*",
+                "Referer": baseURL
+            },
+            data:  `------WebKitFormBoundaryunS2PBTi514UmKrN\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundaryunS2PBTi514UmKrN\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundaryunS2PBTi514UmKrN--\r\n`
+        });
+        if (res.status === 200) {
+            console.log('成功....')
+            console.log(res.response)
+            let chat_id = JSON.parse(res.response).chat_id;
+            console.log("chat_id",chat_id)
+            GM_fetch({
+                method: "GET",
+                url: `https://chat.geekr.dev/stream?chat_id=${chat_id}&api_key=`,
+                headers: {
+                    "Referer": "https://chat.geekr.dev/",
+                    "accept": "text/event-stream"
+                },
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                let finalResult;
+                GM_simulateBotResponse("请稍后...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        finalResult = result.join("")
+                        GM_fillBotResponseAndSave(your_qus,finalResult)
+                        return;
+                    }
+
+                    try {
+
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        console.log("raw:",d)
+                        let dd = d.replace(/data: /g, "").split("\n")
+                        console.log("dd:",dd)
+                        dd.forEach(item=>{
+                            try {
+                                let delta = JSON.parse(item).choices[0].delta.content
+                                result.push(delta)
+                                GM_fillBotResponse(result.join(""))
+                            }catch (e) {
+
+                            }
+                        })
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },function (err) {
+                console.log(err)
+            }).catch((ex)=>{
+                console.log(ex)
+            })
+
+
+        } else {
+            console.log(res)
+            GM_simulateBotResponseAndSave('访问失败了')
+        }
+
+    }
 
 
 
@@ -2664,8 +2741,8 @@
                 case "NBAI":
                     NBAI(qus);
                     break;
-                case "AIFKS":
-                    AIFKS(qus);
+                case "GEEKR":
+                    GEEKR(qus);
                     break;
                case "SUNLE":
                    SUNLE(qus);
@@ -2736,7 +2813,7 @@
  <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
- <option value="AIFKS">AIFKS[挂]</option>
+ <option value="GEEKR">GEEKR</option>
  <option value="PRTBOOM">PRTBOOM</option>
  <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
