@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.1.7
+// @version      2.1.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -66,6 +66,7 @@
 // @connect   gpt66.cn
 // @connect   ai.ls
 // @connect   letsearches.com
+// @connect   zhulei.xyz
 // @connect   gpt.wobcw.com
 // @connect   chat.68686.ltd
 // @connect   t66.ltd
@@ -121,6 +122,7 @@
 // @connect   alllinkai1.com
 // @connect   baidu.com
 // @connect   geekr.dev
+// @connect   chatgptdddd.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -138,7 +140,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.1.7';
+    let JSver = '2.1.8';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -1200,6 +1202,18 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "ZHULEI") {
+            console.log("ZHULEI")
+            ZHULEI()
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE === "CHATDDD") {
+            console.log("CHATDDD")
+            CHATDDD()
+
+            return;
+            //end if
         }
 
 
@@ -1327,6 +1341,8 @@
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI</option>
       <option value="T66">T66</option>
+      <option value="ZHULEI">ZHULEI</option>
+      <option value="CHATDDD">CHATDDD</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
       <option value="FDKANG">FDKANG[挂]</option>
@@ -1971,7 +1987,6 @@
 
 
     var messageChain2 = [];//AILS
-    var messageChain7 = [];//OHTOAI
     var messageChain4 = [];//ESO
     var messageChain5 = [];//XCBL
     var messageChain6 = [];//HZIT
@@ -2227,6 +2242,41 @@
                 console.log(ex)
             });
 
+        });
+    }
+
+    let messageChain_zhulei = [];
+    function ZHULEI() {
+        addMessageChain(messageChain_zhulei, {role: "user", content: your_qus})//连续话
+
+        GM_fetch({
+            method: "POST",
+            url: "https://chathub.zhulei.xyz/api",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer null",
+                "Referer": "https://chathub.zhulei.xyz/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                messages: messageChain_zhulei,
+                model: "gpt-3.5-turbo",
+                password: "",
+                temperature: 0.6
+            }),
+        }).then((r) => {
+            if (r.status === 200) {
+                console.log(r.response);
+                if(messageChain_zhulei.length > 0){
+                    messageChain_zhulei[messageChain_zhulei.length - 1].id = Date.now();
+                }
+                addMessageChain(messageChain_zhulei,{"role":"assistant","content":r.response,"id":Date.now()})
+                showAnserAndHighlightCodeStr(r.response)
+            }
+        },(reason)=>{
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
         });
     }
 
@@ -3055,6 +3105,7 @@
 
     var parentID_nbai;
 
+    //XIAJIE https://f6.xjai.cc/#/chat/1002
     function NBAI() {
         let ops = {};
         if (parentID_nbai) {
@@ -3694,10 +3745,10 @@
         console.log(ops)
         GM_fetch({
             method: "POST",
-            url: "https://chat.hehanwang.com/api/chat-process",
+            url: "https://chat1.hehanwang.com/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat.hehanwang.com/",
+                "Referer": "https://chat1.hehanwang.com/",
                 "Authorization": "Bearer 293426",
                 "accept": "application/json, text/plain, */*"
             },
@@ -3755,67 +3806,63 @@
 
 
 
-    function OHTOAI() {
+    let messageChain7 = [];//CHATDDD
+    function CHATDDD() {
 
-        // let baseURL = "https://chat.ohtoai.com/";
-        let baseURL = "https://chat.bushiai.com/";
+        let baseURL = "https://chatgptdddd.com/";
         addMessageChain(messageChain7, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
+        GM_fetch({
             method: "POST",
-            url: baseURL + "api/chat-stream",
+            url: baseURL + "api/chat",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "",
-                "path": "v1/chat/completions",
                 "Referer": baseURL
             },
             data: JSON.stringify({
                 messages: messageChain7,
-                stream: true,
-                model: "gpt-3.5-turbo",
+                model: {
+                    "id": "gpt-3.5-turbo",
+                    "name": "GPT-3.5",
+                    "maxLength": 12000,
+                    "tokenLimit": 4000
+                },
                 temperature: 1,
-                max_tokens: 2000,
-                presence_penalty: 0
+                prompt: "你是 ChatGPT，一个由 OpenAI 训练的大型语言模型。你可以回答各种问题，帮助人们解决问题。 please think in english and answer by chinese",
+                key: null
             }),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain7, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            showAnserAndHighlightCodeStr(finalResult)
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    let finalResult = result.join("")
                     try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        showAnserAndHighlightCodeStr(result.join(""))
+                        console.log(finalResult)
+                        addMessageChain(messageChain7, {
+                            role: "assistant",
+                            content: finalResult
+                        })
+                        showAnserAndHighlightCodeStr(finalResult)
                     } catch (e) {
                         console.log(e)
                     }
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    result.push(d)
+                    showAnserAndHighlightCodeStr(result.join(""))
+                } catch (e) {
+                    console.log(e)
+                }
 
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onprogress: function (msg) {
-                //console.log(msg)
-            },
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
+                return reader.read().then(processText);
+            },function (reason) {
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            });
         });
 
     }
