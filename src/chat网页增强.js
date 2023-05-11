@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.27
+// @version      4.28
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -18,6 +18,7 @@
 // @connect    api.aigcfun.com
 // @connect    ai5.wuguokai.top
 // @connect    chat.aidutu.cn
+// @connect    chat86.cn
 // @connect    gpt.wobcw.com
 // @connect    chat.68686.ltd
 // @connect    t66.ltd
@@ -67,7 +68,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.27"
+    var JSVer = "v4.28"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2489,18 +2490,18 @@
     function setGroupid_gamejx() {
         GM_fetch({
             method: "POST",
-            url: "https://chat.gamejx.cn/go/api/group/add",
+            url: "https://chatapi.chat86.cn/go/api/group/add",
             headers: {
                 "Referer": `https://chat.gamejx.cn/`,
                 "Content-Type": "application/json",
-                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
             },
             data:JSON.stringify({
                 version: "",
                 os: "pc",
                 language: "zh",
                 pars: {
-                    user_id: "594578",
+                    user_id: "625292",
                     examples_id: "",
                     examples_describe: "你好"
                 }
@@ -2525,18 +2526,18 @@
         GM_handleUserInput(null)
         let req1 = await GM_fetch({
             method: "POST",
-            url: "https://chat.gamejx.cn/go/api/steam/see",
+            url: "https://chatapi.chat86.cn/go/api/steam/see",
             headers: {
                 "Referer": `https://chat.gamejx.cn/`,
                 "Content-Type": "application/json",
-                "Authorization": "YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0="
+                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
             },
             data:JSON.stringify({
                 "version": "",
                 "os": "pc",
                 "language": "zh",
                 "pars": {
-                    "user_id": "594578",
+                    "user_id": "625292",
                     "question": is_first_gamejx ? "你好" : your_qus,
                     "group_id": `${gamejx_group_id}`,
                     "question_id": ""
@@ -2549,7 +2550,7 @@
         console.log(req1.responseText)
 
         //{"code":200,"data":{"answer":"","question_id":"91303","type":"answer",
-        // "user_id":"594578"},"retCode":"ok","retMsg":"success"}
+        // "user_id":"625292"},"retCode":"ok","retMsg":"success"}
         if(req1.responseText){
             try {
                 let data = eval(req1.responseText)
@@ -2558,7 +2559,7 @@
                 console.log("question_id:",question_id)
                 GM_fetch({
                     method: "GET",
-                    url: `https://chat.gamejx.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=594578&token=YlYiuXaoawWHulNEjDxKOxg6OWmUOHa2Nf9lOR12iL0%3D`,
+                    url: `https://chatapi.chat86.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=625292&token=SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo%3D`,
                     headers: {
                         "Content-Type": "application/json",
                         "Referer": "https://chat.gamejx.cn/",
