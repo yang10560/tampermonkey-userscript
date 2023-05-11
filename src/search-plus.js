@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.1.5
+// @version      2.1.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -68,6 +68,7 @@
 // @connect   letsearches.com
 // @connect   gpt.wobcw.com
 // @connect   chat.68686.ltd
+// @connect   t66.ltd
 // @connect   www.aitianhu.com
 // @connect   free.anzz.top
 // @connect   chat.ohtoai.com
@@ -136,7 +137,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.1.5';
+    let JSver = '2.1.6';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -980,10 +981,10 @@
 
             //end if
             return;
-        } else if (GPTMODE && GPTMODE === "LTD68686") {
+        } else if (GPTMODE && GPTMODE === "T66") {
 
-            console.log("LTD68686")
-            LTD68686()
+            console.log("T66")
+            T66()
 
             return;
             //end if
@@ -1306,9 +1307,9 @@
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
-      <option value="LERSEARCH">LERSEARCH</option>
+      <option value="LERSEARCH">LERSEARCH[挂]</option>
       <option value="CHAT1">CHAT1</option>
-      <option value="OFFICECHAT">OFFICECHAT</option>
+      <option value="OFFICECHAT">OFFICECHAT[挂]</option>
       <option value="CHATWEB1">CHATWEB1</option>
       <option value="LINKAI">LINKAI</option>
       <option value="HANJI">HANJI[挂]</option>
@@ -1317,7 +1318,7 @@
       <option value="QDYMYS">QDYMYS</option>
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI</option>
-      <option value="LTD68686">LTD68686</option>
+      <option value="T66">T66</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
       <option value="FDKANG">FDKANG[挂]</option>
@@ -1328,7 +1329,7 @@
       <option value="HEHANWANG">HEHANWANG</option>
       <option value="LBB">LBB</option>
       <option value="GAMEJX">GAMEJX</option>
-      <option value="AIFKS">AIFKS</option>
+      <option value="AIFKS">AIFKS[挂]</option>
       <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
       <option value="SUNLE">SUNLE</option>
@@ -1384,6 +1385,8 @@
         })
     }
 
+    let speakAudio;
+    let isPlayend = true;
     async function pivElemAddEventAndValue(append_case) {
         let search_content
 
@@ -1499,9 +1502,21 @@
         //朗读
         document.getElementById('speakAnser').addEventListener('click', () => {
            let ans = document.querySelector("#gptAnswer");
+           if(!isPlayend){
+               console.log('音频停止！');
+               speakAudio.pause();
+               isPlayend = true;
+               return;
+           }
            if(ans){
                let speakText = encodeURIComponent(ans.innerText);
-               new Audio(`https://fanyi.sogou.com/reventondc/synthesis?text=${speakText}&speed=1&lang=zh-CHS&from=translateweb&speaker=5`).play();
+               speakAudio = new Audio(`https://fanyi.sogou.com/reventondc/synthesis?text=${speakText}&speed=1&lang=zh-CHS&from=translateweb&speaker=5`);
+               speakAudio.play()
+               isPlayend = false;
+               speakAudio.addEventListener("ended",function() {
+                   isPlayend = true;
+                   console.log('音频已播放完毕！');
+               })
            }
         })
 
@@ -1803,8 +1818,8 @@
 
     var parentID_68686;
 
-    //http://chat.68686.ltd/
-    function LTD68686() {
+    //https://t66.ltd/#/chat/1002
+    function T66() {
         let ops = {};
         if (parentID_68686) {
             ops = {parentMessageId: parentID_68686};
@@ -1813,11 +1828,11 @@
         let finalResult = [];
         GM_fetch({
             method: "POST",
-            url: "http://38.47.97.76/api/chat-process",
+            url: "https://t66.ltd/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "http://38.47.97.76/",
-                "X-Forwarded-For": generateRandomIP(),
+                "Referer": "https://t66.ltd/",
+               // "X-Forwarded-For": generateRandomIP(),
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -1839,7 +1854,7 @@
                         let decoder = new TextDecoder('utf-8');
                         console.log(decoder.decode(byteArray))
                         let d = decoder.decode(byteArray);
-                        let dd = d.split("-^&^-");
+                        /*let dd = d.split("-^&^-");
                         if(dd.length === 2){
                             let nowResult = JSON.parse(dd[0])
                             if (nowResult.text) {
@@ -1852,7 +1867,20 @@
                         }else{
                             finalResult.push(d)
                             showAnserAndHighlightCodeStr(finalResult.join(""))
+                        }*/
+
+                        let jsonLines = d.split("\n");
+                        let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                        if (nowResult.text) {
+                            console.log(nowResult)
+                            finalResult = nowResult.text
+                            showAnserAndHighlightCodeStr(finalResult)
                         }
+                        if (nowResult.id) {
+                            parentID_68686 = nowResult.id;
+                        }
+
 
 
                     } catch (e) {
@@ -3014,14 +3042,14 @@
             headers: {
                 "Referer": `https://chatapi.chat86.cn/`,
                 "Content-Type": "application/json",
-                "Authorization": "C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4="
+                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
             },
             data:JSON.stringify({
                 version: "",
                 os: "pc",
                 language: "zh",
                 pars: {
-                    user_id: "615933",
+                    user_id: "625292",
                     examples_id: "",
                     examples_describe: "你好"
                 }
@@ -3047,14 +3075,14 @@
             headers: {
                 "Referer": `https://chatapi.chat86.cn/`,
                 "Content-Type": "application/json",
-                "Authorization": "C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4="
+                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
             },
             data:JSON.stringify({
                 "version": "",
                 "os": "pc",
                 "language": "zh",
                 "pars": {
-                    "user_id": "615933",
+                    "user_id": "625292",
                     "question": is_first_gamejx ? "你好" : your_qus,
                     "group_id": `${gamejx_group_id}`,
                     "question_id": ""
@@ -3076,7 +3104,7 @@
                 console.log("question_id:",question_id)
                 GM_fetch({
                     method: "GET",
-                    url: `https://chatapi.chat86.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=615933&token=C67E0aUHZ3QSAJ1B55qMKg3YVFV2ojPRPiWfwu0JFp4%3D`,
+                    url: `https://chatapi.chat86.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=625292&token=SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo%3D`,
                     headers: {
                         "Content-Type": "application/json",
                         "Referer": "https://chatapi.chat86.cn/",
@@ -4008,7 +4036,7 @@
             headers: {
                 "Referer": "https://ai.pp2pdf.com/chat",
                 "X-Forwarded-For": easyai_ip,
-                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV3cl9OQVluSEtFM1RfblhJZEtOdFdBIiwiZXhwIjoxNjgzODA4NTE5LCJ1c2VySWQiOjEwODJ9.PaiHuDC88oEZ5pI7ubPvV_D21IgtNfxc5O2Ly_Sfjv0",
+                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV6bmJhTnlKa3RUalgza3BBcy1EOFJBIiwiZXhwIjoxNjg0MTM4MTI4LCJ1c2VySWQiOjEzNTV9.PdO-9ozH4aixDYifAt4hnSMkb8WfZmcHw-dZY_1eQ8g",
                 "accept": "text/event-stream"
             },
             onloadstart: (stream) => {

@@ -1,15 +1,17 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.25
+// @version      4.26
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
 // @match        *://yeyu1024.xyz/gpt.html*
 // @grant       GM_xmlhttpRequest
 // @grant      GM_getResourceText
+// @icon64      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAZlBMVEUAAAD///+hoaFoaGhsbGy7u7vd3d2+vr76+vra2tr29va2trYrKyvg4ODs7OxXV1dgYGCtra0xMTGXl5fExMQ6OjqOjo7R0dEVFRWnp6dSUlIiIiIcHBwLCwt4eHhycnKEhIRHR0f14+hfAAADN0lEQVRYhe1WyZajMAyEsMQshgABEwIJ+f+fbC02W0yHnjnNvNYFDFbZKpUlO86v/e/Wpve/8M4TFckwSvI/cx8z11g2/tw9vZKrEIKe159GUkvwipPxVb4eQQzvYV12XX3Y/x6BT5LqUZkgWixEHF/9/hAAeozz0I8nOtzoccDfg8CbaZQrYkOGYUaEFO2RDUTT4MZefjkMpVcQo5/Wr2DSi9/bhlYPhukvZqf41l3hiiFv8xJR2CslIT+XXfc+YapojY60kG1ZA0rknj+lL4YtnGCQ4lbESSczf5R6Ugc5ee4AoL9KAwbwYXDWXJTXhaDhf2L3R44rxzkbgFgHn55Y0JJjzyeONpYLDn4CCPn7A46VaggjwIB6eEltAOConCUAcZVDXBKIHHgbp9IZ4KW0AZj8LAHaQEzaY0lmHk60AXiQ8XYFEDoVrRpXOmSfdQFfbMe7MuTOJMLU6IJqkh7PuTMVrhosAJCp2xrApA6Lk+p4VllMQjsAcNNkpzeQlKkPHhQb0VkAEgO8TSMaVqhMH/EyW57W2R7moNoBCjwDPg1QzM07QAk7o+wUrIcNwAVZ1ktAROE7gBMaEq4kaW8NgHlQOsrULiUoHjGT40PIqngHOIGYzRK22ggJz3TpbrCt7AMU9gPZwc4y5slJC7FO4woAxmcLgMMi0dF1ymSOtnMEYFDczxqtdJRM6HlAbhSvARIqHG+G5BJGqONoK2opooIMLQFaYMvWs0EJruNRV1b8vy+wqDtbEj2caAcQg5NWdIQL6IJPjIGg1gDKhLINARyxed4DpgLFq+vvKoRiEszGWmlCy0OmcyrqSxKr/eaUzFvDGnDWCX2d5zQmNdJsO4xoz8XeyqcpIdRexZ0BBOYl2r2wyHfwB2WFO0zBjS/Zv2Vc8Pey3l3kor0iR65Q+61Vr6GmttNSOtxRf+jgvfnW3eFa4CZ+3fb1k1q1uC0D3GmKC2s5zkxKvieqWbKQPvFpfbRnNF+pYn/+3ny6m0zW+9eYDIMxlQsbvKuO3zfrV5fWKMc4GLu6G+m2KY/fNNnu6/vu2drTv7fFjVuOP3dHy5MolJEqrKfvoPXp57vpr/3r9gUxwiW4OiuC3wAAAABJRU5ErkJggg==
 // @connect    chatai.to
 // @connect    luntianxia.uk
+// @connect    pp2pdf.com
 // @connect    api.tdchat0.com
 // @connect    bxgav.tdchat0.com
 // @connect    xeasy.me
@@ -18,6 +20,7 @@
 // @connect    chat.aidutu.cn
 // @connect    gpt.wobcw.com
 // @connect    chat.68686.ltd
+// @connect    t66.ltd
 // @connect    ai.ls
 // @connect    chat.ohtoai.com
 // @connect    mirrorchat.extkj.cn
@@ -63,7 +66,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.25"
+    var JSVer = "v4.26"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1076,7 +1079,7 @@
 
     var parentID_68686;
 
-    function LTD68686(question) {
+    function T66(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
         let ops = {};
@@ -1087,11 +1090,11 @@
         let finalResult = [];
          GM_fetch({
             method: "POST",
-            url: "http://38.47.97.76/api/chat-process",
+            url: "https://t66.ltd/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "http://38.47.97.76/",
-                "X-Forwarded-For": generateRandomIP(),
+                "Referer": "https://t66.ltd/",
+              //  "X-Forwarded-For": generateRandomIP(),
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -1113,7 +1116,7 @@
                      let decoder = new TextDecoder('utf-8');
                      console.log(decoder.decode(byteArray))
                      let d = decoder.decode(byteArray);
-                     let dd = d.split("-^&^-");
+                     /*let dd = d.split("-^&^-");
                      if(dd.length === 2){
                          let nowResult = JSON.parse(dd[0])
                          if (nowResult.text) {
@@ -1126,7 +1129,19 @@
                      }else{
                          finalResult.push(d)
                          GM_fillBotResponse(finalResult.join(""))
+                     }*/
+                     let jsonLines = d.split("\n");
+                     let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                     if (nowResult.text) {
+                         console.log(nowResult)
+                         finalResult = nowResult.text
+                         GM_fillBotResponse(finalResult)
                      }
+                     if (nowResult.id) {
+                         parentID_68686 = nowResult.id;
+                     }
+
 
 
                  } catch (ex) {
@@ -1812,10 +1827,11 @@
         console.log(sessionId_easyai)
          GM_xmlhttpRequest({
             method: "POST",
-            url: `http://easyai.one/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
+            url: `https://ai.pp2pdf.com/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
             headers: {
-                "Referer": "http://easyai.one/chat",
+                "Referer": "https://ai.pp2pdf.com/chat",
                 "X-Forwarded-For": easyai_ip,
+                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV6bmJhTnlKa3RUalgza3BBcy1EOFJBIiwiZXhwIjoxNjg0MTM4MTI4LCJ1c2VySWQiOjEzNTV9.PdO-9ozH4aixDYifAt4hnSMkb8WfZmcHw-dZY_1eQ8g",
                 "accept": "text/event-stream"
             },
             onloadstart: (stream) => {
@@ -2630,8 +2646,8 @@
                 case "WOBCW":
                     WOBCW(qus);
                     break;
-                case "LTD68686":
-                    LTD68686(qus);
+                case "T66":
+                    T66(qus);
                     break;
                  case "ANZZ":
                      ANZZ(qus);
@@ -2714,13 +2730,13 @@
  <option value="QDYMYS">QDYMYS</option>
  <option value="wgk">wgk</option>
  <option value="WOBCW">WOBCW</option>
- <option value="LTD68686">LTD68686</option>
+ <option value="T66">T66</option>
  <option value="ANZZ">ANZZ</option>
  <option value="BNU120">BNU120</option>
  <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
- <option value="AIFKS">AIFKS</option>
+ <option value="AIFKS">AIFKS[挂]</option>
  <option value="PRTBOOM">PRTBOOM</option>
  <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
