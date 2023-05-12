@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.28
+// @version      4.29
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        http*://blog.yeyusmile.top/gpt.html*
@@ -57,6 +57,7 @@
 // @connect   ai003.live
 // @connect   promptboom.com
 // @connect   caipacity.com
+// @connect   anfans.cn
 // @connect   6bbs.cn
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
@@ -68,7 +69,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.28"
+    var JSVer = "v4.29"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2675,6 +2676,61 @@
 
     }
 
+    //狐猴内置 2023年5月12日
+    function LEMURCHAT(question) {
+        let your_qus = question;
+        GM_handleUserInput(null)
+        let baseURL = "http://lemurchat.anfans.cn/";
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "api/chat/conversation-trial",
+            headers: {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Linux; Android 9; Redmi 4 Prime) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36"
+            },
+            data: `{"messages":"[{\\"content\\":\\"\\",\\"id\\":\\"LEMUR_AI_SYSTEM_SETTING\\",\\"isSensitive\\":false,\\"needCheck\\":false,\\"role\\":\\"system\\"},{\\"content\\":\\"${your_qus}\\",\\"isSensitive\\":false,\\"needCheck\\":true,\\"role\\":\\"user\\"}]"}`,
+            //data: `{"messages":"[{\\"content\\":\\"\\",\\"id\\":\\"LEMUR_AI_SYSTEM_SETTING\\",\\"isSensitive\\":false,\\"needCheck\\":false,\\"role\\":\\"system\\"},{\\"content\\":\\"你好\\",\\"isSensitive\\":false,\\"needCheck\\":true,\\"role\\":\\"user\\"}]"}`,
+            responseType: "stream"
+        }).then((stream)=>{
+            const reader = stream.response.getReader();
+            let result = [];
+            GM_simulateBotResponse("...")
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    GM_fillBotResponseAndSave(your_qus,result.join(""))
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log("raw:",d)
+                    let dd = d.replace(/data: /g, "").split("\n\n")
+                    console.log("dd:",dd)
+                    dd.forEach(item=>{
+                        try {
+                            let delta = /content\\":\\"(.*?)\\"/gi.exec(item)[1]
+                            result.push(delta)
+                            GM_fillBotResponse(result.join(""))
+                        }catch (e) {
+
+                        }
+                    })
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
+
+    }
+
+
+
     //初始化
     setTimeout(() => {
 
@@ -2791,6 +2847,10 @@
                     console.log("THEBAI")
                    THEBAI(qus);
                     break;
+               case "LEMURCHAT":
+                    console.log("LEMURCHAT")
+                   LEMURCHAT(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2805,6 +2865,7 @@
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
+ <option value="LEMURCHAT">狐猴内置</option>
  <option value="QDYMYS">QDYMYS</option>
  <option value="wgk">wgk</option>
  <option value="WOBCW">WOBCW</option>
