@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.1.9
+// @version      2.2.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -124,6 +124,7 @@
 // @connect   geekr.dev
 // @connect   chatgptdddd.com
 // @connect   anfans.cn
+// @connect   bing.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -141,7 +142,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.1.9';
+    let JSver = '2.2.0';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -1131,9 +1132,9 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "DARRICKS") {
-            console.log("DARRICKS")
-            DARRICKS();
+        }else if (GPTMODE && GPTMODE === "newBing") {
+            console.log("newBing")
+            newBing();
 
             return;
             //end if
@@ -1320,6 +1321,7 @@
    <select id="modeSelect">
       <option value="Default">默认线路</option>
       <option value="CHATGPT">CHATGPT</option>
+      <option value="newBing">newBing</option>
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
@@ -1365,7 +1367,6 @@
       <option value="XCBL">XCBL</option>
       <option value="HZIT">HZIT</option>
       <option value="TOYAML">TOYAML</option>
-      <option value="DARRICKS">DARRICKS[挂]</option>
     </select> 部分线路需要科学上网</p>
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
@@ -3282,6 +3283,93 @@
 
     }
 
+
+    let bingSocket;
+    function initBingSocket() {
+        let socket = new WebSocket(`wss://sydney.bing.com/sydney/ChatHub`);
+
+        // 监听连接成功事件
+
+        socket.addEventListener('open', (event) => {
+            console.log('initBingSocket 连接成功');
+            bingSocket = socket;
+            showAnserAndHighlightCodeStr("BingSocket:已连接，请勿重新点击，结果返回较慢请耐心等待，若长时间没反应则不可用。注意：本线路为new bing官网线路。若要使用线路,则需要科学上网和登录微软账号:[BING AI](https://cn.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx)")
+        });
+
+        // 监听接收消息事件
+        socket.addEventListener('message', (event) => {
+            console.log('initBingSocket 接收到消息：', event.data);
+            let revData = event.data;
+            try{
+                let rr = revData.replace(String.fromCharCode(0x1e),"");
+                console.log(JSON.parse(rr).arguments[0].messages[0].text)
+                showAnserAndHighlightCodeStr(JSON.parse(rr).arguments[0].messages[0].text)
+
+            }catch (e) {
+
+            }
+
+        });
+    }
+
+   //setTimeout(initBingSocket,1000)
+   let isStartOfSession = true;
+   async function newBing() {
+
+       setTimeout(initBingSocket)
+       await delay(2000)
+
+        let req1 = await GM_fetch({
+            method: "GET",
+            url: "https://www.bing.com/turing/conversation/create"
+        })
+        let r = req1.responseText;
+        console.log(r)
+        let conversationId = JSON.parse(r).conversationId;
+        let clientId = JSON.parse(r).clientId;
+        let conversationSignature = JSON.parse(r).conversationSignature;
+
+
+       if (bingSocket.readyState === 1) {
+           // 发送协议和版本号
+           const protocol = {protocol: "json", version: 1};
+           bingSocket.send(JSON.stringify(protocol) + String.fromCharCode(0x1e));
+
+           await delay(1000)
+           // 发送请求类型
+           const type = {type: 6};
+           bingSocket.send(JSON.stringify(type) + String.fromCharCode(0x1e));
+
+           await delay(500)
+           //发送提问
+           const msg = {
+               "arguments": [{
+                   "conversationId": conversationId,
+                   "source": "cib",
+                   "isStartOfSession": isStartOfSession,
+                   "message": {
+                       "text": your_qus,
+                       "messageType": "Chat"
+                   },
+                   "conversationSignature": conversationSignature,
+                   "participant": {
+                       "id": clientId
+                   }
+               }],
+               "invocationId": "1",
+               "target": "chat",
+               "type": 4
+           }
+
+           bingSocket.send(JSON.stringify(msg) + String.fromCharCode(0x1e));
+          /* if(isStartOfSession){
+               isStartOfSession = false;
+           }*/
+       }
+
+
+
+    }
 
     var pizzaSecret;
     async function setPizzakey() {
