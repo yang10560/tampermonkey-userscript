@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.1.8
+// @version      2.1.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -123,6 +123,7 @@
 // @connect   baidu.com
 // @connect   geekr.dev
 // @connect   chatgptdddd.com
+// @connect   anfans.cn
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -140,7 +141,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.1.8';
+    let JSver = '2.1.9';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -1148,9 +1149,9 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "LERSEARCH") {
-            console.log("LERSEARCH")
-            LERSEARCH();
+        }else if (GPTMODE && GPTMODE === "LEMURCHAT") {
+            console.log("LEMURCHAT")
+            LEMURCHAT();
 
             return;
             //end if
@@ -1329,7 +1330,7 @@
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
       <option value="GEEKR">GEEKR</option>
-      <option value="LERSEARCH">LERSEARCH[挂]</option>
+      <option value="LEMURCHAT">狐猴内置</option>
       <option value="CHAT1">CHAT1</option>
       <option value="OFFICECHAT">OFFICECHAT[挂]</option>
       <option value="CHATWEB1">CHATWEB1</option>
@@ -2623,29 +2624,21 @@
 
     }
 
-    var messageChain_LERSEARCH = []
-    function LERSEARCH() {
 
-        let baseURL = "https://sensundyaceleant.letsearches.com/";
-        addMessageChain(messageChain_LERSEARCH, {role: "user", content: your_qus})//连续话
+    //狐猴内置 2023年5月12日
+    function LEMURCHAT() {
+
+        let baseURL = "http://lemurchat.anfans.cn/";
+
         GM_fetch({
             method: "POST",
-            url: baseURL + "api/chat-stream",
+            url: baseURL + "api/chat/conversation-trial",
             headers: {
                 "Content-Type": "application/json",
-                "accept": "*/*",
-                "access-code": "j-2004",
-                "X-Forwarded-For": generateRandomIP(),
-                "path": "v1/chat/completions",
-                "Referer": baseURL
+                "User-Agent": "Mozilla/5.0 (Linux; Android 9; Redmi 4 Prime) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36"
             },
-            data: JSON.stringify({
-                messages: messageChain_LERSEARCH,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                presence_penalty: 0
-            }),
+            data: `{"messages":"[{\\"content\\":\\"\\",\\"id\\":\\"LEMUR_AI_SYSTEM_SETTING\\",\\"isSensitive\\":false,\\"needCheck\\":false,\\"role\\":\\"system\\"},{\\"content\\":\\"${your_qus}\\",\\"isSensitive\\":false,\\"needCheck\\":true,\\"role\\":\\"user\\"}]"}`,
+            //data: `{"messages":"[{\\"content\\":\\"\\",\\"id\\":\\"LEMUR_AI_SYSTEM_SETTING\\",\\"isSensitive\\":false,\\"needCheck\\":false,\\"role\\":\\"system\\"},{\\"content\\":\\"你好\\",\\"isSensitive\\":false,\\"needCheck\\":true,\\"role\\":\\"user\\"}]"}`,
             responseType: "stream"
         }).then((stream)=>{
             const reader = stream.response.getReader();
@@ -2653,19 +2646,22 @@
             reader.read().then(function processText({done, value}) {
                 if (done) {
                     highlightCodeStr()
-                    addMessageChain(messageChain_LERSEARCH, {
-                        role: "assistant",
-                        content: result.join("")
-                    });
                     return;
                 }
                 try {
-                    // console.log(normalArray)
-                    let byteArray = new Uint8Array(value);
-                    let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    result.push(decoder.decode(byteArray))
-                    showAnserAndHighlightCodeStr(result.join(""))
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log("raw:",d)
+                    let dd = d.replace(/data: /g, "").split("\n\n")
+                    console.log("dd:",dd)
+                    dd.forEach(item=>{
+                        try {
+                            let delta = /content\\":\\"(.*?)\\"/gi.exec(item)[1]
+                            result.push(delta)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }catch (e) {
+
+                        }
+                    })
 
                 } catch (e) {
                     console.log(e)
