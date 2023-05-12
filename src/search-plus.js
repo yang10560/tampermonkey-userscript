@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.0
+// @version      2.2.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -125,6 +125,7 @@
 // @connect   chatgptdddd.com
 // @connect   anfans.cn
 // @connect   bing.com
+// @connect   openai.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -142,7 +143,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.0';
+    let JSver = '2.2.1';
 
     var darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
@@ -1216,6 +1217,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "OPENAI") {
+            console.log("OPENAI")
+            OPENAI()
+
+            return;
+            //end if
         }
 
 
@@ -1322,6 +1329,7 @@
       <option value="Default">默认线路</option>
       <option value="CHATGPT">CHATGPT</option>
       <option value="newBing">newBing</option>
+      <option value="OPENAI">OPENAI</option>
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
@@ -3370,6 +3378,107 @@
 
 
     }
+
+
+   function uuidv4() {
+       let d = new Date().getTime(); // get current timestamp in ms (to ensure UUID uniqueness)
+       let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+           let r = (d + Math.random() * 16) % 16 | 0 // generate random nibble
+            d = Math.floor(d / 16) // correspond each UUID digit to unique 4-bit chunks of timestamp
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16) // generate random hexadecimal digit
+        })
+        return uuid
+    }
+    //OPENAI 2023年5月12
+   let messageChain_openai = [];
+   async function OPENAI(){
+       addMessageChain(messageChain_openai,{
+           "role": "user",
+           "id": uuidv4(),
+           "content": {
+               "content_type": "text",
+               "parts": [
+                   your_qus
+               ]
+           }
+       },20)
+       showAnserAndHighlightCodeStr("此线路为OpenAI官网线路，使用前确定有访问权限且登录账号：[OPENAI官网](https://chat.openai.com/)")
+       let req1 = await GM_fetch({
+           method: "GET",
+           url: "https://chat.openai.com/api/auth/session"
+       })
+       let r = req1.responseText;
+       console.log(r)
+       let accessToken;
+       try{
+           accessToken = JSON.parse(r).accessToken;
+       }catch (e) {
+           showAnserAndHighlightCodeStr("验证出错,请确认有权限访问OPENAI官网[OPENAI](https://chat.openai.com/)")
+       }
+
+       if(!accessToken){
+           showAnserAndHighlightCodeStr("验证出错,请确认有权限OPENAI官网[OPENAI](https://chat.openai.com/)")
+       }
+
+       let sendData = JSON.stringify({
+           action: "next",
+           messages: messageChain_openai,
+           model: "text-davinci-002-render",
+           parent_message_id: uuidv4(),
+           max_tokens: 4000
+       })
+       GM_fetch({
+           method: 'POST',
+           url: 'https://chat.openai.com/backend-api/conversation',
+           headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + accessToken},
+           responseType: "stream",
+           data: sendData
+       }).then((stream)=> {
+           let reader = stream.response.getReader()
+           let answer;
+           reader.read().then(function processText({done, value}) {
+               if (done) {
+                   console.log("===done==")
+                   addMessageChain(messageChain_openai,{
+                       "role": "assistant",
+                       "id": uuidv4(),
+                       "content": {
+                           "content_type": "text",
+                           "parts": [
+                               answer
+                           ]
+                       }
+                   }, 20)
+                   return
+               }
+               let responseItem = String.fromCharCode(...Array.from(value))
+               let items = responseItem.split('\n\n')
+               if (items.length > 2) {
+                   let lastItem = items.slice(-3, -2)[0]
+                   if (lastItem.startsWith('data: [DONE]')) {
+                       responseItem = items.slice(-4, -3)[0]
+                   } else {
+                       responseItem = lastItem
+                   }
+               }
+               if (responseItem.startsWith('data: {')) {
+                   answer = JSON.parse(responseItem.slice(6)).message.content.parts[0]
+                   showAnserAndHighlightCodeStr(answer)
+               } else if (responseItem.startsWith('data: [DONE]')) {
+
+                  // return
+               }
+               return reader.read().then(processText)
+           },function (reason) {
+               console.log(reason)
+           }).catch((ex)=>{
+               console.log(ex)
+           })
+       })
+   }
+
+
+
 
     var pizzaSecret;
     async function setPizzakey() {
