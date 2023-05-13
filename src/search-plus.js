@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.1
+// @version      2.2.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -126,6 +126,7 @@
 // @connect   anfans.cn
 // @connect   bing.com
 // @connect   openai.com
+// @connect   tongyi.aliyun.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -143,9 +144,14 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.1';
+    let JSver = '2.2.2';
 
-    var darkTheme = localStorage.getItem("darkTheme")
+
+    function getGPTMode() {
+        return localStorage.getItem("GPTMODE");
+    }
+
+    let darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
     //(prefers-color-scheme: light)
     function addHeadCss() {
@@ -264,7 +270,7 @@
     //封装GM_xmlhttpRequest ---end---
 
 
-    var generateRandomIP = () => {
+    let generateRandomIP = () => {
         const ip = [];
         for (let i = 0; i < 4; i++) {
             ip.push(Math.floor(Math.random() * 256));
@@ -276,7 +282,7 @@
 
     //动态pubkey
     function setPubkey() {
-        let GPTMODE = localStorage.getItem("GPTMODE")
+        let GPTMODE = getGPTMode()
         if (GPTMODE === "CHATGPT") {
 
             GM_fetch({
@@ -518,10 +524,10 @@
     }
 
     //顶级配置
-    var webSessionId
-    var autoClick = localStorage.getItem("autoClick")
-    var your_qus
-    var abortXml
+    let webSessionId
+    let autoClick = localStorage.getItem("autoClick")
+    let your_qus
+    let abortXml
     let regx = /search.*?\.cf/g;
     if (window.location.href.indexOf("bing.com") > -1) {
 
@@ -839,7 +845,7 @@
         document.getElementById('gptAnswer').innerHTML = `<div>加载中<span id="dot"></span></div>`;
 
         //CHATGPT模式
-        let GPTMODE = localStorage.getItem("GPTMODE")
+        let GPTMODE = getGPTMode()
         if (GPTMODE && GPTMODE === "CHATGPT") {
             console.log("当前模式CHATGPT")
             if (!localStorage.getItem("openAIkey")) {
@@ -1223,6 +1229,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "TONGYI") {
+            console.log("TONGYI")
+            TONGYI()
+
+            return;
+            //end if
         }
 
 
@@ -1330,6 +1342,7 @@
       <option value="CHATGPT">CHATGPT</option>
       <option value="newBing">newBing</option>
       <option value="OPENAI">OPENAI</option>
+      <option value="TONGYI">通义千问</option>
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
@@ -1396,7 +1409,7 @@
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">支付宝红包</a>
         <hr>
 	</div>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: ${JSver} 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${localStorage.getItem("GPTMODE") || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: ${JSver} 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${getGPTMode() || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
     </div>
     <span class="speak" style="margin-right: 10px;text-align: right">
     <a id="speakAnser" style="cursor: pointer" href="javascript:void(0)" >
@@ -1850,7 +1863,7 @@
     }
 
 
-    var parentID_68686;
+    let parentID_68686;
 
     //https://t66.ltd/#/chat/1002
     function T66() {
@@ -1934,7 +1947,7 @@
 
 
     //2023年5月6日
-    var parentID_chatWeb1;
+    let parentID_chatWeb1;
     function CHATWEB1() {
         let ops = {};
         /*if (parentID_chatWeb1) {
@@ -1996,14 +2009,14 @@
 
 
 
-    var messageChain2 = [];//AILS
-    var messageChain4 = [];//ESO
-    var messageChain5 = [];//XCBL
-    var messageChain6 = [];//HZIT
-    var messageChain8 = [];//lbb
-    var messageChain9 = [];//bnu120
-    var messageChain10 = [];//PRTBOOM
-    var messageChain1 = [
+    let messageChain2 = [];//AILS
+    let messageChain4 = [];//ESO
+    let messageChain5 = [];//XCBL
+    let messageChain6 = [];//HZIT
+    let messageChain8 = [];//lbb
+    let messageChain9 = [];//bnu120
+    let messageChain10 = [];//PRTBOOM
+    let messageChain1 = [
         {
             role: "system",
             content: "请以markdown的形式返回答案"
@@ -2188,7 +2201,7 @@
         });
     }
 
-    var messageChain11 = []//xeasy
+    let messageChain11 = []//xeasy
     function XEASY() {
 
         let now = Date.now();
@@ -2584,7 +2597,7 @@
 
     }
 
-    var messageChain3 = [];//DARRICKS
+    let messageChain3 = [];//DARRICKS
     function DARRICKS() {
 
         let baseURL = "https://chat.darricks.net/";
@@ -2688,7 +2701,7 @@
 
 
     //2023年5月4日 https://chatgpt.cytsee.com/
-    var messageChain_cytsee = []
+    let messageChain_cytsee = []
     function CYTSEE() {
 
         let baseURL = "https://www.cytsee.com/";
@@ -2747,7 +2760,7 @@
     }
 
 
-    var userId_wgk = "#/chat/" + Date.now();
+    let userId_wgk = "#/chat/" + Date.now();
 
     function WGK() {
         console.log(userId_wgk)
@@ -2801,7 +2814,7 @@
     }
 
 
-    var userId_yqcloud = "#/chat/" + Date.now();
+    let userId_yqcloud = "#/chat/" + Date.now();
 
     function YQCLOUD() {
         console.log(userId_yqcloud)
@@ -2853,7 +2866,7 @@
     }
 
 
-    var parentID_thebai;
+    let parentID_thebai;
 
     function THEBAI() {
         let ops = {};
@@ -2925,7 +2938,7 @@
 
 
 
-    var parentID_xiami;
+    let parentID_xiami;
     //https://chat.xiami.one/api/chat-process
     function XIAMI() {
         let ops = {};
@@ -2984,7 +2997,7 @@
 
 
 
-    var parentID_minded;
+    let parentID_minded;
     //http://forwardminded.xyz/
     function MINDED() {
         let ops = {};
@@ -3044,7 +3057,7 @@
     }
 
 
-    var parentID_chat1;
+    let parentID_chat1;
     function CHAT1() {
         let ops = {};
         if (parentID_chat1) {
@@ -3108,7 +3121,7 @@
 
 
 
-    var parentID_nbai;
+    let parentID_nbai;
 
     //XIAJIE https://f6.xjai.cc/#/chat/1002
     function NBAI() {
@@ -3170,7 +3183,7 @@
     }
 
 
-    var gamejx_group_id;
+    let gamejx_group_id;
     function setGroupid_gamejx() {
 
         GM_fetch({
@@ -3380,6 +3393,7 @@
     }
 
 
+
    function uuidv4() {
        let d = new Date().getTime(); // get current timestamp in ms (to ensure UUID uniqueness)
        let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -3477,10 +3491,123 @@
        })
    }
 
+   let csrfToken;
+   async function setCsrfToken(){
+       let req1 = await GM_fetch({
+           method: "GET",
+           url: "https://tongyi.aliyun.com/chat",
+           headers: {
+               "origin":"https://tongyi.aliyun.com",
+               "referer":"https://tongyi.aliyun.com/chat"
+           }
+       })
+       let r = req1.responseText;
+       console.log(r);
+       try{
+           csrfToken =  /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/g.exec(r)[0];
+           console.log("csrfToken:",csrfToken)
+       }catch (e) {
+           showAnserAndHighlightCodeStr("csrfToken获取失败")
+       }
+    }
+   setTimeout(()=>{
+       if(getGPTMode()==="TONGYI"){
+           setCsrfToken()
+       }
+   })
+
+    let tongyi_first = true;
+    let tongyi_sessionId;
+    //通义千问 2023年5月13日
+   async function TONGYI(){
+        if(tongyi_first){
+           let req1 = await GM_fetch({
+               method: "POST",
+               url: "https://tongyi.aliyun.com/qianwen/addSession",
+               headers: {
+                   "origin":"https://tongyi.aliyun.com",
+                   "referer":"https://tongyi.aliyun.com/chat",
+                   "Content-Type": "application/json",
+                   "x-xsrf-token": csrfToken
+               },
+               data:JSON.stringify({
+                   "firstQuery": your_qus
+               })
+           })
+           let r = req1.responseText;
+           //console.log(r);
+
+           try{
+               tongyi_sessionId = JSON.parse(r).data.sessionId;
+               tongyi_first = false;
+           }catch (e) {
+               tongyi_first = true;
+               showAnserAndHighlightCodeStr("出错,请确认已登录通义官网[通义](https://tongyi.aliyun.com/chat)")
+           }
+       }
+
+       let sendData = JSON.stringify({
+           "action": "next",
+           "msgId": generateRandomString(32),
+           "parentMsgId": "0",
+           "contents": [
+               {
+                   "contentType": "text",
+                   "content": your_qus
+               }
+           ],
+           "timeout": 17,
+           "openSearch": false,
+           "sessionId": tongyi_sessionId,
+           "model": ""
+       })
+       GM_fetch({
+           method: 'POST',
+           url: 'https://tongyi.aliyun.com/qianwen/conversation',
+           headers: {
+               "origin":"https://tongyi.aliyun.com",
+               "referer":"https://tongyi.aliyun.com/chat",
+               "Content-Type": "application/json",
+               "accept": "text/event-stream",
+               "x-xsrf-token": csrfToken
+           },
+           responseType: "stream",
+           data: sendData
+       }).then((stream)=> {
+           let reader = stream.response.getReader()
+           let answer;
+           reader.read().then(function processText({done, value}) {
+               if (done) {
+                   console.log("===done==")
+                   return
+               }
+               let responseItem = new TextDecoder("utf-8").decode(value)
+               //console.log(responseItem)
+
+               responseItem.split("\n").forEach(item=>{
+                   try {
+                       let content = JSON.parse(item.replace(/data: /gi,"").trim()).content[0];
+                       console.log(content)
+                       showAnserAndHighlightCodeStr(content)
+                   }catch (ex){}
+               })
+
+               return reader.read().then(processText)
+           },function (reason) {
+               console.log(reason)
+           }).catch((ex)=>{
+               console.log(ex)
+           })
+       })
+
+
+  }
 
 
 
-    var pizzaSecret;
+
+
+    let pizzaSecret;
     async function setPizzakey() {
         try {
 
@@ -3748,7 +3875,7 @@
     }
 
 
-    var parentID_tianhu;
+    let parentID_tianhu;
     let tianhu_first = true;
 
     function AITIANHU() {
@@ -3810,7 +3937,7 @@
                         let byteArray = new Uint8Array(chunk);
                         let decoder = new TextDecoder('utf-8');
                         console.log(decoder.decode(byteArray))
-                        var jsonLines = decoder.decode(byteArray).split("\n");
+                        let jsonLines = decoder.decode(byteArray).split("\n");
                         let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
 
                         if (nowResult.text) {
@@ -3842,7 +3969,7 @@
 
 
 
-    var parentID_anzz;
+    let parentID_anzz;
 
     function authAnzz(){
         console.log("authANZZ")
@@ -3929,7 +4056,7 @@
 
     }
 
-    var parentID_hhw;
+    let parentID_hhw;
     function HEHANWANG() {
         let ops = {};
         if (parentID_hhw) {
@@ -4230,7 +4357,7 @@
     }
 
 
-    var parentID_extkj;
+    let parentID_extkj;
 
     function EXTKJ() {
         let ops = {};
@@ -4347,8 +4474,8 @@
 
 
     // http://easyai.one
-    var sessionId_easyai = generateRandomString(20);
-    var easyai_ip = generateRandomIP();
+    let sessionId_easyai = generateRandomString(20);
+    let easyai_ip = generateRandomIP();
     function EASYAI() {
         console.log(sessionId_easyai)
         abortXml = GM_xmlhttpRequest({
@@ -4435,7 +4562,7 @@
         return key
     }
 
-    var bnuKey;
+    let bnuKey;
     setTimeout(async () => {
         bnuKey = await setNormalKey("https://chat.0.bnu120.space");
     });
@@ -4505,10 +4632,10 @@
 
 
     //https://chat7.aifks001.online/v1/chat/gpt/
-    var aifskList = [];
-    var aifsid = generateRandomString(21);
+    let aifskList = [];
+    let aifsid = generateRandomString(21);
 
-    var  formatTime = () => {
+    let  formatTime = () => {
         let padZero = (num) => {
             // 如果数字小于 10，前面补一个 0
             return num < 10 ? `0${num}` : num;
@@ -4591,8 +4718,8 @@
 
 
     //2023年5月6日
-    var officeChatList = [];
-    var officeChaid = generateRandomString(21);
+    let officeChatList = [];
+    let officeChaid = generateRandomString(21);
     function OFFICECHAT() {
         let Baseurl = "https://officechat.top/";
 
@@ -4660,8 +4787,8 @@
 
     }
 
-    var linkaiList = [];
-    var linkaiId = generateRandomString(21);
+    let linkaiList = [];
+    let linkaiId = generateRandomString(21);
     function LINKAI() {
         let Baseurl = "https://alllinkai1.com/";
 
@@ -4732,8 +4859,8 @@
 
 
     //http://www.gtpcleandx.xyz/#/home/chat
-    var cleandxid = generateRandomString(21);
-    var cleandxList = [];
+    let cleandxid = generateRandomString(21);
+    let cleandxList = [];
     function CLEANDX() {
         let Baseurl = "http://www.chatcleand.xyz/";
 
@@ -4804,8 +4931,8 @@
     }
 
 
-    var parentID_usesless;
-    var referer_uesless = "https://ai.usesless.com/chat/"+Date.now();
+    let parentID_usesless;
+    let referer_uesless = "https://ai.usesless.com/chat/"+Date.now();
     function USESLESS() {
         let ops = {
             systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-${new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()}`,
@@ -4877,7 +5004,7 @@
     //https://www.promptboom.com/
 
     //var promptboom_did = generateRandomString(32)
-    var promptboom_did = 'dd633043916550bea93f56e1af08debd'
+    let promptboom_did = 'dd633043916550bea93f56e1af08debd'
     async function PRTBOOM() {
 
         addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
@@ -5091,7 +5218,7 @@
     }
 
 
-    var parentID_qdymys;
+    let parentID_qdymys;
 
     function QDYMYS() {
         let ops = {};
@@ -5211,9 +5338,9 @@
 
 
 
-    var WebsocketCoolAI;
-    var resultCoolAI = [];
-    var initSocket = function () {
+    let WebsocketCoolAI;
+    let resultCoolAI = [];
+    let initSocket = function () {
         // 创建WebSocket连接
         const socket = new WebSocket(`wss://sd-wx.cool-js.cloud/socket.io/?apiKey=905733647bb7431b81233e12be12cfaa&url=https%3A%2F%2Fcool-js.com%2Fai%2Fchat%2Findex.html%23%2F&EIO=4&transport=websocket`);
         // 监听连接成功事件
@@ -5265,10 +5392,10 @@
 
         });
     }
-    if (localStorage.getItem("GPTMODE") === "COOLAI") {
+    if (getGPTMode() === "COOLAI") {
         setTimeout(initSocket, 1500);
     }
-    if (localStorage.getItem("GPTMODE") === "GAMEJX") {
+    if (getGPTMode() === "GAMEJX") {
         setTimeout(setGroupid_gamejx);
     }
 
