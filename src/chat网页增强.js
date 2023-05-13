@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.29
+// @version      4.30
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
-// @match        http*://blog.yeyusmile.top/gpt.html*
+// @match        *://blog.yeyusmile.top/gpt.html*
 // @match        *://yeyu1024.xyz/gpt.html*
 // @grant       GM_xmlhttpRequest
 // @grant      GM_getResourceText
@@ -69,7 +69,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.29"
+    var JSVer = "v4.30"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -738,7 +738,7 @@
         GM_handleUserInput(null)
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://www.phind.com/api/bing/search",
+            url: "https://www.phind.com/api/web/search",
             headers: {
                 "Content-Type": "application/json",
                 "Referer": `https://www.phind.com`
@@ -2158,7 +2158,7 @@
         addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
 
         const t = Date.now()
-        const r = t + ":" + "question" + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
+        const r = t + ":" + "question" + ":contact_me_and_let_us_make_money_together_thanks"
         const sign = CryptoJS.SHA256(r).toString();
         console.log(sign)
         let request_json = {

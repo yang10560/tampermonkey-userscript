@@ -1347,7 +1347,7 @@
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="XIAMI">XIAMI[挂]</option>
-      <option value="BNU120">BNU120</option>
+      <option value="BNU120">BNU120[挂]</option>
       <option value="DOG2">DOG2</option>
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
@@ -1363,7 +1363,7 @@
       <option value="CYTSEE">CYTSEE</option>
       <option value="QDYMYS">QDYMYS</option>
       <option value="WGK">WGK</option>
-      <option value="NBAI">NBAI</option>
+      <option value="NBAI">NBAI[挂]</option>
       <option value="T66">T66</option>
       <option value="ZHULEI">ZHULEI</option>
       <option value="CHATDDD">CHATDDD</option>
@@ -2678,7 +2678,7 @@
                     dd.forEach(item=>{
                         try {
                             let delta = /content\\":\\"(.*?)\\"/gi.exec(item)[1]
-                            result.push(delta)
+                            result.push(delta.replace(/\\\\n/g,"\n"))
                             showAnserAndHighlightCodeStr(result.join(""))
                         }catch (e) {
 
@@ -3694,7 +3694,7 @@
 
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://www.phind.com/api/bing/search",
+            url: "https://www.phind.com/api/web/search",
             headers: {
                 "Content-Type": "application/json",
                 "Referer": `https://www.phind.com`
@@ -4035,7 +4035,7 @@
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
+                            showAnserAndHighlightCodeStr(finalResult.replace(/hello-ai.anzz.top/gi,""))
                         }
                         if (nowResult.id) {
                             parentID_anzz = nowResult.id;
@@ -4803,7 +4803,7 @@
             url: Baseurl + "v1/chat/gpt/",
             headers: {
                 "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
+                "X-Forwarded-For": generateRandomIP(),
                 "Referer": Baseurl,
                 "accept": "application/json, text/plain, */*"
             },
@@ -5010,7 +5010,7 @@
         addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
 
         const t = Date.now()
-        const r = t + ":" + "question" + ":please_do_not_hack_me_you_are_so_talented_you_can_contact_me_and_let_us_make_money_together"
+        const r = t + ":" + "question" + ":contact_me_and_let_us_make_money_together_thanks"
         const sign = CryptoJS.SHA256(r).toString();
         console.log(sign)
         let request_json = {
@@ -5183,7 +5183,7 @@
                 reader.read().then(function processText({done, value}) {
                     if (done) {
                         finalResult = result.join("")
-                        showAnserAndHighlightCodeStr(finalResult)
+                        showAnserAndHighlightCodeStr(finalResult.replace(/tdchat/gi,""))
                         return;
                     }
 
@@ -5196,7 +5196,7 @@
                             try {
                                 let delta = JSON.parse(item).choices[0].delta.content
                                 result.push(delta)
-                                showAnserAndHighlightCodeStr(result.join(""))
+                                showAnserAndHighlightCodeStr(result.join("").replace(/tdchat/gi,""))
                             }catch (e) {
 
                             }
