@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.30
+// @version      4.31
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -59,6 +59,7 @@
 // @connect   caipacity.com
 // @connect   anfans.cn
 // @connect   6bbs.cn
+// @connect   haohuola.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -69,7 +70,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.30"
+    var JSVer = "v4.31"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -124,6 +125,31 @@
             GM_xmlhttpRequest(details)
         });
     }
+
+
+    function GM_httpRequest(details, callBack, errorCallback, timeoutCallback, abortCallback){
+        if(callBack){
+            switch (details.responseType){
+                case "stream":
+                    details.onloadstart = callBack;
+                    break;
+                default:
+                    details.onload = callBack
+            }
+        }
+        if(errorCallback){
+            details.onerror = errorCallback;
+        }
+        if(timeoutCallback){
+            details.ontimeout = timeoutCallback;
+        }
+        if(abortCallback){
+            details.onabort = abortCallback;
+        }
+        console.log(details)
+        GM_xmlhttpRequest(details);
+    }
+
     //封装GM_xmlhttpRequest ---end---
 
 
@@ -2730,6 +2756,77 @@
     }
 
 
+    let conversationId_haohuola;
+    // 2023年5月13日
+    function HAOHUOLA(question) {
+        let your_qus = question;
+        GM_handleUserInput(null)
+        let ops = {
+            prompt: your_qus
+        };
+        if (conversationId_haohuola) {
+            ops.conversationId = conversationId_haohuola;
+        }
+        console.log(ops)
+        let finalResult = [];
+        GM_httpRequest({
+            method: "POST",
+            url: "https://wetabchat.haohuola.com/api/chat/conversation",
+            headers: {
+                "I-App":"hitab",
+                "I-Branch":"zh",
+                "I-Lang":"zh-CN",
+                "I-Platform":"chrome",
+                "I-Version":"1.0.43",
+                "Content-Type": "application/json;charset=UTF-8",
+                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM",
+                "Referer": "https://wetabchat.haohuola.com/api/chat/conversation",
+                "origin": "chrome-extension://aikflfpejipbpjdlfabpgclhblkpaafo",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
+            },
+            data: JSON.stringify(ops),
+            responseType: "stream"
+        },(stream) => {
+            const reader = stream.response.getReader();
+            GM_simulateBotResponse("。。。")
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    GM_fillBotResponseAndSave(your_qus,finalResult.join(""))
+                    return;
+                }
+                try {
+
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    //console.log(decoder.decode(byteArray))
+                    let items = decoder.decode(byteArray).split(/_.*?_/);
+                    console.log(items)
+                    items.forEach((item) =>{
+                        try{
+                            let dataVal = JSON.parse(item)
+                            if (dataVal.data && dataVal.message !== 'stream done') {
+                                finalResult.push(dataVal.data)
+                                GM_fillBotResponse(finalResult.join(""))
+                            }
+                            if (dataVal.data && dataVal.message === 'stream done') {
+                                conversationId_haohuola = JSON.parse(dataVal.data).conversationId;
+                            }
+                        }catch (e) {
+
+                        }
+                    })
+
+                } catch (e) {
+                    // console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        })
+    }
+
+
+
 
     //初始化
     setTimeout(() => {
@@ -2851,6 +2948,10 @@
                     console.log("LEMURCHAT")
                    LEMURCHAT(qus);
                     break;
+               case "HAOHUOLA":
+                    console.log("HAOHUOLA")
+                   HAOHUOLA(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2866,6 +2967,7 @@
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
  <option value="LEMURCHAT">狐猴内置</option>
+ <option value="HAOHUOLA">HAOHUOLA</option>
  <option value="QDYMYS">QDYMYS</option>
  <option value="wgk">wgk</option>
  <option value="WOBCW">WOBCW</option>

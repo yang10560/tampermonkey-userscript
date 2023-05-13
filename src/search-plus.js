@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.3
+// @version      2.2.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -127,6 +127,7 @@
 // @connect   bing.com
 // @connect   openai.com
 // @connect   tongyi.aliyun.com
+// @connect   haohuola.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -144,7 +145,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.3';
+    let JSver = '2.2.4';
 
 
     function getGPTMode() {
@@ -958,10 +959,10 @@
             YQCLOUD()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE === "XIAMI") {
-            console.log("XIAMI")
+        } else if (GPTMODE && GPTMODE === "HAOHUOLA") {
+            console.log("HAOHUOLA")
 
-            XIAMI();
+            HAOHUOLA();
 
             //end if
             return;
@@ -1346,7 +1347,7 @@
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
-      <option value="XIAMI">XIAMI[挂]</option>
+      <option value="HAOHUOLA">HAOHUOLA</option>
       <option value="BNU120">BNU120[挂]</option>
       <option value="DOG2">DOG2</option>
       <option value="PIZZA">PIZZA</option>
@@ -2938,30 +2939,34 @@
 
 
 
-    let parentID_xiami;
-    //https://chat.xiami.one/api/chat-process
-    function XIAMI() {
-        let ops = {};
-        if (parentID_xiami) {
-            ops = {parentMessageId: parentID_xiami};
+    let conversationId_haohuola;
+
+    // 2023年5月13日
+    function HAOHUOLA() {
+        let ops = {
+            prompt: your_qus
+        };
+        if (conversationId_haohuola) {
+            ops.conversationId = conversationId_haohuola;
         }
         console.log(ops)
         let finalResult = [];
         GM_httpRequest({
             method: "POST",
-            url: "https://smart-chat.xiami.one/api/chat-process",
+            url: "https://wetabchat.haohuola.com/api/chat/conversation",
             headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://smart-chat.xiami.one/",
-                "accept": "application/json, text/plain, */*"
+                "I-App":"hitab",
+                "I-Branch":"zh",
+                "I-Lang":"zh-CN",
+                "I-Platform":"chrome",
+                "I-Version":"1.0.43",
+                "Content-Type": "application/json;charset=UTF-8",
+                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM",
+                "Referer": "https://wetabchat.haohuola.com/api/chat/conversation",
+                "origin": "chrome-extension://aikflfpejipbpjdlfabpgclhblkpaafo",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
             },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops,
-                systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                top_p:1,
-                temperature:0.8
-            }),
+            data: JSON.stringify(ops),
             responseType: "stream"
         },(stream) => {
             const reader = stream.response.getReader();
@@ -2972,22 +2977,29 @@
                     return;
                 }
                 try {
-                    // console.log(normalArray)
+
                     let byteArray = new Uint8Array(value);
                     let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    let nowResult = JSON.parse(decoder.decode(byteArray))
-                    if (nowResult.text) {
-                        console.log(nowResult)
-                        finalResult = nowResult.text
-                        showAnserAndHighlightCodeStr(finalResult)
-                    }
-                    if (nowResult.id) {
-                        parentID_xiami = nowResult.id;
-                    }
+                    //console.log(decoder.decode(byteArray))
+                    let items = decoder.decode(byteArray).split(/_.*?_/);
+                    console.log(items)
+                    items.forEach((item) =>{
+                        try{
+                            let dataVal = JSON.parse(item)
+                            if (dataVal.data && dataVal.message !== 'stream done') {
+                                finalResult.push(dataVal.data)
+                                showAnserAndHighlightCodeStr(finalResult.join(""))
+                            }
+                            if (dataVal.data && dataVal.message === 'stream done') {
+                                conversationId_haohuola = JSON.parse(dataVal.data).conversationId;
+                            }
+                        }catch (e) {
+                            
+                        }
+                    })
 
                 } catch (e) {
-                    console.log(e)
+                   // console.log(e)
                 }
 
                 return reader.read().then(processText);
