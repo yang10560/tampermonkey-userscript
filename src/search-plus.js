@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.7
+// @version      2.2.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -149,7 +149,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.7';
+    let JSver = '2.2.8';
 
 
     function getGPTMode() {
@@ -3939,7 +3939,7 @@
     let tg_msg_id;
     let tg_first = true;
     async function TIANGONG(){
-        showAnserAndHighlightCodeStr("请稍后...")
+        showAnserAndHighlightCodeStr("请稍后...使用该线路，请确保已经登天工官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
         console.log("tg_token:",tg_token)
         console.log("tg_invite_Token:",tg_invite_Token)
         if(!tg_invite_Token || !tg_token){
@@ -3969,6 +3969,7 @@
 
         //新会话
         if(!tg_session_id || tg_first){
+            console.log("新会话")
             let req1 = await GM_fetch({
                 method: "POST",
                 url: "https://neice.tiangong.cn/api/v1/session/newSession",
@@ -3996,6 +3997,7 @@
             console.log("tg_msg_idg:",tg_msg_id)
             tg_first = false;
         }else {
+            console.log("旧会话")
             let req1 = await GM_fetch({
                 method: "POST",
                 url: "https://neice.tiangong.cn/api/v1/chat/chat",
@@ -4018,7 +4020,7 @@
             let r = req1.responseText;
             console.log(r)
             let rj = JSON.parse(r);
-            tg_msg_id = rj.resp_data.message.message_id
+            tg_msg_id = rj.resp_data.result_message.message_id
             console.log("tg_msg_idg:",tg_msg_id)
         }
 
