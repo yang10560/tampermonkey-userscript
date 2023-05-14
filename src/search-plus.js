@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.5
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
+// @version      2.2.6
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内星火，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
 // @match      https://www.bing.com/*
@@ -147,7 +147,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.5';
+    let JSver = '2.2.6';
 
 
     function getGPTMode() {
@@ -3842,7 +3842,7 @@
             })
             let r = req1.responseText;
             console.log("rename chat:",r)
-            spark_first = true;
+            spark_first = false;
         }
 
         //提问
