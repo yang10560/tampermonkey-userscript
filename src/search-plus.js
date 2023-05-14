@@ -3820,7 +3820,7 @@
 
     let spark_first = true;
     async function SPARK(){
-        showAnserAndHighlightCodeStr("请稍后,第一切换该线路需要刷新页面，该线路为官网线路,使用前确保已经登录[讯飞星火](https://xinghuo.xfyun.cn/)")
+        showAnserAndHighlightCodeStr("请稍后,第一次切换到该线路需要刷新页面，该线路为官网线路,使用前确保已经登录[讯飞星火](https://xinghuo.xfyun.cn/)")
         await get_sp_GtToken()
         console.log("sp_GtToken",sp_GtToken)
         //重命名
