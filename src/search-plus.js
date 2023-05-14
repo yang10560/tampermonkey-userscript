@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.8
+// @version      2.2.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -149,7 +149,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.8';
+    let JSver = '2.2.9';
 
 
     function getGPTMode() {
@@ -2965,7 +2965,16 @@
 
 
     let conversationId_haohuola;
-
+    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlMzg2M2YxMzIzNzY3MTRmZjdhZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3MTMwMiwiZXhwIjoxNjg0MjQ0MTAyfQ.deqSa0v7J2Rp0Z6I_dMgO8YIkUq6Y5VjeLJ2j3p8xSM'
+        ,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlOWE0YTFkZThjYTRjMzgzNDM2NyIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3Mjg2OCwiZXhwIjoxNjg0MjQ1NjY4fQ.DXiW5LXcw1oDQ79xs3QicIrcQexlzCcndpBUtAWHVf4'];
+    let tk_haohuola;
+    try{
+        tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)];
+        console.log("tk_haohuola：",tk_haohuola)
+    }catch (e) {
+        console.error(e)
+    }
     // 2023年5月13日
     function HAOHUOLA() {
         let ops = {
@@ -2986,7 +2995,7 @@
                 "I-Platform":"chrome",
                 "I-Version":"1.0.43",
                 "Content-Type": "application/json;charset=UTF-8",
-                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM",
+                "Authorization": `Bearer ${tk_haohuola}`,
                 "Referer": "https://wetabchat.haohuola.com/api/chat/conversation",
                 "origin": "chrome-extension://aikflfpejipbpjdlfabpgclhblkpaafo",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
@@ -3935,6 +3944,41 @@
     setTimeout(initTGtoken)
 
 
+    //过时 {"code":60101,"code_msg":"当前使用授权已失效，请重新排队"}
+    //resp_data.invite_token
+    async function waitAccess() {
+        let req1 = await GM_fetch({
+            method: "POST",
+            url: "https://neice.tiangong.cn/api/v1/queue/waitAccess",
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "origin":"https://neice.tiangong.cn",
+                "invite-token": `Bearer null`,
+                "Content-Type":"application/json",
+                "token": `Bearer ${tg_token}`,
+                "device": "Web",
+                "referer":"https://neice.tiangong.cn/interlocutionPage"
+            },
+            data:JSON.stringify({
+                data:{
+                    token: ""
+                }
+            })
+        })
+        let r = req1.responseText;
+        console.log(r)
+        return new Promise((resolve, reject) => {
+            try {
+                tg_invite_Token = JSON.parse(r).resp_data.invite_token;
+                GM_setValue("waitAccess tg_invite_Token",tg_invite_Token)
+                resolve("更新成功，请再次点击")
+            }catch (e) {
+                resolve("waitAccess 异常 请到官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
+            }
+        })
+    }
+
+
     let tg_session_id;
     let tg_msg_id;
     let tg_first = true;
@@ -3966,6 +4010,12 @@
         })
         let r = req1.responseText;
         console.log(r)
+        if(r.includes("请重新排队")){
+            showAnserAndHighlightCodeStr("invite_Token失效。请至官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
+/*            let result = await waitAccess();
+            showAnserAndHighlightCodeStr(result)*/
+            return
+        }
 
         //新会话
         if(!tg_session_id || tg_first){

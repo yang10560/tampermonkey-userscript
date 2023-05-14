@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.33
+// @version      4.34
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -70,7 +70,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.33"
+    var JSVer = "v4.34"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2757,6 +2757,17 @@
 
 
     let conversationId_haohuola;
+    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlMzg2M2YxMzIzNzY3MTRmZjdhZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3MTMwMiwiZXhwIjoxNjg0MjQ0MTAyfQ.deqSa0v7J2Rp0Z6I_dMgO8YIkUq6Y5VjeLJ2j3p8xSM'
+        ,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlOWE0YTFkZThjYTRjMzgzNDM2NyIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3Mjg2OCwiZXhwIjoxNjg0MjQ1NjY4fQ.DXiW5LXcw1oDQ79xs3QicIrcQexlzCcndpBUtAWHVf4'];
+    let tk_haohuola;
+    try{
+        tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)];
+        console.log("tk_haohuola：",tk_haohuola)
+    }catch (e) {
+        console.error(e)
+    }
+
     // 2023年5月13日
     function HAOHUOLA(question) {
         let your_qus = question;
@@ -2779,7 +2790,7 @@
                 "I-Platform":"chrome",
                 "I-Version":"1.0.43",
                 "Content-Type": "application/json;charset=UTF-8",
-                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM",
+                "Authorization": `Bearer ${tk_haohuola}`,
                 "Referer": "https://wetabchat.haohuola.com/api/chat/conversation",
                 "origin": "chrome-extension://aikflfpejipbpjdlfabpgclhblkpaafo",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
