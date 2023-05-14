@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.4
+// @version      2.2.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -128,6 +128,8 @@
 // @connect   openai.com
 // @connect   tongyi.aliyun.com
 // @connect   haohuola.com
+// @connect   xinghuo.xfyun.cn
+// @connect   geetest.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -145,7 +147,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.4';
+    let JSver = '2.2.5';
 
 
     function getGPTMode() {
@@ -185,6 +187,13 @@
         if(!document.getElementById("katex-link")){
             $("head").append($(
                 '<link id="katex-link" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.css" rel="stylesheet">'
+            ));
+        }
+
+        //spark-js
+        if(!document.getElementById("spark-js")){
+            $("head").append($(
+                '<script id="spark-js" src="https://static.geetest.com/g5/gd.js"></script>'
             ));
         }
 
@@ -337,7 +346,7 @@
             })
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
-                bnuKey = await setNormalKey("https://chat.0.bnu120.space");
+                bnuKey = await setNormalKey("https://chat.5.bnu120.space");
                 if(bnuKey){
                     showAnserAndHighlightCodeStr(`BNU120：更新成功,KEY:${bnuKey}`)
                 }else {
@@ -1236,6 +1245,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "SPARK") {
+            console.log("SPARK")
+            SPARK()
+
+            return;
+            //end if
         }
 
 
@@ -1344,11 +1359,12 @@
       <option value="newBing">newBing</option>
       <option value="OPENAI">OPENAI</option>
       <option value="TONGYI">通义千问</option>
+      <option value="SPARK">讯飞星火</option>
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="HAOHUOLA">HAOHUOLA</option>
-      <option value="BNU120">BNU120[挂]</option>
+      <option value="BNU120">BNU120</option>
       <option value="DOG2">DOG2</option>
       <option value="PIZZA">PIZZA</option>
       <option value="AITIANHU">AITIANHU</option>
@@ -3618,6 +3634,276 @@
 
 
 
+    //星火相关====start=====
+    let sp_appId;
+    let sp_fd = String(+new Date()).slice(-6);//a = (a = String(+new Date)).substring(a.length - 6)
+    let sp_chatId;
+    let sp_GtToken;
+
+    async function init_sp_appId() {
+        //get https://xinghuo.xfyun.cn/chat
+        //script defer="defer" src="/static/js/main.04f3ec36.js"></script>
+        let req1 = await GM_fetch({
+            method: "GET",
+            url: "https://xinghuo.xfyun.cn/chat",
+            headers: {
+                "origin":"https://xinghuo.xfyun.cn",
+                "referer":"https://xinghuo.xfyun.cn/"
+            }
+        })
+        let r = req1.responseText;
+        //console.log(r);
+        let mainjs;
+
+        try{
+
+            mainjs = /src="(\/static\/js\/main.*?.js)"/.exec(r)[1];//https://xinghuo.xfyun.cn/static/js/main.04f3ec36.js
+            console.log("mainjs:",mainjs)
+        }catch (e) {
+            console.error(r)
+            showAnserAndHighlightCodeStr("出错了，js获取失败")
+        }
+
+        if(mainjs){
+            console.log("https://xinghuo.xfyun.cn"+ mainjs.trim())
+            let req2 = await GM_fetch({
+                method: "GET",
+                url: "https://xinghuo.xfyun.cn"+ mainjs.trim(),
+                headers: {
+                    "origin":"https://xinghuo.xfyun.cn",
+                    "referer":"https://xinghuo.xfyun.cn/"
+                }
+            })
+            let rr = req2.responseText;
+
+            console.log(rr.substring(0,100))
+            try{
+                const re = /appId:"(.*?)"/gi;
+                let match;
+                while ((match = re.exec(rr)) !== null) {
+                    console.log(match[1]);
+                    sp_appId = match[1];
+                }
+                /*let index = rr.indexOf("appId");
+                if (index !== -1) {
+                    let sp_appId = rr.substring(index, index + 10); // 指定文本
+                }*/
+                console.log("sp_appId:",sp_appId)
+            }catch (e) {
+                console.error(e)
+                showAnserAndHighlightCodeStr("出错了,sp_appId获取失败",)
+            }
+        }
+
+
+    }
+
+    setTimeout(()=>{
+        if(getGPTMode()==="SPARK"){
+            init_sp_appId()
+        }
+    })
+    async function init_sp_chatId() {
+        //https://xinghuo.xfyun.cn/iflygpt/u/chat-list/v1/create-chat-list
+        let req1 = await GM_fetch({
+            method: "POST",
+            url: "https://xinghuo.xfyun.cn/iflygpt/u/chat-list/v1/create-chat-list",
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "x-requested-with": "XMLHttpRequest",
+                "origin":"https://xinghuo.xfyun.cn",
+                "Content-Type":"application/json",
+                "referer":"https://xinghuo.xfyun.cn/desk"
+            },
+            data:"{}"
+        })
+        let r = req1.responseText;
+        try{
+            sp_chatId = JSON.parse(r).data.id;
+            console.log("sp_chatId:",sp_chatId)
+        }catch (e) {
+            console.error(r)
+            showAnserAndHighlightCodeStr("sp_chatId获取失败")
+        }
+
+
+
+    }
+
+    setTimeout(()=>{
+        if(getGPTMode()==="SPARK"){
+            init_sp_chatId()
+        }
+    },500)
+
+    async function get_sp_GtToken() {
+        return new Promise(async (resolve, reject) => {
+
+            //https://riskct.geetest.com/g2/api/v1/pre_load?client_type=h5&callback=geetest_时间戳
+            let timestamp = Date.now();
+            let req1 = await GM_fetch({
+                method: "GET",
+                url: `https://riskct.geetest.com/g2/api/v1/pre_load?client_type=h5&callback=geetest_${timestamp}`,
+                headers: {
+                    "accept": "*/*",
+                    "referer": "https://xinghuo.xfyun.cn/"
+                }
+            })
+            let r = req1.responseText;
+            console.log(r);
+            try {
+                let rr = r.replace(`geetest_${timestamp}(`,
+                    "");
+                rr = rr.substring(0, rr.length - 1)
+                console.log("rr", rr)
+                let rj = JSON.parse(rr);
+                console.log("rj:");
+                console.log(rj);
+
+                //====
+                let config = {
+                    appId: sp_appId,
+                    js: rj.data.js,
+                    staticPath: rj.data.staticPath,
+                    gToken: rj.data.gToken
+                }
+                console.log("config")
+                console.log(config)
+                setTimeout(() => {
+                    initGeeGuard(config, (gd) => {
+                        console.log(gd)
+                        if (gd.data.gee_token) {
+                            sp_GtToken = gd.data.gee_token;
+                            resolve(sp_GtToken)
+                        }else{
+                            reject("出错")
+                        }
+                    })
+                }, 500)
+
+
+            } catch (e) {
+                console.error(e)
+                reject("出错")
+            }
+        })
+
+    }
+
+
+    //解码
+    function decodeSpark(src) {
+       /*let rv = function(e) {
+            return e.replace(/[^A-Za-z0-9\+\/]/g, "")
+        }*/
+
+        let dv =  function(e) {
+                //return Buffer.from(e, "base64").toString("utf8")
+            // 将 base64 编码的字符串转换为字节数组
+            const bytes = CryptoJS.enc.Base64.parse(e);
+            // 将字节数组转换为 UTF-8 字符串
+            return bytes.toString(CryptoJS.enc.Utf8);
+        }//等价BASE64解码 6KaB
+
+         /*let  fv = function(e) {
+                return dv(function(e) {
+                    return rv(e.replace(/[-_]/g, (function(e) {
+                            return "-" == e ? "+" : "/"
+                        }
+                    )))
+                }(e))
+         };*/
+       return dv(src);
+    }
+
+
+
+    let spark_first = true;
+    async function SPARK(){
+        showAnserAndHighlightCodeStr("请稍后,第一切换该线路需要刷新页面，该线路为官网线路,使用前确保已经登录[讯飞星火](https://xinghuo.xfyun.cn/)")
+        await get_sp_GtToken()
+        console.log("sp_GtToken",sp_GtToken)
+        //重命名
+        if(spark_first){
+           let req1 = await GM_fetch({
+                method: "POST",
+                url: "https://xinghuo.xfyun.cn/iflygpt/u/chat-list/v1/rename-chat-list",
+                headers: {
+                    "accept": "application/json, text/plain, */*",
+                    "x-requested-with": "XMLHttpRequest",
+                    "origin":"https://xinghuo.xfyun.cn",
+                    "Content-Type":"application/json",
+                    "referer":"https://xinghuo.xfyun.cn/desk"
+                },
+                data:JSON.stringify({
+                    "chatListId": sp_chatId,
+                    "chatListName": your_qus
+                })
+            })
+            let r = req1.responseText;
+            console.log("rename chat:",r)
+            spark_first = true;
+        }
+
+        //提问
+
+        let sendData = `------WebKitFormBoundaryAS7tSr3osJng5Nxk\r\nContent-Disposition: form-data; name=\"fd\"\r\n\r\n${sp_fd}\r\n------WebKitFormBoundaryAS7tSr3osJng5Nxk\r\nContent-Disposition: form-data; name=\"clientType\"\r\n\r\n2\r\n------WebKitFormBoundaryAS7tSr3osJng5Nxk\r\nContent-Disposition: form-data; name=\"chatId\"\r\n\r\n${sp_chatId}\r\n------WebKitFormBoundaryAS7tSr3osJng5Nxk\r\nContent-Disposition: form-data; name=\"text\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundaryAS7tSr3osJng5Nxk\r\nContent-Disposition: form-data; name=\"GtToken\"\r\n\r\n${sp_GtToken}\r\n------WebKitFormBoundaryAS7tSr3osJng5Nxk--\r\n`;
+        GM_fetch({
+            method: 'POST',
+            url: 'https://xinghuo.xfyun.cn/iflygpt-chat/u/chat_message/chat',
+            headers: {
+                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryAS7tSr3osJng5Nxk",
+                "challenge": "undefined",
+                "seccode": "",
+                "validate": "undefined",
+                "accept": "text/event-stream",
+                "x-requested-with": "XMLHttpRequest",
+                "origin":"https://xinghuo.xfyun.cn",
+                "referer":"https://xinghuo.xfyun.cn/desk"
+            },
+            responseType: "stream",
+            data: sendData
+        }).then((stream)=> {
+            let reader = stream.response.getReader()
+            let ans = []
+            //let de = []
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    console.log("===done==")
+                    //console.log(de)
+                    return
+                }
+                let responseItem = new TextDecoder("utf-8").decode(value)
+                console.log(responseItem)
+
+                responseItem.split("\n").forEach(item=>{
+                    try {
+                        let ii = item.replace(/data:/gi,"").trim();
+                        if(ii && ii !==""){
+                            let chunk = decodeSpark(ii)
+                            //de.push(item.replace(/data:/gi,"").trim())
+                            ans.push(chunk)
+                            showAnserAndHighlightCodeStr(ans.join(""))
+                        }
+                    }catch (ex){
+                        console.error(item)
+                    }
+                })
+
+                return reader.read().then(processText)
+            },function (reason) {
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            })
+        })
+
+
+    }
+
+    //星火相关====end=====
+
+
 
     let pizzaSecret;
     async function setPizzakey() {
@@ -4576,13 +4862,13 @@
 
     let bnuKey;
     setTimeout(async () => {
-        bnuKey = await setNormalKey("https://chat.0.bnu120.space");
+        bnuKey = await setNormalKey("https://chat.5.bnu120.space");
     });
-    //https://chat.bnu120.space/
+    //https://ic.muspimerol.site/
     function BNU120() {
 
         let now = Date.now();
-        let Baseurl = "https://chat.0.bnu120.space/"
+        let Baseurl = "https://chat.5.bnu120.space/"
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
