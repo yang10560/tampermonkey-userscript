@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.2
+// @version      2.3.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -151,7 +151,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.2';
+    let JSver = '2.3.3';
 
 
     function getGPTMode() {
@@ -2926,7 +2926,7 @@
 
 
     let conversationId_haohuola;
-    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlMzg2M2YxMzIzNzY3MTRmZjdhZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3MTMwMiwiZXhwIjoxNjg0MjQ0MTAyfQ.deqSa0v7J2Rp0Z6I_dMgO8YIkUq6Y5VjeLJ2j3p8xSM'
+    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3MTA1MCwiZXhwIjoxNjg0MjQzODUwfQ.-i5fY_WqP3aA6l2gaQQtfi8bG9N9KqSZZ1jPkdZSr8Y'
         ,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlOWE0YTFkZThjYTRjMzgzNDM2NyIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3Mjg2OCwiZXhwIjoxNjg0MjQ1NjY4fQ.DXiW5LXcw1oDQ79xs3QicIrcQexlzCcndpBUtAWHVf4'];
     let tk_haohuola;
@@ -4150,15 +4150,36 @@
             let ans = []
             let preResponseItem = '';//前一记录
             let combineItem = [];//合并
+            let referenceList;//引用
             reader.read().then(function processText({done, value}) {
                 if (done) {
                     console.log("===done==")
                     //console.log(de)
+                    let result = ans.join("");
+                    let arr = result.match(/\^(.*?)\^/g);
+                    let oldArr = arr.slice()
+                    if(referenceList && referenceList.length > 0){
+                        for (let i = 0; i < arr.length; i++) {
+                            for (let j = 0; j < referenceList.length; j++) {
+                                if(arr[i].includes(`[${j+1}]`)){
+                                    let url = referenceList[j].url;
+                                    arr[i] = arr[i].replace(`[${j+1}]`,`[${j+1}](${url})`)
+                                }
+                            }
+                        }
+                    }
+                    console.log("arr:",arr)
+                    console.log("oldArr:",oldArr)
+                    for (let i = 0; i < oldArr.length; i++) {
+                        result =  result.replace(oldArr[i],arr[i].replace(/\^/g,""))
+                    }
+                    showAnserAndHighlightCodeStr(result)
+
                     return
                 }
                 let responseItem = new TextDecoder("utf-8").decode(value)
                 console.log(responseItem)
-                if(!responseItem.includes("event:ping") && !responseItem.includes("event:messag")){
+                if(!responseItem.includes("event:ping") && !responseItem.startsWith("event:messag")){
                     combineItem.push(preResponseItem)
                     combineItem.push(responseItem)
                     preResponseItem = '';//恢复初始
@@ -4179,6 +4200,10 @@
                             //de.push(item.replace(/data:/gi,"").trim())
                             ans.push(chunk)
                             showAnserAndHighlightCodeStr(ans.join(""))
+                            if(JSON.parse(ii).data.message.content.generator.referenceList){
+                                referenceList = JSON.parse(ii).data.message.content.generator.referenceList
+                            }
+
                         }
                     }catch (ex){
                         console.error(item)
