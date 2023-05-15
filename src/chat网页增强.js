@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.34
+// @version      4.35
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -70,7 +70,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    var JSVer = "v4.34"
+    let JSVer = "v4.35"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -422,8 +422,8 @@
             onload: function (res) {
                 if (res.status === 200) {
                     console.log('成功....')
-                    console.log(res.response)
-                    let rest = res.response
+                    console.log(res)
+                    let rest = res.responseText
                     //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
 
                     try {
@@ -777,8 +777,8 @@
             onload: function (res) {
                 if (res.status === 200) {
                     console.log('成功....')
-                    console.log(res.response)
-                    let rest = res.response
+                    console.log(res)
+                    let rest = res.responseText
                     //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
                     let rjson = JSON.parse(rest);
                     let _bingResults = rjson.processedBingResults;
@@ -1783,8 +1783,8 @@
         });
         if (res.status === 200) {
             console.log('成功....')
-            console.log(res.response)
-            let chat_id = JSON.parse(res.response).chat_id;
+            console.log(res)
+            let chat_id = JSON.parse(res.responseText).chat_id;
             console.log("chat_id",chat_id)
             GM_fetch({
                 method: "GET",
@@ -2352,8 +2352,8 @@
         if (res.status === 200) {
             GM_simulateBotResponse("...")
             console.log('成功....')
-            console.log(res.response)
-            let rest = JSON.parse(res.response).data;
+            console.log(res)
+            let rest = JSON.parse(res.responseText).data;
             console.log(rest)
             for (let i = 0; i < 25; i++) {
                 console.log("hzit",i)
@@ -2373,7 +2373,7 @@
                 });
                 if (rr.status === 200) {
                     console.log(rr)
-                    let result = JSON.parse(rr.response).data;
+                    let result = JSON.parse(rr.responseText).data;
                     if(!result) {
                         await delay(3000)
                         continue;
@@ -2431,8 +2431,8 @@
             })
         }).then((res)=>{
             if (res.status === 200) {
-                console.log(res.response)
-                let rest = res.response
+                console.log(res)
+                let rest = res.responseText
                 try {
                     addMessageChain(messageChain8, {
                         role: "assistant",

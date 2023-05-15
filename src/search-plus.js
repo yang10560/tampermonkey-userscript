@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.0
+// @version      2.3.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -26,6 +26,7 @@
 // @match      https://www.google.com.hk/*
 // @match      *://www.sogou.com/*
 // @match      *://m.sogou.com/*
+// @match      *://wap.sogou.com/*
 // @match      *://neice.tiangong.cn/*
 // @icon64      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAZlBMVEUAAAD///+hoaFoaGhsbGy7u7vd3d2+vr76+vra2tr29va2trYrKyvg4ODs7OxXV1dgYGCtra0xMTGXl5fExMQ6OjqOjo7R0dEVFRWnp6dSUlIiIiIcHBwLCwt4eHhycnKEhIRHR0f14+hfAAADN0lEQVRYhe1WyZajMAyEsMQshgABEwIJ+f+fbC02W0yHnjnNvNYFDFbZKpUlO86v/e/Wpve/8M4TFckwSvI/cx8z11g2/tw9vZKrEIKe159GUkvwipPxVb4eQQzvYV12XX3Y/x6BT5LqUZkgWixEHF/9/hAAeozz0I8nOtzoccDfg8CbaZQrYkOGYUaEFO2RDUTT4MZefjkMpVcQo5/Wr2DSi9/bhlYPhukvZqf41l3hiiFv8xJR2CslIT+XXfc+YapojY60kG1ZA0rknj+lL4YtnGCQ4lbESSczf5R6Ugc5ee4AoL9KAwbwYXDWXJTXhaDhf2L3R44rxzkbgFgHn55Y0JJjzyeONpYLDn4CCPn7A46VaggjwIB6eEltAOConCUAcZVDXBKIHHgbp9IZ4KW0AZj8LAHaQEzaY0lmHk60AXiQ8XYFEDoVrRpXOmSfdQFfbMe7MuTOJMLU6IJqkh7PuTMVrhosAJCp2xrApA6Lk+p4VllMQjsAcNNkpzeQlKkPHhQb0VkAEgO8TSMaVqhMH/EyW57W2R7moNoBCjwDPg1QzM07QAk7o+wUrIcNwAVZ1ktAROE7gBMaEq4kaW8NgHlQOsrULiUoHjGT40PIqngHOIGYzRK22ggJz3TpbrCt7AMU9gPZwc4y5slJC7FO4woAxmcLgMMi0dF1ymSOtnMEYFDczxqtdJRM6HlAbhSvARIqHG+G5BJGqONoK2opooIMLQFaYMvWs0EJruNRV1b8vy+wqDtbEj2caAcQg5NWdIQL6IJPjIGg1gDKhLINARyxed4DpgLFq+vvKoRiEszGWmlCy0OmcyrqSxKr/eaUzFvDGnDWCX2d5zQmNdJsO4xoz8XeyqcpIdRexZ0BBOYl2r2wyHfwB2WFO0zBjS/Zv2Vc8Pey3l3kor0iR65Q+61Vr6GmttNSOtxRf+jgvfnW3eFa4CZ+3fb1k1q1uC0D3GmKC2s5zkxKvieqWbKQPvFpfbRnNF+pYn/+3ny6m0zW+9eYDIMxlQsbvKuO3zfrV5fWKMc4GLu6G+m2KY/fNNnu6/vu2drTv7fFjVuOP3dHy5MolJEqrKfvoPXp57vpr/3r9gUxwiW4OiuC3wAAAABJRU5ErkJggg==
 // @grant       GM_xmlhttpRequest
@@ -149,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.0';
+    let JSver = '2.3.2';
 
 
     function getGPTMode() {
@@ -1182,79 +1183,57 @@
             //end if
         }
 
+        console.log("默认线路:")
+        AIGCFUN();
 
+    }
 
-        console.log("Defualt:")
+    //默认线路
+    function AIGCFUN() {
+        showAnserAndHighlightCodeStr("该线路较慢，请稍后")
         const now = Date.now();
         console.log(now);
-
         generateSignature({
             t: now,
             m: your_qus || ""
         }).then(sign => {
             console.log(sign)
             addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
-            abortXml = GM_xmlhttpRequest({
+            GM_fetch({
                 method: "POST",
                 url: "https://api.aigcfun.com/api/v1/text?key=" + getPubkey(),
-                //url: "https://chatforai.cc/api/generate",
                 headers: {
                     "Content-Type": "application/json",
-                    "Referer": `https://aigcfun.com/`
+                    "Referer": "https://aigcfun.com/",
+                    "origin": "https://aigcfun.com"
                 },
                 data: JSON.stringify({
                     messages: messageChain1,
                     tokensLength: your_qus.length + 10,
                     model: "gpt-3.5-turbo"
-
                 }),
-                //	data: JSON.stringify({
-                //	prompt: "Human:"+your_qus+"\nAI:",
-                //		tokensLength: your_qus.length
-                //	}),
-
-                onload: function (res) {
-                    if (res.status === 200) {
+                responseType: "text",
+            }).then(function (res) {
+                if (res.status === 200) {
+                    try {
                         console.log('成功....')
-                        console.log(res.response)
-                        let rest = JSON.parse(res.response).choices[0].text
-                        console.log(rest)
-
-                        try {
-                            showAnserAndHighlightCodeStr(rest);
-                            addMessageChain(messageChain1, {
-                                role: "assistant",
-                                content: rest
-                            })
-                        } catch (e) {
-                            //TODO handle the exception
-                            document.getElementById('gptAnswer').innerHTML = `${rest}`
-                        }
-
-                        highlightCodeStr()
-                    } else {
-                        console.log('失败')
                         console.log(res)
-                        document.getElementById('gptAnswer').innerHTML = '访问失败了'
-                    }
-                },
+                        let rest = JSON.parse(res.responseText).choices[0].text
+                        console.log(rest)
+                        showAnserAndHighlightCodeStr(rest);
+                        addMessageChain(messageChain1, {
+                            role: "assistant",
+                            content: rest
+                        })
+                    } catch (e) {}
 
-                responseType: "application/json;charset=UTF-8",
-
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>some err happends,errinfo :<br>${err.messages}</div>`
-                },
-                ontimeout: function (err) {
-                    document.getElementById('gptAnswer').innerHTML =
-                        `<div>Opps!TimeOut,Please try again,errinfo:<br>${err.messages}</div>`
+                } else {
+                    showAnserAndHighlightCodeStr('访问失败了')
                 }
+            },function (reason){
+                showAnserAndHighlightCodeStr(`出错了:${reason.status},${reason.statusText}`)
             });
         });
-
     }
 
 
@@ -1283,7 +1262,7 @@
     <div id=gptCueBox>
     <p class="chatHide" id="gptStatus">
    <select id="modeSelect">
-      <option value="Default">默认线路</option>
+      <option value="Default">默认线路[兼容]</option>
       <option value="CHATGPT">CHATGPT</option>
       <option value="newBing">newBing</option>
       <option value="OPENAI">OPENAI</option>
@@ -1296,7 +1275,7 @@
       <option value="HAOHUOLA">HAOHUOLA</option>
       <option value="BNU120">BNU120</option>
       <option value="DOG2">DOG2</option>
-      <option value="PIZZA">PIZZA</option>
+      <option value="PIZZA">PIZZA[兼容]</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
       <option value="GEEKR">GEEKR</option>
@@ -1312,17 +1291,17 @@
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI[挂]</option>
       <option value="T66">T66</option>
-      <option value="ZHULEI">ZHULEI</option>
+      <option value="ZHULEI">ZHULEI[兼容]</option>
       <option value="CHATDDD">CHATDDD</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
       <option value="FDKANG">FDKANG[挂]</option>
-      <option value="COOLAI">COOLAI</option>
+      <option value="COOLAI">COOLAI[兼容]</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
       <option value="HEHANWANG">HEHANWANG</option>
-      <option value="LBB">LBB</option>
+      <option value="LBB">LBB[兼容]</option>
       <option value="GAMEJX">GAMEJX</option>
       <option value="AIFKS">AIFKS[挂]</option>
       <option value="USESLESS">USESLESS</option>
@@ -1333,7 +1312,7 @@
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
       <option value="XCBL">XCBL</option>
-      <option value="HZIT">HZIT</option>
+      <option value="HZIT">HZIT[兼容]</option>
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
@@ -1458,8 +1437,8 @@
                 onload:(r) => {
                     //console.log(r)
                     if (r.status === 200) {
-                        console.log(r.response);
-                        let dataList = JSON.parse(r.response).g;
+                        console.log(r);
+                        let dataList = JSON.parse(r.responseText).g;
                         const su = document.querySelector('#suggestions');
                         su.innerHTML = '';
                         dataList && dataList.forEach(v => {
@@ -2280,12 +2259,12 @@
             }),
         }).then((r) => {
             if (r.status === 200) {
-                console.log(r.response);
+                console.log(r);
                 if(messageChain_zhulei.length > 0){
                     messageChain_zhulei[messageChain_zhulei.length - 1].id = Date.now();
                 }
-                addMessageChain(messageChain_zhulei,{"role":"assistant","content":r.response,"id":Date.now()})
-                showAnserAndHighlightCodeStr(r.response)
+                addMessageChain(messageChain_zhulei,{"role":"assistant","content":r.responseText,"id":Date.now()})
+                showAnserAndHighlightCodeStr(r.responseText)
             }
         },(reason)=>{
             console.log(reason)
@@ -2465,8 +2444,8 @@
         });
        if (res.status === 200) {
            console.log('成功....')
-           console.log(res.response)
-           let rest = JSON.parse(res.response).data;
+           console.log(res)
+           let rest = JSON.parse(res.responseText).data;
            console.log(rest)
            for (let i = 0; i < 25; i++) {
                console.log("hzit",i)
@@ -2486,7 +2465,7 @@
                });
                if (rr.status === 200) {
                    console.log(rr)
-                   let result = JSON.parse(rr.response).data;
+                   let result = JSON.parse(rr.responseText).data;
                    if(!result) {
                        await delay(3000)
                        continue;
@@ -2531,8 +2510,8 @@
         });
         if (res.status === 200) {
             console.log('成功....')
-            console.log(res.response)
-            let chat_id = JSON.parse(res.response).chat_id;
+            console.log(res)
+            let chat_id = JSON.parse(res.responseText).chat_id;
             console.log("chat_id",chat_id)
             GM_fetch({
                 method: "GET",
@@ -2613,8 +2592,8 @@
             })
         }).then((res)=>{
             if (res.status === 200) {
-                console.log(res.response)
-                let rest = res.response;
+                console.log(res)
+                let rest = res.responseText;
                 console.log(rest)
                 try {
                     showAnserAndHighlightCodeStr(rest);
@@ -4138,8 +4117,8 @@
             onload: function (res) {
                 if (res.status === 200) {
                     console.log('成功....')
-                    console.log(res.response)
-                    let rest = res.response
+                    console.log(res)
+                    let rest = res.responseText
                     //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
 
                     try {
@@ -4157,10 +4136,10 @@
                 }
             },
 
-            responseType: "application/json;charset=UTF-8",
+            responseType: "text",
             onerror: function (err) {
-                document.getElementById('gptAnswer').innerHTML =
-                    `<div>some err happends,errinfo :<br>${err.messages}</div>`
+                console.error(err)
+                showAnserAndHighlightCodeStr("出错，[访问](https://www.pizzagpt.it/)")
             }
         });
     }
@@ -4185,8 +4164,8 @@
             onload: function (res) {
                 if (res.status === 200) {
                     console.log('成功....')
-                    console.log(res.response)
-                    let rest = res.response
+                    console.log(res)
+                    let rest = res.responseText
                     //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
                     let rjson = JSON.parse(rest);
                     let _bingResults = rjson.processedBingResults;
@@ -4925,8 +4904,8 @@
             })
         }).then((res)=>{
             if (res.status === 200) {
-                console.log(res.response)
-                let rest = res.response
+                console.log(res)
+                let rest = res.responseText
                 try {
                     addMessageChain(messageChain8, {
                         role: "assistant",
