@@ -2,7 +2,7 @@
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
 // @version      2.3.2
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
 // @match      https://www.bing.com/*
@@ -133,6 +133,7 @@
 // @connect   xinghuo.xfyun.cn
 // @connect   geetest.com
 // @connect   neice.tiangong.cn
+// @connect   baidu.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
@@ -1181,6 +1182,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "YIYAN") {
+            console.log("YIYAN")
+            YIYAN()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1263,10 +1270,11 @@
     <p class="chatHide" id="gptStatus">
    <select id="modeSelect">
       <option value="Default">默认线路[兼容]</option>
-      <option value="CHATGPT">CHATGPT</option>
-      <option value="newBing">newBing</option>
+      <option value="CHATGPT">GPT</option>
+      <option value="newBing">New Bing</option>
       <option value="OPENAI">OPENAI</option>
       <option value="TONGYI">通义千问</option>
+      <option value="YIYAN">百度文心</option>
       <option value="SPARK">讯飞星火</option>
       <option value="TIANGONG">天工AI</option>
       <option value="ANZZ">ANZZ</option>
@@ -1315,7 +1323,7 @@
       <option value="HZIT">HZIT[兼容]</option>
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
-	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、CHATGPT、BNU120线路</p>
+	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、GPT、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
 	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
@@ -1437,7 +1445,7 @@
                 onload:(r) => {
                     //console.log(r)
                     if (r.status === 200) {
-                        console.log(r);
+                        //console.log(r);
                         let dataList = JSON.parse(r.responseText).g;
                         const su = document.querySelector('#suggestions');
                         su.innerHTML = '';
@@ -1632,12 +1640,21 @@
 
                         break;
                     case 5: //fsoufsou
-                        let frow = document.querySelectorAll(".flex-row")[2]
-                        if (frow.children!==undefined && frow.children.length === 2) {
-                            frow.children.item(1).prepend(divE)
-                        } else {
-                            frow.innerHTML = frow.innerHTML +
-                                `<div><div class="wiki-container" style="margin-left: 124px!important;padding: 15px!important;">${divE.innerHTML}</div></div>`
+                        if(isMobile()){
+                            //手机fsou
+                            let frow = document.querySelectorAll(".flex-row")[3]
+                            if (frow.children!==undefined ) {
+                                frow.children.item(0).prepend(divE)
+                            }
+                            resetWidth()
+                        }else{
+                            let frow = document.querySelectorAll(".flex-row")[2]
+                            if (frow.children!==undefined && frow.children.length === 2) {
+                                frow.children.item(1).prepend(divE)
+                            } else {
+                                frow.innerHTML = frow.innerHTML +
+                                    `<div><div class="wiki-container" style="margin-left: 124px!important;padding: 15px!important;">${divE.innerHTML}</div></div>`
+                            }
                         }
 
                         break;
@@ -3871,18 +3888,24 @@
 
     let tg_invite_Token;
     let tg_token;
-    function initTGtoken() {
-       if(location.href.includes("neice.tiangong.cn")){
-           //"invite-token": "Bearer " + c("formNatureQueueWaitToken"),
-           tg_invite_Token = localStorage.getItem("formNatureQueueWaitToken");
-           //token: "Bearer " + c("formNatureResearchToken"),
-           tg_token = localStorage.getItem("formNatureResearchToken");
-           GM_setValue("tg_invite_Token",tg_invite_Token)
-           GM_setValue("tg_token",tg_token)
-       }else{
-           tg_invite_Token =  GM_getValue("tg_invite_Token")
-           tg_token = GM_getValue("tg_token")
-       }
+    async function initTGtoken() {
+        if (location.href.includes("neice.tiangong.cn")) {
+            //"invite-token": "Bearer " + c("formNatureQueueWaitToken"),
+            tg_invite_Token = localStorage.getItem("formNatureQueueWaitToken");
+            //token: "Bearer " + c("formNatureResearchToken"),
+            tg_token = localStorage.getItem("formNatureResearchToken");
+            GM_setValue("tg_invite_Token", tg_invite_Token)
+            GM_setValue("tg_token", tg_token)
+            if(tg_invite_Token){
+                document.querySelector('div[class="title"]').innerText = `invite_Token获取成功:${tg_invite_Token}`
+            }else{
+                document.querySelector('div[class="title"]').innerText = `invite_Token获取失败，请再次刷新`
+            }
+            setTimeout(initTGtoken,5000)
+        } else {
+            tg_invite_Token = GM_getValue("tg_invite_Token")
+            tg_token = GM_getValue("tg_token")
+        }
     }
 
     setTimeout(initTGtoken)
@@ -4062,6 +4085,116 @@
 
 
     //天工 ----end--------
+
+
+
+    //问心一言 ----start---
+
+    let yy_aisearch_id;
+    let yy_pvId;
+    let yy_sessionId;
+
+    async function initYiYAN(){
+        let req1 = await GM_fetch({
+            method: "GET",
+            url: `https://chat.baidu.com/?pcasync=pc&asyncRenderUrl=&passportStaticPage=https%3A%2F%2Fwww.baidu.com%2Fcache%2Fuser%2Fhtml%2Fv3Jump.html&from=pc_tab&word=${encodeURI(your_qus)}&source=pd_ic`,
+            headers: {
+                "accept": "*/*",
+                "origin":"https://www.baidu.com",
+                "referer":`https://www.baidu.com/`
+            },
+            data:JSON.stringify({
+                data:{}
+            })
+        })
+        let r = req1.responseText;
+        yy_aisearch_id =  /"aisearch_id":"(.*?)"/i.exec(r)[1];
+        yy_pvId =  /"pvId":"(.*?)"/i.exec(r)[1];
+        yy_sessionId =  /"sessionId":"(.*?)"/i.exec(r)[1];
+        console.log("yy_aisearch_id:",yy_aisearch_id)
+        console.log("yy_pvId:",yy_pvId)
+        console.log("yy_sessionId:",yy_sessionId)
+    }
+    setTimeout(()=>{
+        if(getGPTMode() === 'YIYAN'){
+            initYiYAN()
+        }
+    })
+    async function YIYAN() {
+        showAnserAndHighlightCodeStr("请稍后...该线路为官网线路，使用该线路，请确保已经登百度账号，再刷新页面。[百度](https://www.baidu.com/)")
+        GM_fetch({
+            method: 'POST',
+            url: 'https://chat-ws.baidu.com/aichat/api/conversation',
+            headers: {
+                "origin":"https://www.baidu.com",
+                "referer":`https://www.baidu.com/`,
+                "Content-Type": "application/json",
+                "accept": "text/event-stream"
+            },
+            responseType: "stream",
+            data: JSON.stringify({
+                "message": {
+                    "inputMethod": "keyboard",
+                    "isRebuild": false,
+                    "content": {
+                        "query": your_qus,
+                        "qtype": 0
+                    }
+                },
+                "sessionId": yy_sessionId,
+                "aisearchId": yy_aisearch_id,
+                "pvId": yy_pvId
+            })
+        }).then((stream)=> {
+            let reader = stream.response.getReader()
+            let ans = []
+            let preResponseItem = '';//前一记录
+            let combineItem = [];//合并
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    console.log("===done==")
+                    //console.log(de)
+                    return
+                }
+                let responseItem = new TextDecoder("utf-8").decode(value)
+                console.log(responseItem)
+                if(!responseItem.includes("event:ping") && !responseItem.includes("event:messag")){
+                    combineItem.push(preResponseItem)
+                    combineItem.push(responseItem)
+                    preResponseItem = '';//恢复初始
+                    responseItem = combineItem.join("")//合并
+                    console.log("combineItem:",responseItem)
+                    combineItem = [];//清空
+
+                }else if(!responseItem.includes("event:ping")){
+                    preResponseItem = responseItem;
+                }
+
+
+                responseItem.split("\n").forEach(item=>{
+                    try {
+                        let ii = item.replace(/data:/gi,"").trim();
+                        if(ii && ii !==""){
+                            let chunk = JSON.parse(ii).data.message.content.generator.text
+                            //de.push(item.replace(/data:/gi,"").trim())
+                            ans.push(chunk)
+                            showAnserAndHighlightCodeStr(ans.join(""))
+                        }
+                    }catch (ex){
+                        console.error(item)
+                    }
+                })
+
+                return reader.read().then(processText)
+            },function (reason) {
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            })
+        })
+
+    }
+    //问心一言 ----end---
 
 
     let pizzaSecret;
@@ -5819,10 +5952,10 @@
                 isFirst = true
                 setTimeout(() => socket.send("3"), 3000)
             }
-            if (revData == "3") {
+            if (revData === "3") {
                 socket.send("2");
             }
-            if (revData == "2") {
+            if (revData === "2") {
                 socket.send("3");
             }
             if (revData.match(/40/)) {
