@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.2.9
+// @version      2.3.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -11,6 +11,7 @@
 // @match      https://www.google.com/*
 // @match      https://duckduckgo.com/*
 // @match      https://www.so.com/s*
+// @match      *://m.so.com/s*
 // @match      *://www.baidu.com/s*
 // @match      https://www.baidu.com/*
 // @match      https://m.baidu.com/*
@@ -24,8 +25,8 @@
 // @match      https://fsoufsou.com/search*
 // @match      https://www.google.com.hk/*
 // @match      *://www.sogou.com/*
+// @match      *://m.sogou.com/*
 // @match      *://neice.tiangong.cn/*
-// @include    /^https:\/\/www\.baidu\.com\/s\?wd.*$/
 // @icon64      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAZlBMVEUAAAD///+hoaFoaGhsbGy7u7vd3d2+vr76+vra2tr29va2trYrKyvg4ODs7OxXV1dgYGCtra0xMTGXl5fExMQ6OjqOjo7R0dEVFRWnp6dSUlIiIiIcHBwLCwt4eHhycnKEhIRHR0f14+hfAAADN0lEQVRYhe1WyZajMAyEsMQshgABEwIJ+f+fbC02W0yHnjnNvNYFDFbZKpUlO86v/e/Wpve/8M4TFckwSvI/cx8z11g2/tw9vZKrEIKe159GUkvwipPxVb4eQQzvYV12XX3Y/x6BT5LqUZkgWixEHF/9/hAAeozz0I8nOtzoccDfg8CbaZQrYkOGYUaEFO2RDUTT4MZefjkMpVcQo5/Wr2DSi9/bhlYPhukvZqf41l3hiiFv8xJR2CslIT+XXfc+YapojY60kG1ZA0rknj+lL4YtnGCQ4lbESSczf5R6Ugc5ee4AoL9KAwbwYXDWXJTXhaDhf2L3R44rxzkbgFgHn55Y0JJjzyeONpYLDn4CCPn7A46VaggjwIB6eEltAOConCUAcZVDXBKIHHgbp9IZ4KW0AZj8LAHaQEzaY0lmHk60AXiQ8XYFEDoVrRpXOmSfdQFfbMe7MuTOJMLU6IJqkh7PuTMVrhosAJCp2xrApA6Lk+p4VllMQjsAcNNkpzeQlKkPHhQb0VkAEgO8TSMaVqhMH/EyW57W2R7moNoBCjwDPg1QzM07QAk7o+wUrIcNwAVZ1ktAROE7gBMaEq4kaW8NgHlQOsrULiUoHjGT40PIqngHOIGYzRK22ggJz3TpbrCt7AMU9gPZwc4y5slJC7FO4woAxmcLgMMi0dF1ymSOtnMEYFDczxqtdJRM6HlAbhSvARIqHG+G5BJGqONoK2opooIMLQFaYMvWs0EJruNRV1b8vy+wqDtbEj2caAcQg5NWdIQL6IJPjIGg1gDKhLINARyxed4DpgLFq+vvKoRiEszGWmlCy0OmcyrqSxKr/eaUzFvDGnDWCX2d5zQmNdJsO4xoz8XeyqcpIdRexZ0BBOYl2r2wyHfwB2WFO0zBjS/Zv2Vc8Pey3l3kor0iR65Q+61Vr6GmttNSOtxRf+jgvfnW3eFa4CZ+3fb1k1q1uC0D3GmKC2s5zkxKvieqWbKQPvFpfbRnNF+pYn/+3ny6m0zW+9eYDIMxlQsbvKuO3zfrV5fWKMc4GLu6G+m2KY/fNNnu6/vu2drTv7fFjVuOP3dHy5MolJEqrKfvoPXp57vpr/3r9gUxwiW4OiuC3wAAAABJRU5ErkJggg==
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
@@ -52,7 +53,6 @@
 // @connect    ai.bo-e.com
 // @connect    a.mydog.buzz
 // @connect    freechatgpt.xgp.one
-// @connect    gptkey.oss-cn-hangzhou.aliyuncs.com
 // @connect    luntianxia.uk
 // @connect    chat.51buygpt.com
 // @connect    extkj.cn
@@ -149,7 +149,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.2.9';
+    let JSver = '2.3.0';
 
 
     function getGPTMode() {
@@ -447,7 +447,7 @@
 
     function isMobile() {
         let userAgentInfo = navigator.userAgent.toLowerCase();
-        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod","Mobile"];
         let mobile_flag = false;
         //根据userAgent判断是否是手机
         for (let v = 0; v < mobileAgents.length; v++) {
@@ -551,12 +551,16 @@
         })
         //linkToBing_beautification_script()
     }
-    if (window.location.href.indexOf("www.google.com") > -1 || window.location.href.match(regx)) {
+    if (window.location.href.indexOf("google.com") > -1 || window.location.href.match(regx)) {
         GM_add_box_style(1)
         addBothStyle()
         keyEvent()
         appendBox(1).then((res) => {
-            pivElemAddEventAndValue(1)
+            if(isMobile()){
+                pivElemAddEventAndValue(11)
+            }else {
+                pivElemAddEventAndValue(1)
+            }
         })
     }
     if (window.location.href.indexOf("https:\/\/www.baidu.com\/s") > -1 && !isMobile()) {
@@ -592,7 +596,11 @@
         addBothStyle()
         keyEvent()
         appendBox(4).then((res) => {
-            pivElemAddEventAndValue(4)
+            if(isMobile()){
+                pivElemAddEventAndValue(9)
+            }else {
+                pivElemAddEventAndValue(4)
+            }
         })
     }
 
@@ -624,7 +632,11 @@
         addBothStyle()
         keyEvent()
         appendBox(8).then((res) => {
-            pivElemAddEventAndValue(8)
+            if(isMobile()){
+                pivElemAddEventAndValue(10)
+            }else{
+                pivElemAddEventAndValue(8)
+            }
         })
     }
 
@@ -645,97 +657,6 @@
     function GM_add_box_style(case_web) {
         case_web = 2;
         switch (case_web) {
-            case 0: //bing
-                GM_addStyle(`
-    #gptAnswer{
-   margin: 15px;
-   border-top: solid;
-    border-bottom: solid;
-    }
-    #gptInput{
-    width:74%;
-    border-radius: 4px;
-    }
-    #gptInputBox{
-        display: flex;
-    justify-content: space-around;
-    }
-
-    #button_GPT:hover{
-    background:#ffffffcc;
-    }
-    #gptDiv{
-     border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 9px;
-    width:452px;
-    translate:-20px;
-    background:#ffffffcc;
-    backdrop-filter: blur(5px);
-    display: flex;
-    flex-direction: column;
-    }
-    #button_GPT{
-    }
-    #button_GPT{
-    background: transparent;
-    border-radius: 4px;
-
-    }
-    #gptCueBox{
-        translate: 3px;
-    }
-    
-    #gptStatus{
-        margin-left: 10px;
-    }
-
-	 p{white-space: pre-line}
-
-
-    `)
-                break;
-            case 1: //google
-                GM_addStyle(`
-    #gptAnswer{
-   margin: 15px;
-   border-top: solid;
-    border-bottom: solid;
-    }
-    #gptInput{
-    border-radius: 4px;
-    width: 68%;
-    }
-    #button_GPT:hover{
-    background:#dcdcdccc;
-    }
-    #gptDiv{
-		width:452px;
-        flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: fit-content;
-
-    }
-    #gptInputBox{
-    display:flex;
-    justify-content: space-around;
-    }
-    #button_GPT{
-    background: transparent;
-    border-radius: 3px;
-     font-size: 14px;
-    }
-    #gptStatus{
-        margin-left: 10px;
-     }
-
-
- p{white-space: pre-line}
-
-
-    `)
-                break; //baidu
             case 2:
                 GM_addStyle(`
     #gptAnswer{
@@ -1464,6 +1385,15 @@
         let search_content
 
         try {
+            if (append_case === 11) {//手机google
+                search_content = document.querySelector("#tsf input").value
+            }
+            if (append_case === 10) {//手机sogou
+                search_content = document.querySelector("input#keyword").value
+            }
+            if (append_case === 9) {//手机360
+                search_content = document.querySelector("input#q").value
+            }
             if (append_case === 8) {
                 search_content = document.querySelector("input#upquery").value
             }
@@ -1665,16 +1595,38 @@
     async function appendBox(append_case) {
         return new Promise((resolve, reject) => {
             creatBox().then((divE) => {
+                let resetWidth = ()=>{
+                    try {
+                        document.querySelector("#gptDiv").style.setProperty("width",
+                            "100%")
+                        /*document.querySelector("#gptInput").setAttribute("class",
+                            "se-input adjust-input")*/
+                    } catch (e) {
+                        console.error(e)
+                    }
+                }
+
                 switch (append_case) {
                     case 0: //bing
                         if (divE) {
-                            document.getElementById('b_context').prepend(divE)
+                            if(isMobile()){
+                                //手机bing
+                                document.getElementById('b_results').prepend(divE)
+                                resetWidth();
+                            }else{
+                                document.getElementById('b_context').prepend(divE)
+                            }
                         }
                         break;
                     case 1: //google
-                        if (document.getElementsByClassName('TQc1id ')[0]) {
+                        if(isMobile()){
+                            //手机google
+                            document.querySelector("div#msc").after(divE);
+                            resetWidth();
+                        }else if (document.getElementsByClassName('TQc1id ')[0]) {
                             document.getElementsByClassName('TQc1id ')[0].prepend(divE);
                         } else {
+                            //other
                             document.getElementById("rcnt").appendChild(divE);
                         }
                         break;
@@ -1689,9 +1641,16 @@
                         }
                         break;
                     case 4: //360
-                        if (document.getElementById('side')) {
-                            document.getElementById('side').prepend(divE)
+                        if(isMobile()){
+                            //手机360
+                            document.getElementById("search-box").appendChild(divE);
+                            resetWidth();
+                        }else{
+                            if (document.getElementById('side')) {
+                                document.getElementById('side').prepend(divE)
+                            }
                         }
+
                         break;
                     case 5: //fsoufsou
                         let frow = document.querySelectorAll(".flex-row")[2]
@@ -1707,25 +1666,31 @@
                         if (document.getElementById('page-bd')) {
                             document.getElementById('page-bd').prepend(divE)
                             //调整css
-                            try {
-                                document.querySelector("#gptDiv").style.setProperty("width",
-                                    "100%")
-                                /*document.querySelector("#gptInput").setAttribute("class",
-                                    "se-input adjust-input")*/
-                            } catch (e) {
-                                console.error(e)
-                            }
+                            resetWidth();
                         }
                         break;
                     case 7: //duckduckgo
-                        if (document.querySelector('.results--sidebar div')) {
-                            document.querySelector('.results--sidebar div').prepend(divE)
+                        if(isMobile()){
+                            //手机dockgo
+                            document.querySelector('form#search_form').after(divE)
+                            resetWidth();
+                        }else{
+                            if (document.querySelector('[data-area="sidebar"]')) {
+                                document.querySelector('[data-area="sidebar"]').prepend(divE)
+                            }
                         }
                         break;
                    case 8: //sogou
-                        if (document.querySelector('div.right')) {
-                            document.querySelector('div.right').prepend(divE)
+                        if(isMobile()){
+                            //手机搜狗
+                            document.querySelector('form#searchform').after(divE)
+                            resetWidth();
+                        }else{
+                            if (document.querySelector('div.right')) {
+                                document.querySelector('div.right').prepend(divE)
+                            }
                         }
+
                         break;
                     default:
                         if (divE) {
@@ -4298,7 +4263,7 @@
                 } else {
                     console.log('失败')
                     console.log(res)
-                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                    showAnserAndHighlightCodeStr('访问失败了,[phind](https://www.phind.com/api/web/search)')
                 }
             },
 

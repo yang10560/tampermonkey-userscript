@@ -850,7 +850,7 @@
                 } else {
                     console.log('失败')
                     console.log(res)
-                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                   GM_simulateBotResponse('访问失败了,[phind](https://www.phind.com/api/web/search)')
                 }
             },
 
