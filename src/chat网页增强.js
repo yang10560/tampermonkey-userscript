@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.36
+// @version      4.37
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -70,7 +70,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.36"
+    let JSVer = "v4.37"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -195,6 +195,16 @@
     var messageChain3 = []//XCBL
     var messageChain6 = []//HZIT
 
+
+    function uuidv4() {
+        let d = new Date().getTime(); // get current timestamp in ms (to ensure UUID uniqueness)
+        let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (d + Math.random() * 16) % 16 | 0 // generate random nibble
+            d = Math.floor(d / 16) // correspond each UUID digit to unique 4-bit chunks of timestamp
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16) // generate random hexadecimal digit
+        })
+        return uuid
+    }
 
     function addMessageChain(messageChain, element) {
         if (messageChain.length >= 5) {
@@ -481,10 +491,12 @@
             console.log(sign)
             GM_fetch({
                 method: "POST",
-                url: Baseurl + "v1/chat/completions",
+                url: Baseurl + "v1/chat/completions?full=false",
                 headers: {
                     "Content-Type": "application/json",
                     "authorization": "Bearer free",
+                    "client-id": uuidv4(),
+                    "client-v": "0.1.29",
                     "Referer": Baseurl,
                     "origin": "https://ai.ls",
                     "X-Forwarded-For": generateRandomIP(),
@@ -522,13 +534,14 @@
                     }
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        d.split("\n").forEach(item=>{
+                        /*d.split("\n").forEach(item=>{
                             try {
                                 let chunk = JSON.parse(item.replace(/data:/,"").trim())
                                     .choices[0].delta.content;
                                 result.push(chunk)
                             }catch (ex){}
-                        })
+                        })*/
+                        result.push(d)
                         GM_fillBotResponse(result.join(""))
                     } catch (e) {
                         console.log(e)
@@ -2064,7 +2077,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "586-481-525B",
+                "access-code": "586-481-535C",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.5
+// @version      2.3.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.5';
+    let JSver = '2.3.6';
 
 
     function getGPTMode() {
@@ -2074,10 +2074,12 @@
             console.log(sign)
             GM_fetch({
                 method: "POST",
-                url: Baseurl + "v1/chat/completions",
+                url: Baseurl + "v1/chat/completions?full=false",
                 headers: {
                     "Content-Type": "application/json",
                     "authorization": "Bearer free",
+                    "client-id": uuidv4(),
+                    "client-v": "0.1.29",
                     "Referer": Baseurl,
                     "origin": "https://ai.ls",
                     "X-Forwarded-For": generateRandomIP(),
@@ -2114,13 +2116,15 @@
                     }
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        d.split("\n").forEach(item=>{
+                        console.log(d)
+                        /*d.split("\n").forEach(item=>{
                             try {
                                 let chunk = JSON.parse(item.replace(/data:/,"").trim())
                                     .choices[0].delta.content;
                                 result.push(chunk)
                             }catch (ex){}
-                        })
+                        })*/
+                        result.push(d)
                         showAnserAndHighlightCodeStr(result.join(""))
                     } catch (e) {
                         console.log(e)
@@ -2376,6 +2380,9 @@
     let chatzhang_key;
     let chatzhang_ip = generateRandomIP();
     setTimeout(()=>{
+        if(getGPTMode() !== 'CHATZHANG'){
+            return
+        }
         GM_fetch({
             method: "GET",
             url: "http://chat.chatzhang.top/index.php",
@@ -3554,6 +3561,7 @@
            }catch (e) {
                tongyi_first = true;
                showAnserAndHighlightCodeStr("出错,请确认已登录通义官网[通义](https://tongyi.aliyun.com/chat)")
+               setTimeout(setCsrfToken)
            }
        }
 
@@ -3767,6 +3775,7 @@
 
             } catch (e) {
                 console.error(e)
+                setTimeout(init_sp_chatId)
                 reject("出错")
             }
         })
@@ -3985,6 +3994,7 @@
             showAnserAndHighlightCodeStr("invite_Token失效。请至官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
 /*            let result = await waitAccess();
             showAnserAndHighlightCodeStr(result)*/
+            initTGtoken()
             return
         }
 
@@ -4806,7 +4816,7 @@
 
     }
 
-    //https://gpt.esojourn.org/api/chat-stream
+    //https://gpt.esojourn.org/api/chat-stream https://0505.betai55.uk/api/chat-stream
     function ESO() {
 
         let baseURL = "https://gpt.esojourn.org/";
@@ -4816,7 +4826,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "586-481-525B",
+                "access-code": "586-481-535C",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
