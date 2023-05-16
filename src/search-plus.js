@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.4
+// @version      2.3.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -114,12 +114,11 @@
 // @connect   hehanwang.com
 // @connect   caipacity.com
 // @connect   chat.fdkang.top
-// @connect   darricks.net
+// @connect   chatzhang.top
 // @connect   51mskd.com
 // @connect   forwardminded.xyz
 // @connect   1chat.cc
 // @connect   cytsee.com
-// @connect   hanji051.cn
 // @connect   skybyte.me
 // @connect   alllinkai1.com
 // @connect   baidu.com
@@ -151,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.4';
+    let JSver = '2.3.5';
 
 
     function getGPTMode() {
@@ -1136,9 +1135,9 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "HANJI") {
-            console.log("HANJI")
-            HANJI()
+        }else if (GPTMODE && GPTMODE === "CHATZHANG") {
+            console.log("CHATZHANG")
+            CHATZHANG()
 
             return;
             //end if
@@ -1312,7 +1311,7 @@
       <option value="OFFICECHAT">OFFICECHAT[挂]</option>
       <option value="CHATWEB1">CHATWEB1</option>
       <option value="LINKAI">LINKAI</option>
-      <option value="HANJI">HANJI[挂]</option>
+      <option value="CHATZHANG">CHATZHANG</option>
       <option value="MINDED">MINDED</option>
       <option value="CYTSEE">CYTSEE</option>
       <option value="QDYMYS">QDYMYS</option>
@@ -2374,42 +2373,48 @@
     }
 
 
-    let hanji_key;
+    let chatzhang_key;
+    let chatzhang_ip = generateRandomIP();
     setTimeout(()=>{
         GM_fetch({
             method: "GET",
-            url: "http://vip.hanji051.cn/index.php",
+            url: "http://chat.chatzhang.top/index.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://vip.hanji051.cn/"
+                "Referer": "http://chat.chatzhang.top/",
+                "x-requested-with": "XMLHttpRequest",
+                "X-Forwarded-For" : chatzhang_ip
             }
         }).then(res=>{
-            console.log("vip.hanji051.cn",res.responseHeaders);
-            hanji_key = res.responseHeaders.match(/key=(.*?);/)[1];
-            console.log("hanji_key",hanji_key)
+            chatzhang_key = res.responseHeaders.match(/key=(.*?);/)[1];
+            console.log("CHATZHANG_key",chatzhang_key)
         }).catch((ex)=>{
             console.log(ex)
         })
     })
 
-    async function HANJI() {
+    async function CHATZHANG() {
         await GM_fetch({
             method: "POST",
-            url: "http://vip.hanji051.cn/setsession.php",
+            url: "http://chat.chatzhang.top/setsession.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://vip.hanji051.cn/"
+                "Referer": "http://chat.chatzhang.top/",
+                "x-requested-with": "XMLHttpRequest",
+                "X-Forwarded-For" : chatzhang_ip
             },
-            data: `message=+${encodeURI(your_qus)}&context=%5B%5D&key=${hanji_key}`
+            data: `message=+${encodeURI(your_qus)}&context=%5B%5D&key=${chatzhang_key}`
         })
 
         GM_fetch({
             method: "POST",
-            url: "http://vip.hanji051.cn/stream.php",
+            url: "http://chat.chatzhang.top/stream.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://vip.hanji051.cn/",
-                "accept": "text/event-stream"
+                "Referer": "http://chat.chatzhang.top/",
+                "accept": "text/event-stream",
+                "x-requested-with": "XMLHttpRequest",
+                "X-Forwarded-For" : chatzhang_ip
             },
             responseType: "stream"
         }).then((stream) => {
@@ -2604,53 +2609,32 @@
 
     }
 
-    let messageChain3 = [];//DARRICKS
-    function DARRICKS() {
 
-        let baseURL = "https://chat.darricks.net/";
-        addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "accept": "*/*",
-                "access-code": "j-2004",
-                "X-Forwarded-For": generateRandomIP(),
-                "path": "v1/chat/completions",
-                "Referer": baseURL
-            },
-            data: JSON.stringify({
-                messages: messageChain3,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                presence_penalty: 0
-            })
-        }).then((res)=>{
-            if (res.status === 200) {
-                console.log(res)
-                let rest = res.responseText;
-                console.log(rest)
-                try {
-                    showAnserAndHighlightCodeStr(rest);
-                    addMessageChain(messageChain3, {
-                        role: "assistant",
-                        content: rest
-                    })
-                } catch (ex) {
-                    console.log(ex)
-                }
-
-            } else {
-                showAnserAndHighlightCodeStr(`访问失败了${res}`)
+    //取某个cookie的值
+    function getCookieValue(cookies, cookieName) {
+        let name = cookieName + "=";
+        let cookieArray = cookies.split(';');
+        for(let i = 0; i < cookieArray.length; i++) {
+            let cookie = cookieArray[i];
+            while (cookie.charAt(0) === ' ') {
+                cookie = cookie.substring(1);
             }
-        },function (err) {
-            console.log(err)
-        }).catch((ex)=>{
-            console.log(ex)
-        });
+            if (cookie.indexOf(name) === 0) {
+                return cookie.substring(name.length, cookie.length);
+            }
+        }
+        return "";
+    }
 
+    //取header的cookie
+    function getCookies(headers) {
+        let cookieArray = headers.split('\r\n');
+        cookieArray.forEach(item => {
+            if(item.startsWith('set-cookie')){
+                return item;
+            }
+        })
+        return "";
     }
 
 
