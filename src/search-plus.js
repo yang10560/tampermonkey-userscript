@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.3
+// @version      2.3.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -151,7 +151,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.3';
+    let JSver = '2.3.4';
 
 
     function getGPTMode() {
@@ -350,7 +350,7 @@
             })
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
-                bnuKey = await setNormalKey("https://chat.5.bnu120.space");
+                bnuKey = await setNormalKey("https://chat.1.bnu120.space");
                 if(bnuKey){
                     showAnserAndHighlightCodeStr(`BNU120：更新成功,KEY:${bnuKey}`)
                 }else {
@@ -475,7 +475,27 @@
             return katex.renderToString(tex, {displayMode: false, throwOnError: false});
         });
        // console.log("========katexTohtml end=======")
+        try {
+            renderedHtml = filterXSS(renderedHtml) //filterXSS
+        }catch (e) {
+            console.warn(e)
+        }
+
         return renderedHtml;
+    }
+
+
+    function filterXSS(input) {
+        //let output = input.replace(/<script[^>]*>.*?<script>/gi, '');
+        let output = input.replace(/<script/gi, '&lt;script');
+        //output = output.replace(/<\/script/gi, '&lt;&#x2F;script');
+        output = output.replace(/<meta/gi, '&lt;meta');
+       // output = output.replace(/<\/meta/gi, '&lt;&#x2F;meta');
+       /* output = output.replace(/<>]+?on\\\\w+=.*?>/gi, '');
+        output = output.replace(/<[^>]*>.*?<iframe>/gi, '');
+        output = output.replace(/<img[^>]+src=[\\']([^\\']+)[\\'][^>]*>/gi, '');
+        output = output.replace(/<link rel=[\\']stylesheet[\\'][^>]+>/gi, ''); */
+        return output;
     }
 
     let rawAns = undefined;
@@ -5179,13 +5199,13 @@
 
     let bnuKey;
     setTimeout(async () => {
-        bnuKey = await setNormalKey("https://chat.5.bnu120.space");
+        bnuKey = await setNormalKey("https://chat.1.bnu120.space");
     });
     //https://ic.muspimerol.site/
     function BNU120() {
 
         let now = Date.now();
-        let Baseurl = "https://chat.5.bnu120.space/"
+        let Baseurl = "https://chat.1.bnu120.space/"
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",

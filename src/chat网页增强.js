@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.35
+// @version      4.36
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -70,7 +70,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.35"
+    let JSVer = "v4.36"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1399,7 +1399,7 @@
 
     var bnuKey;
     setTimeout(async () => {
-        bnuKey = await setNormalKey("https://chat.5.bnu120.space");
+        bnuKey = await setNormalKey("https://chat.1.bnu120.space");
     });
     let messageChain9 = []
     //https://chat.bnu120.space/
@@ -1407,7 +1407,7 @@
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
         let now = Date.now();
-        let Baseurl = "https://chat.5.bnu120.space/"
+        let Baseurl = "https://chat.1.bnu120.space/"
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
