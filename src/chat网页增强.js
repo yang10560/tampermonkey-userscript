@@ -60,6 +60,7 @@
 // @connect   anfans.cn
 // @connect   6bbs.cn
 // @connect   haohuola.com
+// @connect   cytsee.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -2768,6 +2769,72 @@
 
     }
 
+    let messageChain_cytsee = []
+    function CYTSEE(question) {
+        let your_qus = question;
+        GM_handleUserInput(null)
+        let baseURL = "https://www.cytsee.com/";
+        addMessageChain(messageChain_cytsee, {role: "user", content: your_qus})//连续话
+        let sendData = JSON.stringify({
+            messages: messageChain_cytsee,
+            justStream: true,
+            stream: true,
+            model: "gpt-3.5-turbo",
+            temperature: 1,
+            presence_penalty: 0
+        });
+        let hmac = CryptoJS.HmacSHA256(sendData, "981028");
+        let signature = hmac.toString(CryptoJS.enc.Hex);
+
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "api/generateStream",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "*/*",
+                "sign": signature,
+                "Referer": "https://saosao.cytsee.com/",
+                "origin": "https://saosao.cytsee.com"
+            },
+            data: sendData,
+            responseType: "stream"
+        }).then((stream)=>{
+            GM_simulateBotResponse("。。。")
+            const reader = stream.response.getReader();
+            let result = [];
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    addMessageChain(messageChain_cytsee, {
+                        role: "assistant",
+                        content: result.join("")
+                    });
+                    GM_fillBotResponseAndSave(your_qus,result.join(""))
+                    return;
+                }
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(value);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    result.push(decoder.decode(byteArray))
+                    GM_fillBotResponse(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+
+        },function (err) {
+            console.log(err)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
+
+    }
+
+
 
     let conversationId_haohuola;
     let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3MTA1MCwiZXhwIjoxNjg0MjQzODUwfQ.-i5fY_WqP3aA6l2gaQQtfi8bG9N9KqSZZ1jPkdZSr8Y'
@@ -2976,6 +3043,10 @@
                     console.log("HAOHUOLA")
                    HAOHUOLA(qus);
                     break;
+             case "CYTSEE":
+                    console.log("CYTSEE")
+                    CYTSEE(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -2992,6 +3063,7 @@
  <option value="tdchat">tdchat</option>
  <option value="LEMURCHAT">狐猴内置</option>
  <option value="HAOHUOLA">HAOHUOLA</option>
+ <option value="CYTSEE">CYTSEE</option>
  <option value="QDYMYS">QDYMYS</option>
  <option value="wgk">wgk</option>
  <option value="WOBCW">WOBCW</option>

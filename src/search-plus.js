@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.6
+// @version      2.3.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.6';
+    let JSver = '2.3.7';
 
 
     function getGPTMode() {
@@ -1289,7 +1289,6 @@
     <p class="chatHide" id="gptStatus">
    <select id="modeSelect">
       <option value="Default">默认线路[兼容]</option>
-      <option value="CHATGPT">GPT</option>
       <option value="newBing">New Bing</option>
       <option value="OPENAI">OPENAI</option>
       <option value="TONGYI">通义千问</option>
@@ -1341,6 +1340,7 @@
       <option value="XCBL">XCBL</option>
       <option value="HZIT">HZIT[兼容]</option>
       <option value="TOYAML">TOYAML</option>
+      <option value="CHATGPT">GPT</option>
     </select> 部分线路需要科学上网</p>
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、GPT、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
@@ -2698,28 +2698,34 @@
     }
 
 
-    //2023年5月4日 https://chatgpt.cytsee.com/
+    //2023年5月4日 https://chatgpt.cytsee.com/ https://chatgpt01.peo.icu/
     let messageChain_cytsee = []
     function CYTSEE() {
 
         let baseURL = "https://www.cytsee.com/";
         addMessageChain(messageChain_cytsee, {role: "user", content: your_qus})//连续话
+        let sendData = JSON.stringify({
+            messages: messageChain_cytsee,
+            justStream: true,
+            stream: true,
+            model: "gpt-3.5-turbo",
+            temperature: 1,
+            presence_penalty: 0
+        });
+        let hmac = CryptoJS.HmacSHA256(sendData, "981028");
+        let signature = hmac.toString(CryptoJS.enc.Hex);
+
         GM_fetch({
             method: "POST",
             url: baseURL + "api/generateStream",
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
-                "Referer": baseURL
+                "sign": signature,
+                "Referer": "https://saosao.cytsee.com/",
+                "origin": "https://saosao.cytsee.com"
             },
-            data: JSON.stringify({
-                messages: messageChain_cytsee,
-                justStream: true,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                presence_penalty: 0
-            }),
+            data: sendData,
             responseType: "stream"
         }).then((stream)=>{
 
