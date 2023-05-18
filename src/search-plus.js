@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.4.1
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
+// @version      2.4.2
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
 // @match      https://www.bing.com/*
@@ -15,6 +15,7 @@
 // @match      *://www.baidu.com/s*
 // @match      https://www.baidu.com/*
 // @match      https://m.baidu.com/*
+// @match      *://baidu.com/s*
 // @match      *://yandex.ru/search*
 // @match      *://yandex.com/search*
 // @match      https://search.ecnu.cf/search*
@@ -28,6 +29,7 @@
 // @match      *://m.sogou.com/*
 // @match      *://wap.sogou.com/*
 // @match      *://neice.tiangong.cn/*
+// @match      *://www.bilibili.com/video/*
 // @icon64      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAZlBMVEUAAAD///+hoaFoaGhsbGy7u7vd3d2+vr76+vra2tr29va2trYrKyvg4ODs7OxXV1dgYGCtra0xMTGXl5fExMQ6OjqOjo7R0dEVFRWnp6dSUlIiIiIcHBwLCwt4eHhycnKEhIRHR0f14+hfAAADN0lEQVRYhe1WyZajMAyEsMQshgABEwIJ+f+fbC02W0yHnjnNvNYFDFbZKpUlO86v/e/Wpve/8M4TFckwSvI/cx8z11g2/tw9vZKrEIKe159GUkvwipPxVb4eQQzvYV12XX3Y/x6BT5LqUZkgWixEHF/9/hAAeozz0I8nOtzoccDfg8CbaZQrYkOGYUaEFO2RDUTT4MZefjkMpVcQo5/Wr2DSi9/bhlYPhukvZqf41l3hiiFv8xJR2CslIT+XXfc+YapojY60kG1ZA0rknj+lL4YtnGCQ4lbESSczf5R6Ugc5ee4AoL9KAwbwYXDWXJTXhaDhf2L3R44rxzkbgFgHn55Y0JJjzyeONpYLDn4CCPn7A46VaggjwIB6eEltAOConCUAcZVDXBKIHHgbp9IZ4KW0AZj8LAHaQEzaY0lmHk60AXiQ8XYFEDoVrRpXOmSfdQFfbMe7MuTOJMLU6IJqkh7PuTMVrhosAJCp2xrApA6Lk+p4VllMQjsAcNNkpzeQlKkPHhQb0VkAEgO8TSMaVqhMH/EyW57W2R7moNoBCjwDPg1QzM07QAk7o+wUrIcNwAVZ1ktAROE7gBMaEq4kaW8NgHlQOsrULiUoHjGT40PIqngHOIGYzRK22ggJz3TpbrCt7AMU9gPZwc4y5slJC7FO4woAxmcLgMMi0dF1ymSOtnMEYFDczxqtdJRM6HlAbhSvARIqHG+G5BJGqONoK2opooIMLQFaYMvWs0EJruNRV1b8vy+wqDtbEj2caAcQg5NWdIQL6IJPjIGg1gDKhLINARyxed4DpgLFq+vvKoRiEszGWmlCy0OmcyrqSxKr/eaUzFvDGnDWCX2d5zQmNdJsO4xoz8XeyqcpIdRexZ0BBOYl2r2wyHfwB2WFO0zBjS/Zv2Vc8Pey3l3kor0iR65Q+61Vr6GmttNSOtxRf+jgvfnW3eFa4CZ+3fb1k1q1uC0D3GmKC2s5zkxKvieqWbKQPvFpfbRnNF+pYn/+3ny6m0zW+9eYDIMxlQsbvKuO3zfrV5fWKMc4GLu6G+m2KY/fNNnu6/vu2drTv7fFjVuOP3dHy5MolJEqrKfvoPXp57vpr/3r9gUxwiW4OiuC3wAAAABJRU5ErkJggg==
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
@@ -39,10 +41,12 @@
 // @grant      GM_setClipboard
 // @run-at     document-end
 // @require    https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
-// @require    https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/marked/4.3.0/marked.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/markdown-it/13.0.1/markdown-it.min.js
-// @require    https://unpkg.com/axios/dist/axios.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
+// @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.min.js
 // @connect    api.forchange.cn
 // @connect    wenxin110.top
 // @connect    gpt008.com
@@ -132,13 +136,8 @@
 // @connect   xinghuo.xfyun.cn
 // @connect   geetest.com
 // @connect   neice.tiangong.cn
-// @connect   baidu.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
-// @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
-// @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
-// @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
-// @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.min.js
 
 // ==/UserScript==
 
@@ -150,7 +149,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.4.1';
+    let JSver = '2.4.2';
 
 
     function getGPTMode() {
@@ -438,7 +437,7 @@
         $(".bg.s_btn_wr").after(mybtn)
         document.getElementById("mybtn").addEventListener("click", function () {
             console.log("reloadPage")
-            if (window.location.href.indexOf("https:\/\/www.baidu.com\/s") > -1) {
+            if (window.location.href.indexOf("baidu.com\/s") > -1) {
                 GM_add_box_style(2)
                 addBothStyle()
                 keyEvent()
@@ -587,7 +586,7 @@
             }
         })
     }
-    if (window.location.href.indexOf("https:\/\/www.baidu.com\/s") > -1 && !isMobile()) {
+    if (window.location.href.indexOf("baidu.com\/s") > -1 && !isMobile()) {
         GM_add_box_style(2)
         addBothStyle()
         keyEvent()
@@ -661,6 +660,16 @@
             }else{
                 pivElemAddEventAndValue(8)
             }
+        })
+    }
+
+    //bilibili.com
+    if (window.location.href.includes("bilibili.com")) {
+        GM_add_box_style(1)
+        addBothStyle()
+        keyEvent()
+        appendBox(9).then((res) => {
+            pivElemAddEventAndValue(null)
         })
     }
 
@@ -1301,7 +1310,6 @@
     <div id="gptInputBox">
         <input autocomplete="off" placeholder="若用不了,请更新KEY或切换线路" id="gptInput" list="suggestions" type=text><button id="button_GPT" ><svg width="15px" height="15px" focusable="false" viewBox="0 0 24 24"><path fill="#34a853" d="M10 2v2a6 6 0 0 1 6 6h2a8 8 0 0 0-8-8"></path><path fill="#ea4335" d="M10 4V2a8 8 0 0 0-8 8h2c0-3.3 2.7-6 6-6"></path><path fill="#fbbc04" d="M4 10H2a8 8 0 0 0 8 8v-2c-3.3 0-6-2.69-6-6"></path><path fill="#4285f4" d="M22 20.59l-5.69-5.69A7.96 7.96 0 0 0 18 10h-2a6 6 0 0 1-6 6v2c1.85 0 3.52-.64 4.88-1.68l5.69 5.69L22 20.59"></path></svg>搜索</button>
         <datalist id="suggestions">
-            <option value="你好"></option>
         </datalist>
     </div>
     <div class="chatSetting"><a id="chatSetting"><svg fill="#909399" width="15px" height="15px" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.85 22.25h-3.7c-.74 0-1.36-.54-1.45-1.27l-.27-1.89c-.27-.14-.53-.29-.79-.46l-1.8.72c-.7.26-1.47-.03-1.81-.65L2.2 15.53c-.35-.66-.2-1.44.36-1.88l1.53-1.19c-.01-.15-.02-.3-.02-.46 0-.15.01-.31.02-.46l-1.52-1.19c-.59-.45-.74-1.26-.37-1.88l1.85-3.19c.34-.62 1.11-.9 1.79-.63l1.81.73c.26-.17.52-.32.78-.46l.27-1.91c.09-.7.71-1.25 1.44-1.25h3.7c.74 0 1.36.54 1.45 1.27l.27 1.89c.27.14.53.29.79.46l1.8-.72c.71-.26 1.48.03 1.82.65l1.84 3.18c.36.66.2 1.44-.36 1.88l-1.52 1.19c.01.15.02.3.02.46s-.01.31-.02.46l1.52 1.19c.56.45.72 1.23.37 1.86l-1.86 3.22c-.34.62-1.11.9-1.8.63l-1.8-.72c-.26.17-.52.32-.78.46l-.27 1.91c-.1.68-.72 1.22-1.46 1.22zm-3.23-2h2.76l.37-2.55.53-.22c.44-.18.88-.44 1.34-.78l.45-.34 2.38.96 1.38-2.4-2.03-1.58.07-.56c.03-.26.06-.51.06-.78s-.03-.53-.06-.78l-.07-.56 2.03-1.58-1.39-2.4-2.39.96-.45-.35c-.42-.32-.87-.58-1.33-.77l-.52-.22-.37-2.55h-2.76l-.37 2.55-.53.21c-.44.19-.88.44-1.34.79l-.45.33-2.38-.95-1.39 2.39 2.03 1.58-.07.56a7 7 0 0 0-.06.79c0 .26.02.53.06.78l.07.56-2.03 1.58 1.38 2.4 2.39-.96.45.35c.43.33.86.58 1.33.77l.53.22.38 2.55z"></path><circle cx="12" cy="12" r="3.5" fill="#909399"></circle></svg>设置</a></div>
@@ -1348,7 +1356,7 @@
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
-      <option value="HEHANWANG">HEHANWANG</option>
+      <option value="HEHANWANG">HEHANWANG[挂]</option>
       <option value="LBB">LBB[兼容]</option>
       <option value="GAMEJX">GAMEJX</option>
       <option value="AIFKS">AIFKS[挂]</option>
@@ -1463,7 +1471,7 @@
             console.log(e)
         }
 
-        document.getElementById("gptInput").value = search_content
+        document.getElementById("gptInput").value = search_content || ''
         document.getElementById('button_GPT').addEventListener('click', () => {
             your_qus = document.getElementById("gptInput").value
             do_it()
@@ -1627,8 +1635,12 @@
     async function appendBox(append_case) {
         return new Promise((resolve, reject) => {
             creatBox().then((divE) => {
-                let resetWidth = ()=>{
+                let resetWidth = (width)=>{
                     try {
+                        if(width){
+                            document.querySelector("#gptDiv").style.setProperty("width",width);
+                            return
+                        }
                         document.querySelector("#gptDiv").style.setProperty("width",
                             "100%")
                         /*document.querySelector("#gptInput").setAttribute("class",
@@ -1730,6 +1742,13 @@
                             if (document.querySelector('div.right')) {
                                 document.querySelector('div.right').prepend(divE)
                             }
+                        }
+
+                        break;
+                    case 9: //bilibili
+                        if (document.querySelector('div#danmukuBox')) {
+                            document.querySelector('div#danmukuBox').children.item(0).prepend(divE)
+                            resetWidth();
                         }
 
                         break;
@@ -1860,7 +1879,7 @@
     //实时监控百度,360按钮消失
     setInterval(() => {
         //百度
-        if (window.location.href.indexOf("https:\/\/www.baidu.com\/s") > -1 && !isMobile()) {
+        if (window.location.href.indexOf("baidu.com\/s") > -1 && !isMobile()) {
             if (!document.getElementById("gptDiv") && document.getElementById("mybtn")) {
                 document.getElementById("mybtn").click()
             }
@@ -1878,6 +1897,15 @@
             keyEvent()
             appendBox(4).then((res) => {
                 pivElemAddEventAndValue(4)
+            })
+        }
+        //bilibli
+        if (window.location.href.indexOf("bilibili.com\/video") > -1 && !document.getElementById("gptDiv")) {
+            GM_add_box_style(1)
+            addBothStyle()
+            keyEvent()
+            appendBox(9).then((res) => {
+                pivElemAddEventAndValue(null)
             })
         }
 
