@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.9
+// @version      2.4.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.9';
+    let JSver = '2.4.1';
 
 
     function getGPTMode() {
@@ -981,6 +981,17 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "XBOAT") {
+            console.log("XBOAT")
+            try {
+                resultXBOAT = [];
+                WebsocketXBOAT.send(your_qus)
+            } catch (e) {
+                initSocketXBOAT()
+            }
+
+            return;
+            //end if
         } else if (GPTMODE && GPTMODE === "PHIND") {
             console.log("PHIND")
             PHIND();
@@ -1210,6 +1221,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "GPTPLUS") {
+            console.log("GPTPLUS")
+            GPTPLUS()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1298,6 +1315,8 @@
       <option value="YIYAN">百度文心</option>
       <option value="SPARK">讯飞星火</option>
       <option value="TIANGONG">天工AI</option>
+      <option value="GPTPLUS">GPTPLUS</option>
+      <option value="XBOAT">XBOAT[兼容]</option>
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
@@ -1563,6 +1582,10 @@
 
             if (selectedValue === 'COOLAI') {
                 initSocket();
+            }
+
+            if (selectedValue === 'XBOAT') {
+                initSocketXBOAT();
             }
             if (selectedValue === 'GAMEJX') {
                 setTimeout(setGroupid_gamejx)
@@ -2014,6 +2037,92 @@
         ).catch(ex => {
             console.log(ex)
         })
+    }
+
+
+
+    //2023年5月18日 http://home.cutim.top/ https://gpt.gogpt.site/#/chat/1002
+    let parentID_gptplus;
+
+    function getGPTPLUSkey() {
+        let nn = Math.floor(new Date().getTime() / 1e3);
+        const fD = e=>{
+            let t = CryptoJS.enc.Utf8.parse(e)
+                , o = CryptoJS.AES.encrypt(t, '14487141bvirvvG', {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            return o.toString()
+        }
+        return fD(nn);
+    }
+
+    function GPTPLUS() {
+        let ops = {};
+        if (parentID_gptplus) {
+            ops = {parentMessageId: parentID_gptplus};
+        }
+
+
+        GM_fetch({
+            method: "POST",
+            url: "https://api.gptplus.one/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "https://gpt.gogpt.site/",
+                "origin": "https://gpt.gogpt.site",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                secret: getGPTPLUSkey(),
+                top_p: 1,
+                prompt: your_qus,
+                systemMessage: "You are ChatGPT, the version is GPT3.5, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                temperature: 0.8,
+                options: ops
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+            let result = "";
+            const reader = stream.response.getReader();
+            //     console.log(reader.read)
+            let finalResult;
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    highlightCodeStr()
+                    return;
+                }
+
+                const chunk = value;
+                result += chunk;
+                try {
+                    // console.log(normalArray)
+                    let byteArray = new Uint8Array(chunk);
+                    let decoder = new TextDecoder('utf-8');
+                    console.log(decoder.decode(byteArray))
+                    let jsonLines = decoder.decode(byteArray).split("\n");
+                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
+                    if (nowResult.text) {
+                        console.log(nowResult)
+                        finalResult = nowResult.text
+                        showAnserAndHighlightCodeStr(finalResult)
+                    }
+                    if (nowResult.id) {
+                        parentID_gptplus = nowResult.id;
+                    }
+
+                } catch (e) {
+
+                }
+
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.log(err)
+            showAnserAndHighlightCodeStr("erro:", err.message)
+        })
+
     }
 
 
@@ -6041,6 +6150,37 @@
     if (getGPTMode() === "GAMEJX") {
         setTimeout(setGroupid_gamejx);
     }
+
+    let WebsocketXBOAT;
+    let resultXBOAT = [];
+
+    let initSocketXBOAT = function () {
+        // 创建WebSocket连接
+        const socket = new WebSocket(`wss://box.xboat.cc/wsschat`);
+        // 监听连接成功事件
+        WebsocketXBOAT = socket;
+        socket.addEventListener('open', (event) => {
+            console.log('连接成功');
+
+            showAnserAndHighlightCodeStr("WebsocketXBOAT:ws已经连接")
+        });
+
+
+        // 监听接收消息事件
+        socket.addEventListener('message', (event) => {
+            console.log('接收到消息：', event.data);
+            let revData = event.data;
+            if(!revData.startsWith("/end")){
+                resultXBOAT.push(revData)
+            }
+            showAnserAndHighlightCodeStr(resultXBOAT.join(""))
+
+        });
+    }
+    if (getGPTMode() === "XBOAT") {
+        setTimeout(initSocketXBOAT, 1000);
+    }
+
 
     setTimeout(()=>{
         if(localStorage.getItem('GPTMODE')){
