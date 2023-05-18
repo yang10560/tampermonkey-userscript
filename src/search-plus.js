@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.7
+// @version      2.3.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.7';
+    let JSver = '2.3.8';
 
 
     function getGPTMode() {
@@ -349,11 +349,14 @@
             })
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
-                bnuKey = await setNormalKey("https://chat.1.bnu120.space");
+                bnuKey = await setNormalKey(`https://chat.${bnuInt}.bnu120.space`);
                 if(bnuKey){
                     showAnserAndHighlightCodeStr(`BNU120：更新成功,KEY:${bnuKey}`)
+                    localStorage.setItem("bnuInt", bnuInt)
                 }else {
                     showAnserAndHighlightCodeStr("BNU120：更新失败")
+                    localStorage.removeItem("bnuInt")
+                    bnuInt = Math.floor(Math.random() * 7)
                 }
             });
         }else {
@@ -1315,7 +1318,7 @@
       <option value="CYTSEE">CYTSEE</option>
       <option value="QDYMYS">QDYMYS</option>
       <option value="WGK">WGK</option>
-      <option value="NBAI">NBAI[挂]</option>
+      <option value="NBAI">NBAI</option>
       <option value="T66">T66</option>
       <option value="ZHULEI">ZHULEI[兼容]</option>
       <option value="CHATDDD">CHATDDD</option>
@@ -5198,14 +5201,15 @@
     }
 
     let bnuKey;
+    let bnuInt = localStorage.getItem("bnuInt") || Math.floor(Math.random() * 7);
     setTimeout(async () => {
-        bnuKey = await setNormalKey("https://chat.1.bnu120.space");
+        bnuKey = await setNormalKey(`https://chat.${bnuInt}.bnu120.space`);
     });
     //https://ic.muspimerol.site/
     function BNU120() {
 
         let now = Date.now();
-        let Baseurl = "https://chat.1.bnu120.space/"
+        let Baseurl = `https://chat.${bnuInt}.bnu120.space/`
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
@@ -5241,6 +5245,10 @@
                                 content: finalResult
                             })
                             showAnserAndHighlightCodeStr(finalResult)
+                            if(finalResult.includes("Invalid signature")){
+                                bnuInt = Math.floor(Math.random() * 7)
+                                setPubkey()
+                            }
                         } catch (e) {
                             console.log(e)
                         }
