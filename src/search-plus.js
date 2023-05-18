@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.3.8
+// @version      2.3.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.3.8';
+    let JSver = '2.3.9';
 
 
     function getGPTMode() {
@@ -2946,9 +2946,9 @@
 
 
     let conversationId_haohuola;
-    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3MTA1MCwiZXhwIjoxNjg0MjQzODUwfQ.-i5fY_WqP3aA6l2gaQQtfi8bG9N9KqSZZ1jPkdZSr8Y'
-        ,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4Mzg5ODIzNywiZXhwIjoxNjg0MDcxMDM3fQ.MMy4g0EOisXPKXZLa-d4TEEE1ErAPsp-QyeucoC_HTM',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlOWE0YTFkZThjYTRjMzgzNDM2NyIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDA3Mjg2OCwiZXhwIjoxNjg0MjQ1NjY4fQ.DXiW5LXcw1oDQ79xs3QicIrcQexlzCcndpBUtAWHVf4'];
+    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDM3OTM2OSwiZXhwIjoxNjg0NTUyMTY5fQ.4F8N6hLvDg6iBILTUzIvY4eNwQwRoTTsFJKEKERapzI'
+        ,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlOWE0YTFkZThjYTRjMzgzNDM2NyIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDMwODExMCwiZXhwIjoxNjg0NDgwOTEwfQ.sUqtt-7jDm5xaRHyRsuG8j2PjD_1mnrOCoi8_itvkmA',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlMzg2M2YxMzIzNzY3MTRmZjdhZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDM4NjU0NiwiZXhwIjoxNjg0NTU5MzQ2fQ.6UaTClVS6mg1YmXBvvwH_FeHgbPxrbRKCZ5fAtTslnk'];
     let tk_haohuola;
     try{
         tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)];
