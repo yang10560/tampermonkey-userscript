@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.4.2
+// @version      2.4.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -48,15 +48,11 @@
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.min.js
 // @connect    api.forchange.cn
-// @connect    wenxin110.top
 // @connect    gpt008.com
 // @connect    chatforai.cc
 // @connect    api.aigcfun.com
-// @connect    www.aiai.zone
 // @connect    chatbot.theb.ai
 // @connect    cbjtestapi.binjie.site
-// @connect    ai.bo-e.com
-// @connect    a.mydog.buzz
 // @connect    freechatgpt.xgp.one
 // @connect    luntianxia.uk
 // @connect    chat.51buygpt.com
@@ -149,7 +145,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.4.2';
+    let JSver = '2.4.4';
 
 
     function getGPTMode() {
@@ -348,14 +344,20 @@
             })
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
-                bnuKey = await setNormalKey(`https://chat.${bnuInt}.bnu120.space`);
-                if(bnuKey){
-                    showAnserAndHighlightCodeStr(`BNU120：更新成功,KEY:${bnuKey}`)
-                    localStorage.setItem("bnuInt", bnuInt)
-                }else {
-                    showAnserAndHighlightCodeStr("BNU120：更新失败")
-                    localStorage.removeItem("bnuInt")
-                    bnuInt = Math.floor(Math.random() * 7)
+                bnuInt = (bnuInt + 1) > 6 ? 0 : (bnuInt + 1)
+                showAnserAndHighlightCodeStr(`正在更新.若无法更新,则多点几次,当前：${bnuInt}，共6`)
+                try {
+                    bnuKey = await setNormalKey(`https://chat.${bnuInt}.bnu120.space`);
+                    if(bnuKey){
+                        showAnserAndHighlightCodeStr(`BNU120：更新成功,KEY:${bnuKey}`)
+                        localStorage.setItem("bnuInt", bnuInt)
+                    }else {
+                        showAnserAndHighlightCodeStr("BNU120：更新失败")
+                        localStorage.removeItem("bnuInt")
+                        bnuInt = Math.floor(Math.random() * 7)
+                    }
+                }catch (e) {
+                    showAnserAndHighlightCodeStr(`错误了。请重试`)
                 }
             });
         }else {
@@ -2915,7 +2917,6 @@
                 "Content-Type": "application/json",
                 // "Authorization": "Bearer null",
                 "Referer": "https://chat.wuguokai.cn/",
-                //"Host":"www.aiai.zone",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -4601,7 +4602,6 @@
                         "Content-Type": "application/json",
                         // "Authorization": "Bearer null",
                         "Referer": "https://chat.wobcw.com/",
-                        //"Host":"www.aiai.zone",
                         "accept": "text/event-stream"
                     },
                     onloadstart: (stream) => {
@@ -5382,9 +5382,8 @@
                                 content: finalResult
                             })
                             showAnserAndHighlightCodeStr(finalResult)
-                            if(finalResult.includes("Invalid signature")){
-                                bnuInt = Math.floor(Math.random() * 7)
-                                setPubkey()
+                            if(finalResult.includes("Invalid signature") || finalResult.includes("exceeded your current")){
+                                showAnserAndHighlightCodeStr(`请到设置更新key`)
                             }
                         } catch (e) {
                             console.log(e)
