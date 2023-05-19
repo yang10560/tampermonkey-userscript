@@ -3471,6 +3471,8 @@
 
 
     let bingSocket;
+    let bing_sourceAttributions;
+    let bing_result;
     function initBingSocket() {
         let socket = new WebSocket(`wss://sydney.bing.com/sydney/ChatHub`);
 
@@ -3488,32 +3490,75 @@
             let revData = event.data;
             try{
                 let rr = revData.replace(String.fromCharCode(0x1e),"");
-                console.log(JSON.parse(rr).arguments[0].messages[0].text)
-                showAnserAndHighlightCodeStr(JSON.parse(rr).arguments[0].messages[0].text)
+
+                try{
+                    let ref = '\n'
+                    if(rr.startsWith('{"type":2')){
+                        console.warn("bing_sourceAttributions foreach")
+                        bing_sourceAttributions && bing_sourceAttributions.forEach((sb,index) =>{
+                            try{
+                                ref += `${index}.[${sb.providerDisplayName}](${sb.seeMoreUrl})\n\n`
+                            }catch (e) {console.error("sb", e)}
+                        })
+                        showAnserAndHighlightCodeStr(bing_result + ref);
+                    }
+                }catch (ex) { /*console.error("bing_sourceAttributions  ex ", JSON.parse(rr))*/ }
+
+
+                let ans = JSON.parse(rr).arguments[0].messages[0].text;
+                bing_result = (ans ? ans : bing_result)
+                console.log(bing_result)
+                showAnserAndHighlightCodeStr(bing_result)
+                if(conversationId){
+                    isStartOfSession = false;
+                }
+
+                if(JSON.parse(rr).arguments[0].messages[0].sourceAttributions){
+                    let sb = JSON.parse(rr).arguments[0].messages[0].sourceAttributions;
+                    bing_sourceAttributions = sb.length > 0 ? sb : bing_sourceAttributions;
+
+                    console.warn('bing_sourceAttributions',bing_sourceAttributions)
+                }
 
             }catch (e) {
 
             }
+            /*if(revData.includes("allowReconnect")){
+                isStartOfSession = true;
+            }*/
 
         });
     }
 
    //setTimeout(initBingSocket,1000)
-   let isStartOfSession = true;
+    let isStartOfSession = true;
+    let conversationId;
+    let clientId;
+    let conversationSignature;
+    let invocationId = 0;
+    let toneStyle = 'fast';
    async function newBing() {
 
        setTimeout(initBingSocket)
        await delay(2000)
 
-        let req1 = await GM_fetch({
-            method: "GET",
-            url: "https://www.bing.com/turing/conversation/create"
-        })
-        let r = req1.responseText;
-        console.log(r)
-        let conversationId = JSON.parse(r).conversationId;
-        let clientId = JSON.parse(r).clientId;
-        let conversationSignature = JSON.parse(r).conversationSignature;
+       const genRanHex = (size) =>
+           [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')
+
+       if(isStartOfSession){
+           console.log("isStartOfSession:",isStartOfSession)
+           let req1 = await GM_fetch({
+               method: "GET",
+               url: "https://www.bing.com/turing/conversation/create"
+           })
+           let r = req1.responseText;
+           console.log(r)
+           conversationId = JSON.parse(r).conversationId;
+           clientId = JSON.parse(r).clientId;
+           conversationSignature = JSON.parse(r).conversationSignature;
+
+       }
+
 
 
        if (bingSocket.readyState === 1) {
@@ -3528,12 +3573,43 @@
 
            await delay(500)
            //发送提问
+           if(!isStartOfSession){
+               invocationId += 1;
+           }
+           let toneOption
+           if (toneStyle === 'creative') {
+               toneOption = 'h3imaginative'
+           } else if (toneStyle === 'precise') {
+               toneOption = 'h3precise'
+           } else if (toneStyle === 'fast') {
+               // new "Balanced" mode, allegedly GPT-3.5 turbo
+               toneOption = 'galileo'
+           } else {
+               // old "Balanced" mode
+               toneOption = 'harmonyv3'
+           }
            const msg = {
                "arguments": [{
                    "conversationId": conversationId,
+                   "sliceIds": ["222dtappid", "225cricinfo", "224locals0"],
+                   "optionsSets": [
+                       'nlu_direct_response_filter',
+                       'deepleo',
+                       'disable_emoji_spoken_text',
+                       'responsible_ai_policy_235',
+                       'enablemm',
+                       toneOption,
+                       'dtappid',
+                       'cricinfo',
+                       'cricinfov2',
+                       'dv3sugg',
+                       'nojbfedge',
+                   ],
+                   "traceId": genRanHex(32),
                    "source": "cib",
                    "isStartOfSession": isStartOfSession,
                    "message": {
+                       "author": "user",
                        "text": your_qus,
                        "messageType": "Chat"
                    },
@@ -3542,7 +3618,7 @@
                        "id": clientId
                    }
                }],
-               "invocationId": "1",
+               "invocationId": `${invocationId}`,
                "target": "chat",
                "type": 4
            }
