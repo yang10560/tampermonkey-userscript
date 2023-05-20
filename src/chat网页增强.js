@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.40
+// @version      4.41
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -61,6 +61,7 @@
 // @connect   6bbs.cn
 // @connect   haohuola.com
 // @connect   cytsee.com
+// @connect   yeyu1024.xyz
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -71,7 +72,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.40"
+    let JSVer = "v4.41"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2847,16 +2848,28 @@
 
 
     let conversationId_haohuola;
-    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDM3OTM2OSwiZXhwIjoxNjg0NTUyMTY5fQ.4F8N6hLvDg6iBILTUzIvY4eNwQwRoTTsFJKEKERapzI'
-        ,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlOWE0YTFkZThjYTRjMzgzNDM2NyIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDMwODExMCwiZXhwIjoxNjg0NDgwOTEwfQ.sUqtt-7jDm5xaRHyRsuG8j2PjD_1mnrOCoi8_itvkmA',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlMzg2M2YxMzIzNzY3MTRmZjdhZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDM4NjU0NiwiZXhwIjoxNjg0NTU5MzQ2fQ.6UaTClVS6mg1YmXBvvwH_FeHgbPxrbRKCZ5fAtTslnk'];
+    let tokens_haohuola = ['null'];
     let tk_haohuola;
-    try{
-        tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)];
-        console.log("tk_haohuola：",tk_haohuola)
-    }catch (e) {
-        console.error(e)
-    }
+    setTimeout(async () => {
+        let rr = await GM_fetch({
+            method: "GET",
+            url: `https://yeyu1024.xyz/chat/haohula.json?r=${Math.random()}`
+        });
+        if (rr.status === 200) {
+            console.log(rr)
+            let result = JSON.parse(rr.responseText);
+            tokens_haohuola = result.haohula.token;
+            try {
+                tokens_haohuola && (tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)]);
+                console.log("tk_haohuola：", tk_haohuola)
+            } catch (e) {
+                console.error(e)
+            }
+        } else {
+            console.error(rr)
+        }
+
+    })
 
     // 2023年5月13日
     function HAOHUOLA(question) {

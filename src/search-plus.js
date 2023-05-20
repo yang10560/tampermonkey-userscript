@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.4.5
+// @version      2.4.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -133,6 +133,7 @@
 // @connect   xinghuo.xfyun.cn
 // @connect   geetest.com
 // @connect   neice.tiangong.cn
+// @connect   yeyu1024.xyz
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -146,7 +147,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.4.5';
+    let JSver = '2.4.7';
 
 
     function getGPTMode() {
@@ -517,11 +518,7 @@
                 console.log(e)
             }
         }
-        for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-            document.getElementsByTagName("code")[i].setAttribute("class",
-                "hljs");
-            hljs.highlightAll()
-        }
+        highlightCodeStr()//高亮
         //添加代码复制按钮 start
         let preList =  document.querySelectorAll("#gptAnswer pre")
         preList.forEach((pre)=>{
@@ -554,8 +551,9 @@
 
     //高亮代码函数
     function highlightCodeStr() {
-        for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
-            document.getElementsByTagName("code")[i].setAttribute("class",
+        let gptAnswerDiv = document.querySelector("#gptAnswer");
+        for (let i = 0; i <= gptAnswerDiv.getElementsByTagName("code").length - 1; i++) {
+            gptAnswerDiv.getElementsByTagName("code")[i].setAttribute("class",
                 "hljs");
             hljs.highlightAll()
         }
@@ -3114,16 +3112,30 @@
 
 
     let conversationId_haohuola;
-    let tokens_haohuola = ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NWUzZjdkOTQ4YjE5OTRhMDNiYWRmZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDM3OTM2OSwiZXhwIjoxNjg0NTUyMTY5fQ.4F8N6hLvDg6iBILTUzIvY4eNwQwRoTTsFJKEKERapzI'
-        ,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlOWE0YTFkZThjYTRjMzgzNDM2NyIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDMwODExMCwiZXhwIjoxNjg0NDgwOTEwfQ.sUqtt-7jDm5xaRHyRsuG8j2PjD_1mnrOCoi8_itvkmA',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVpZCI6IjY0NjBlMzg2M2YxMzIzNzY3MTRmZjdhZSIsInZlcnNpb24iOjAsInZpcFZlcnNpb24iOjAsImJyYW5jaCI6InpoIn0sImlhdCI6MTY4NDM4NjU0NiwiZXhwIjoxNjg0NTU5MzQ2fQ.6UaTClVS6mg1YmXBvvwH_FeHgbPxrbRKCZ5fAtTslnk'];
+    let tokens_haohuola = ['null'];
     let tk_haohuola;
-    try{
-        tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)];
-        console.log("tk_haohuola：",tk_haohuola)
-    }catch (e) {
-        console.error(e)
-    }
+
+    setTimeout(async () => {
+        //if(getGPTMode() !== 'HAOHUOLA') return
+        let rr = await GM_fetch({
+            method: "GET",
+            url: `https://yeyu1024.xyz/chat/haohula.json?r=${Math.random()}`
+        });
+        if (rr.status === 200) {
+            console.log(rr)
+            let result = JSON.parse(rr.responseText);
+            tokens_haohuola = result.haohula.token;
+            try {
+                tokens_haohuola && (tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)]);
+                console.log("tk_haohuola：", tk_haohuola)
+            } catch (e) {
+                console.error(e)
+            }
+        } else {
+            console.error(rr)
+        }
+
+    })
     // 2023年5月13日
     function HAOHUOLA() {
         let ops = {
@@ -5817,11 +5829,21 @@
 
 
     let parentID_usesless;
-    let referer_uesless = "https://ai.usesless.com/chat/"+Date.now();
+    let referer_uesless = "https://ai.usesless.com/chat/1002";
+    setTimeout(()=>{
+            GM_fetch({
+                method: "GET",
+                url: `https://ai.usesless.com/chat/1002`,
+                headers: {
+                    "Referer": referer_uesless,
+                    "origin": "https://ai.usesless.com",
+                }
+            })
+    })
     function USESLESS() {
         let ops = {
-            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-04-${new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()}`,
-            completionParams:{presence_penalty: 0.8, temperature: 1, model: "gpt-3.5-turbo"}
+            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-05-${new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()}`,
+            completionParams:{presence_penalty: 0.8, temperature: 1}
         };
         if (parentID_usesless) {
             ops.parentMessageId = parentID_usesless;
