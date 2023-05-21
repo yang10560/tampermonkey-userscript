@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.4.7
+// @version      2.4.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -106,6 +106,7 @@
 // @connect   toyaml.com
 // @connect   38.47.97.76
 // @connect   lbb.ai
+// @connect   xiaowenzi.xyz
 // @connect   gamejx.cn
 // @connect   chat86.cn
 // @connect   ai001.live
@@ -147,7 +148,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.4.7';
+    let JSver = '2.4.8';
 
 
     function getGPTMode() {
@@ -1038,9 +1039,9 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE === "LBB") {
-            console.log("LBB")
-            LBB();
+        } else if (GPTMODE && GPTMODE === "XIAOWENZI") {
+            console.log("XIAOWENZI")
+            XIAOWENZI();
 
             return;
             //end if
@@ -1369,7 +1370,7 @@
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
       <option value="HEHANWANG">HEHANWANG[挂]</option>
-      <option value="LBB">LBB[兼容]</option>
+      <option value="XIAOWENZI">XIAOWENZI</option>
       <option value="GAMEJX">GAMEJX</option>
       <option value="AIFKS">AIFKS[挂]</option>
       <option value="USESLESS">USESLESS</option>
@@ -2189,7 +2190,7 @@
     let messageChain4 = [];//ESO
     let messageChain5 = [];//XCBL
     let messageChain6 = [];//HZIT
-    let messageChain8 = [];//lbb
+    let messageChain8 = [];//XIAOWENZI
     let messageChain9 = [];//bnu120
     let messageChain10 = [];//PRTBOOM
     let messageChain1 = [
@@ -5140,7 +5141,6 @@
     }
 
     function XCBL() {
-        //同LBB
         let baseURL = "https://52221239187007.ai003.live/";
         addMessageChain(messageChain5, {role: "user", content: your_qus})//连续话
         GM_fetch({
@@ -5318,45 +5318,64 @@
     }
 
 
-    //4-25
-    function LBB() {
-        let baseURL = "https://43207713129.ai006.live/";
+    //5.21
+    function XIAOWENZI() {
+        let baseURL = "http://srgfdfsf.xiaowenzi.xyz/";
         addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
-            url: baseURL + "api/chat-stream",
+            url: baseURL + "api/openai/v1/chat/completions",
             headers: {
                 "Content-Type": "application/json",
-                "accept": "*/*",
-                "path": "v1/chat/completions",
+                "accept": "text/event-stream",
+                "origin": "http://srgfdfsf.xiaowenzi.xyz",
                 "Referer": baseURL
             },
             data: JSON.stringify({
                 messages: messageChain8,
                 stream: true,
                 model: "gpt-3.5-turbo",
-                temperature: 1,
+                temperature: 0.5,
                 presence_penalty: 0
-            })
-        }).then((res)=>{
-            if (res.status === 200) {
-                console.log(res)
-                let rest = res.responseText
+            }),
+            responseType: "stream"
+        }).then((stream)=>{
+            let result = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    let finalResult = result.join("")
+                    try {
+                        console.log(finalResult)
+                        addMessageChain(messageChain5, {
+                            role: "assistant",
+                            content: finalResult
+                        })
+                        showAnserAndHighlightCodeStr(finalResult)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return;
+                }
                 try {
-                    addMessageChain(messageChain8, {
-                        role: "assistant",
-                        content: rest
-                    })
-                    showAnserAndHighlightCodeStr(rest);
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    d.split("\n").forEach(item=>{
+                        try {
+                            let chunk = JSON.parse(item.replace(/data:/,"").trim())
+                                .choices[0].delta.content;
+                            result.push(chunk)
+                            showAnserAndHighlightCodeStr(result.join(""))
+                        }catch (ex){
 
-                } catch (ex) {
-                    console.log(ex)
-                    showAnserAndHighlightCodeStr(rest);
+                        }
+                    })
+
+                } catch (e) {
+                    console.log(e)
                 }
 
-            } else {
-                showAnserAndHighlightCodeStr('访问失败了');
-            }
+                return reader.read().then(processText);
+            });
         },reason => {
             console.log(reason)
         }).catch((ex)=>{
@@ -5511,7 +5530,8 @@
                     try {
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
-                        showAnserAndHighlightCodeStr(result.join(""))
+                        showAnserAndHighlightCodeStr(result.join("")
+                            .replace(/muspimerol.site/gi,""))
                     } catch (e) {
                         console.log(e)
                     }
