@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.4.8
+// @version      2.4.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -92,7 +92,7 @@
 // @connect   easyai.one
 // @connect   pp2pdf.com
 // @connect   api.aichatos.cloud
-// @connect   xiami.one
+// @connect   ai.fakeopen.com
 // @connect   chat2.wuguokai.cn
 // @connect   www.gtpcleandx.xyz
 // @connect   gpt.esojourn.org
@@ -148,7 +148,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.4.8';
+    let JSver = '2.4.9';
 
 
     function getGPTMode() {
@@ -1249,6 +1249,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "XIAMI") {
+            console.log("XIAMI")
+            XIAMI()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1343,6 +1349,7 @@
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="HAOHUOLA">HAOHUOLA</option>
       <option value="BNU120">BNU120</option>
+      <option value="XIAMI">XIAMI</option>
       <option value="DOG2">DOG2</option>
       <option value="PIZZA">PIZZA[兼容]</option>
       <option value="AITIANHU">AITIANHU</option>
@@ -6016,6 +6023,70 @@
 
 
     }
+
+    //https://ct2.xiami.monster/
+
+    let messageChain_xiami = [];
+    async function XIAMI() {
+        //https://api.wer.plus/api/min?key&t=你好
+
+        let baseURL = "https://ai.fakeopen.com/";
+        addMessageChain(messageChain_xiami, {role: "user", content: your_qus})//连续话
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "v1/chat/completions",
+            headers: {
+                "Content-Type": "application/json",
+                "authorization": "Bearer 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",
+                "Referer": 'https://ct2.xiami.monster/'
+            },
+            data: JSON.stringify({
+                messages: messageChain_xiami,
+                stream: true,
+                model: "gpt-3.5-turbo",
+                temperature: 1,
+                max_tokens: 2000,
+                presence_penalty: 0
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            let finalResult = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    finalResult = result.join("")
+                    showAnserAndHighlightCodeStr(finalResult.replace(/tdchat/gi, ""))
+                    return;
+                }
+
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log("raw:", d)
+                    let dd = d.replace(/data: /g, "").split("\n\n")
+                    console.log("dd:", dd)
+                    dd.forEach(item => {
+                        try {
+                            let delta = JSON.parse(item).choices[0].delta.content
+                            result.push(delta)
+                            showAnserAndHighlightCodeStr(result.join("").replace(/tdchat/gi, ""))
+                        } catch (e) {
+
+                        }
+                    })
+                } catch (e) {
+                    console.log(e)
+                }
+
+
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.error(err)
+        })
+
+    }
+
 
     //https://chat.sunls.me/
     function SUNLE() {
