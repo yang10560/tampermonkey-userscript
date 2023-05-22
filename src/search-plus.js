@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.4.9
+// @version      2.5.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -148,7 +148,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.4.9';
+    let JSver = '2.5.1';
 
 
     function getGPTMode() {
@@ -2048,19 +2048,19 @@
     let parentID_chatWeb1;
     function CHATWEB1() {
         let ops = {};
-        /*if (parentID_chatWeb1) {
+        if (parentID_chatWeb1) {
             ops = {parentMessageId: parentID_chatWeb1};
-        }*/
+        }
 
         console.log(ops)
         let finalResult = [];
        GM_fetch({
             method: "POST",
-            url: "https://cbot1.skybyte.me/api/chat-process",
+            url: "https://b3bot1.skybyte.me/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://cbot1.skybyte.me/",
-                "origin": "https://cbot1.skybyte.me",
+                "Referer": "https://b3bot1.skybyte.me/",
+                "origin": "https://b3bot1.skybyte.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -3098,6 +3098,7 @@
                         }
 
                     } catch (e) {
+                        console.error(e)
                     }
 
                     return reader.read().then(processText);
@@ -3756,23 +3757,28 @@
                    }, 20)
                    return
                }
-               let responseItem = String.fromCharCode(...Array.from(value))
-               let items = responseItem.split('\n\n')
-               if (items.length > 2) {
-                   let lastItem = items.slice(-3, -2)[0]
-                   if (lastItem.startsWith('data: [DONE]')) {
-                       responseItem = items.slice(-4, -3)[0]
-                   } else {
-                       responseItem = lastItem
+               try{
+                   let responseItem = String.fromCharCode(...Array.from(value))
+                   let items = responseItem.split('\n\n')
+                   if (items.length > 2) {
+                       let lastItem = items.slice(-3, -2)[0]
+                       if (lastItem.startsWith('data: [DONE]')) {
+                           responseItem = items.slice(-4, -3)[0]
+                       } else {
+                           responseItem = lastItem
+                       }
                    }
-               }
-               if (responseItem.startsWith('data: {')) {
-                   answer = JSON.parse(responseItem.slice(6)).message.content.parts[0]
-                   showAnserAndHighlightCodeStr(answer)
-               } else if (responseItem.startsWith('data: [DONE]')) {
+                   if (responseItem.startsWith('data: {')) {
+                       answer = JSON.parse(responseItem.slice(6)).message.content.parts[0]
+                       showAnserAndHighlightCodeStr(answer)
+                   } else if (responseItem.startsWith('data: [DONE]')) {
 
-                  // return
+                       // return
+                   }
+               }catch (e) {
+                   console.error(e)
                }
+
                return reader.read().then(processText)
            },function (reason) {
                console.log(reason)
