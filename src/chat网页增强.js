@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.41
+// @version      4.42
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -72,7 +72,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.41"
+    let JSVer = "v4.42"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2695,19 +2695,27 @@
                         return;
                     }
                     try {
-                        // console.log(normalArray)
+
                         let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
+                        let d = decoder.decode(byteArray);
+                        console.log(d)
 
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            GM_fillBotResponse(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_thebai = nowResult.id;
-                        }
+                        d.split("\n").forEach(item=>{
+                            try {
+                                let jsonObj = JSON.parse(item.trim())
+                                if (jsonObj.text) {
+                                    // console.warn(jsonObj)
+                                    finalResult = jsonObj.text;
+                                    GM_fillBotResponse(jsonObj.text)
+                                }
+                                if (jsonObj.id) {
+                                    parentID_thebai = jsonObj.id;
+                                }
+                            }catch (ex){
+
+                            }
+                        })
 
                     } catch (ex) {
                         console.log(ex)

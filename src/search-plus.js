@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.1
+// @version      2.5.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -148,7 +148,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.1';
+    let JSver = '2.5.3';
 
 
     function getGPTMode() {
@@ -163,11 +163,11 @@
             if(!darkTheme) {
                 //暗黑
                 $("head").append($(
-                    '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: dark)">'
+                    '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown-dark.min.css">'
                 ));
             }else{
                 $("head").append($(
-                    '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown.css" media="(prefers-color-scheme: light)">'
+                    '<link id="github-markdown-link" rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">'
                 ));
             }
 
@@ -1325,6 +1325,7 @@
             pE.appendChild(pText);
             divE.appendChild(pE);
             divE.classList.add("gpt-container");
+            divE.classList.add("markdown-body");
             divE.innerHTML = `
     <div id="gptInputBox">
         <input autocomplete="off" placeholder="若用不了,请更新KEY或切换线路" id="gptInput" list="suggestions" type=text><button id="button_GPT" ><svg width="15px" height="15px" focusable="false" viewBox="0 0 24 24"><path fill="#34a853" d="M10 2v2a6 6 0 0 1 6 6h2a8 8 0 0 0-8-8"></path><path fill="#ea4335" d="M10 4V2a8 8 0 0 0-8 8h2c0-3.3 2.7-6 6-6"></path><path fill="#fbbc04" d="M4 10H2a8 8 0 0 0 8 8v-2c-3.3 0-6-2.69-6-6"></path><path fill="#4285f4" d="M22 20.59l-5.69-5.69A7.96 7.96 0 0 0 18 10h-2a6 6 0 0 1-6 6v2c1.85 0 3.52-.64 4.88-1.68l5.69 5.69L22 20.59"></path></svg>搜索</button>
@@ -1409,7 +1410,7 @@
         <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>
         <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">用爱发电</a>
-        <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">支付宝红包</a>
+        <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">领红包</a>
         <hr>
 	</div>
    <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: ${JSver} 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${getGPTMode() || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
@@ -1548,6 +1549,11 @@
         })
 
         document.getElementById('darkTheme').addEventListener('click', () => {
+            try{
+                document.getElementById("github-markdown-link").remove()
+                document.getElementById("highlight-link").remove()
+            }catch (e) { console.error(e) }
+
             if(darkTheme){
                 localStorage.removeItem("darkTheme")
                 darkTheme = undefined;
@@ -3055,7 +3061,6 @@
             ops = {parentMessageId: parentID_thebai};
         }
         console.log(ops)
-        let finalResult = [];
         abortXml = GM_xmlhttpRequest({
             method: "POST",
             url: "https://chatbot.theb.ai/api/chat-process",
@@ -3069,33 +3074,31 @@
                 options: ops
             }),
             onloadstart: (stream) => {
-                let result = "";
                 const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let charsReceived = 0;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        highlightCodeStr()
                         return;
                     }
-
-                    charsReceived += value.length;
-                    const chunk = value;
-                    result += chunk;
                     try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
+                        let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
+                        let d = decoder.decode(byteArray);
+                        console.log(d)
 
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_thebai = nowResult.id;
-                        }
+                        d.split("\n").forEach(item=>{
+                            try {
+                                let jsonObj = JSON.parse(item.trim())
+                                if (jsonObj.text) {
+                                   // console.warn(jsonObj)
+                                    showAnserAndHighlightCodeStr(jsonObj.text)
+                                }
+                                if (jsonObj.id) {
+                                    parentID_thebai = jsonObj.id;
+                                }
+                            }catch (ex){
+
+                            }
+                        })
 
                     } catch (e) {
                         console.error(e)
@@ -3759,6 +3762,7 @@
                }
                try{
                    let responseItem = String.fromCharCode(...Array.from(value))
+                   console.log(responseItem)
                    let items = responseItem.split('\n\n')
                    if (items.length > 2) {
                        let lastItem = items.slice(-3, -2)[0]
