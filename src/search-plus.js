@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.7
+// @version      2.5.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.7';
+    let JSver = '2.5.8';
 
 
     function getGPTMode() {
@@ -4595,11 +4595,11 @@
             chatgml_token = getCookieValue(document.cookie,"chatglm_token")
             GM_setValue("chatgml_token", chatgml_token)
             if(chatgml_token){
-                document.querySelector('textarea').value  = `invite_Token获取成功:${chatgml_token}`
+                document.querySelector('textarea').value  = `chatgml_token获取成功:${chatgml_token}`
             }else{
                 document.querySelector('textarea').value  = `invite_Token获取失败，请再次刷新`
             }
-            setTimeout(init_chatgml_token,5000)
+
         } else {
             chatgml_token = GM_getValue("chatgml_token")
             console.log("chatgml_token:",chatgml_token)
@@ -4614,6 +4614,11 @@
         console.log("chatgml_token:",chatgml_token)
         showAnserAndHighlightCodeStr("请稍后...该线路为官网线路，使用该线路，请确保已经登录并获取token，再刷新页面。[ChatGLM](https://chatglm.cn/)")
 
+        if(!chatgml_token){
+            setTimeout(init_chatgml_token)
+            showAnserAndHighlightCodeStr("init_chatgml_token为空，请确保已经登录并获取token，再刷新页面。[ChatGLM](https://chatglm.cn/)")
+            return
+        }
         if (chatgml_first || !chatgml_task_id) {
             let req1 = await GM_fetch({
                 method: "POST",
