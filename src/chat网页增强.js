@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.43
+// @version      4.44
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -72,7 +72,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.43"
+    let JSVer = "v4.44"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1384,8 +1384,11 @@
             method: "GET",
             url: url,
             headers: {
-                "Referer": url,
-                "origin": url
+                "accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                "Referer": url+"/",
+                "origin": url,
+                "cookie":"_h=_1",
+                "upgrade-insecure-requests":"1"
             }
         });
         let resp = response.responseText;
@@ -1403,7 +1406,8 @@
             url: url + jsurl,
             headers: {
                 "Referer": url,
-                "origin": url
+                "origin": url,
+                "cookie":"_h=_1"
             }
         });
         resp = rr.responseText;

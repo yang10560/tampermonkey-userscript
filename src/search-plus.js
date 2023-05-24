@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.9
+// @version      2.6.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.9';
+    let JSver = '2.6.0';
 
 
     function getGPTMode() {
@@ -4181,7 +4181,7 @@
                 },
                 data:JSON.stringify({
                     "chatListId": sp_chatId,
-                    "chatListName": your_qus
+                    "chatListName": your_qus.substring(0,10)
                 })
             })
             let r = req1.responseText;
@@ -5673,11 +5673,26 @@
             method: "GET",
             url: url,
            headers: {
-               "Referer": url,
-               "origin": url
+               "Referer": url+"/",
+               "origin": url,
+               "upgrade-insecure-requests":"1"
            }
         });
         let resp = response.responseText;
+        if(!resp){
+            response = await GM_fetch({
+                method: "GET",
+                url: url,
+                headers: {
+                    "accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                    "Referer": url+"/",
+                    "origin": url,
+                    "cookie":"_h=_1",
+                    "upgrade-insecure-requests":"1"
+                }
+            });
+             resp = response.responseText;
+        }
         let regex = /component-url="(.*?)"/i;
         let match = resp.match(regex);
         let jsurl = match[1];
@@ -5691,8 +5706,9 @@
             method: "GET",
             url: url + jsurl,
             headers: {
-               "Referer": url,
-               "origin": url
+               "Referer": url+"/",
+               "origin": url,
+                "cookie":"_h=_1"
             }
         });
         resp = rr.responseText;
