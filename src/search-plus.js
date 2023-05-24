@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.8
+// @version      2.5.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.8';
+    let JSver = '2.5.9';
 
 
     function getGPTMode() {
@@ -570,8 +570,11 @@
         for (let i = 0; i <= gptAnswerDiv.getElementsByTagName("code").length - 1; i++) {
             gptAnswerDiv.getElementsByTagName("code")[i].setAttribute("class",
                 "hljs");
-            hljs.highlightAll()
+            //hljs.highlightAll()
         }
+        gptAnswerDiv.querySelectorAll('pre code').forEach((el) => {
+            hljs.highlightElement(el);
+        });
     }
 
     //顶级配置
