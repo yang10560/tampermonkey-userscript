@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.42
+// @version      4.43
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -72,7 +72,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.42"
+    let JSVer = "v4.43"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -471,6 +471,8 @@
 
         return `${year}-${formattedMonth}-${formattedDay}`;
     }
+
+    let ails_clientv;
     function AILS(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
@@ -498,7 +500,7 @@
                     "Content-Type": "application/json",
                     "authorization": "Bearer free",
                     "client-id": uuidv4(),
-                    "client-v": "0.1.29",
+                    "client-v": ails_clientv,
                     "Referer": Baseurl,
                     "origin": "https://ai.ls",
                     "X-Forwarded-For": generateRandomIP(),
@@ -2873,6 +2875,9 @@
             } catch (e) {
                 console.error(e)
             }
+            //AILS
+            ails_clientv = result.ails.clientv
+            console.log("ails_clientv:",ails_clientv)
         } else {
             console.error(rr)
         }

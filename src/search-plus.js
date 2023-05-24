@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.4
+// @version      2.5.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -148,7 +148,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.4';
+    let JSver = '2.5.5';
 
 
     function getGPTMode() {
@@ -2253,6 +2253,7 @@
 
 
 
+    let ails_clientv;
     function AILS() {
 
         let vtime = function converTimestamp(t) {
@@ -2279,7 +2280,7 @@
                     "Content-Type": "application/json",
                     "authorization": "Bearer free",
                     "client-id": uuidv4(),
-                    "client-v": "0.1.29",
+                    "client-v": ails_clientv,
                     "Referer": Baseurl,
                     "origin": "https://ai.ls",
                     "X-Forwarded-For": generateRandomIP(),
@@ -3159,6 +3160,13 @@
             } catch (e) {
                 console.error(e)
             }
+            //XIAMi
+            xiami_token = result.xiami.token
+            console.log("xiami_token:",xiami_token)
+
+            //AILS
+            ails_clientv = result.ails.clientv
+            console.log("ails_clientv:",ails_clientv)
         } else {
             console.error(rr)
         }
@@ -6053,6 +6061,7 @@
     //https://ct2.xiami.monster/
 
     let messageChain_xiami = [];
+    let xiami_token;
     async function XIAMI() {
         //https://api.wer.plus/api/min?key&t=你好
 
@@ -6063,7 +6072,7 @@
             url: baseURL + "v1/chat/completions",
             headers: {
                 "Content-Type": "application/json",
-                "authorization": "Bearer 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",
+                "authorization": `Bearer ${xiami_token}`,
                 "Referer": 'https://ct2.xiami.monster/'
             },
             data: JSON.stringify({
