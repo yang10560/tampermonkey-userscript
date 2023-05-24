@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.6
+// @version      2.5.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -31,6 +31,7 @@
 // @match      *://neice.tiangong.cn/*
 // @match      *://www.bilibili.com/video/*
 // @match      *://blog.csdn.net/*/article/details/*
+// @match      *://chatglm.cn/*
 // @icon64      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAZlBMVEUAAAD///+hoaFoaGhsbGy7u7vd3d2+vr76+vra2tr29va2trYrKyvg4ODs7OxXV1dgYGCtra0xMTGXl5fExMQ6OjqOjo7R0dEVFRWnp6dSUlIiIiIcHBwLCwt4eHhycnKEhIRHR0f14+hfAAADN0lEQVRYhe1WyZajMAyEsMQshgABEwIJ+f+fbC02W0yHnjnNvNYFDFbZKpUlO86v/e/Wpve/8M4TFckwSvI/cx8z11g2/tw9vZKrEIKe159GUkvwipPxVb4eQQzvYV12XX3Y/x6BT5LqUZkgWixEHF/9/hAAeozz0I8nOtzoccDfg8CbaZQrYkOGYUaEFO2RDUTT4MZefjkMpVcQo5/Wr2DSi9/bhlYPhukvZqf41l3hiiFv8xJR2CslIT+XXfc+YapojY60kG1ZA0rknj+lL4YtnGCQ4lbESSczf5R6Ugc5ee4AoL9KAwbwYXDWXJTXhaDhf2L3R44rxzkbgFgHn55Y0JJjzyeONpYLDn4CCPn7A46VaggjwIB6eEltAOConCUAcZVDXBKIHHgbp9IZ4KW0AZj8LAHaQEzaY0lmHk60AXiQ8XYFEDoVrRpXOmSfdQFfbMe7MuTOJMLU6IJqkh7PuTMVrhosAJCp2xrApA6Lk+p4VllMQjsAcNNkpzeQlKkPHhQb0VkAEgO8TSMaVqhMH/EyW57W2R7moNoBCjwDPg1QzM07QAk7o+wUrIcNwAVZ1ktAROE7gBMaEq4kaW8NgHlQOsrULiUoHjGT40PIqngHOIGYzRK22ggJz3TpbrCt7AMU9gPZwc4y5slJC7FO4woAxmcLgMMi0dF1ymSOtnMEYFDczxqtdJRM6HlAbhSvARIqHG+G5BJGqONoK2opooIMLQFaYMvWs0EJruNRV1b8vy+wqDtbEj2caAcQg5NWdIQL6IJPjIGg1gDKhLINARyxed4DpgLFq+vvKoRiEszGWmlCy0OmcyrqSxKr/eaUzFvDGnDWCX2d5zQmNdJsO4xoz8XeyqcpIdRexZ0BBOYl2r2wyHfwB2WFO0zBjS/Zv2Vc8Pey3l3kor0iR65Q+61Vr6GmttNSOtxRf+jgvfnW3eFa4CZ+3fb1k1q1uC0D3GmKC2s5zkxKvieqWbKQPvFpfbRnNF+pYn/+3ny6m0zW+9eYDIMxlQsbvKuO3zfrV5fWKMc4GLu6G+m2KY/fNNnu6/vu2drTv7fFjVuOP3dHy5MolJEqrKfvoPXp57vpr/3r9gUxwiW4OiuC3wAAAABJRU5ErkJggg==
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
@@ -135,6 +136,7 @@
 // @connect   geetest.com
 // @connect   neice.tiangong.cn
 // @connect   yeyu1024.xyz
+// @connect   chatglm.cn
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -148,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.6';
+    let JSver = '2.5.7';
 
 
     function getGPTMode() {
@@ -1174,6 +1176,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "ChatGLM") {
+            console.log("ChatGLM")
+            ChatGLM()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1343,6 +1351,7 @@
       <option value="YIYAN">百度文心</option>
       <option value="SPARK">讯飞星火</option>
       <option value="TIANGONG">天工AI</option>
+      <option value="ChatGLM">ChatGLM</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="XBOAT">XBOAT[兼容]</option>
       <option value="ANZZ">ANZZ[挂]</option>
@@ -4575,6 +4584,144 @@
     }
     //问心一言 ----end---
 
+
+
+    //ChatGLM相关 ----start-----
+    //https://chatglm.cn
+
+    let chatgml_token;
+    function init_chatgml_token() {
+        if (location.href.includes("chatglm.cn")) {
+            chatgml_token = getCookieValue(document.cookie,"chatglm_token")
+            GM_setValue("chatgml_token", chatgml_token)
+            if(chatgml_token){
+                document.querySelector('textarea').value  = `invite_Token获取成功:${chatgml_token}`
+            }else{
+                document.querySelector('textarea').value  = `invite_Token获取失败，请再次刷新`
+            }
+            setTimeout(init_chatgml_token,5000)
+        } else {
+            chatgml_token = GM_getValue("chatgml_token")
+            console.log("chatgml_token:",chatgml_token)
+        }
+    }
+    setTimeout(init_chatgml_token)
+
+    let chatgml_first = true;
+    let chatgml_task_id;
+    let chatgml_context_id;
+    async function ChatGLM() {
+        console.log("chatgml_token:",chatgml_token)
+        showAnserAndHighlightCodeStr("请稍后...该线路为官网线路，使用该线路，请确保已经登录并获取token，再刷新页面。[ChatGLM](https://chatglm.cn/)")
+
+        if (chatgml_first || !chatgml_task_id) {
+            let req1 = await GM_fetch({
+                method: "POST",
+                url: `https://chatglm.cn/chatglm/backend-api/v1/conversation`,
+                headers: {
+                    "accept": "application/json, text/plain, */*",
+                    "authorization": `Bearer ${chatgml_token}`,
+                    "origin": "https://chatglm.cn",
+                    "content-type": "application/json;charset=UTF-8",
+                    "referer": `https://chatglm.cn/detail`
+                },
+                data: JSON.stringify({
+                    "prompt": your_qus
+                })
+            })
+            let r = req1.responseText;
+            let jsonObj = JSON.parse(r);
+            try {
+                chatgml_task_id = jsonObj.result.task_id;
+                console.log("chatgml_task_id:",chatgml_task_id)
+                chatgml_first = false;
+            }catch (e) {
+                showAnserAndHighlightCodeStr("task_id出错了，请确保已经登录并获取token，再刷新页面。[ChatGLM](https://chatglm.cn/)")
+                return
+            }
+        }
+
+        let req1 = await GM_fetch({
+            method: "POST",
+            url: `https://chatglm.cn/chatglm/backend-api/v1/stream_context`,
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "authorization": `Bearer ${chatgml_token}`,
+                "origin": "https://chatglm.cn",
+                "content-type": "application/json;charset=UTF-8",
+                "referer": `https://chatglm.cn/detail`
+            },
+            data: JSON.stringify({
+                "prompt": your_qus,
+                "seed": 69809,
+                "max_tokens": 512,
+                "conversation_task_id": chatgml_task_id,
+                "retry": false,
+                "retry_history_task_id": null
+            })
+        })
+        let r = req1.responseText;
+        let jsonObj = JSON.parse(r);
+        try {
+            chatgml_context_id = jsonObj.result.context_id;
+            console.log("chatgml_context_id:",chatgml_task_id)
+        }catch (e) {
+            showAnserAndHighlightCodeStr("context_id出错了，请确保已经登录并获取token，再刷新页面。[ChatGLM](https://chatglm.cn/)")
+            return
+        }
+
+
+        GM_fetch({
+            method: "GET",
+            url: `https://chatglm.cn/chatglm/backend-api/v1/stream?context_id=${chatgml_context_id}`,
+            headers: {
+                "accept": "text/event-stream",
+                "origin": "https://chatglm.cn",
+                "referer": `https://chatglm.cn/detail`
+            },
+            responseType:"stream"
+        }).then((stream)=> {
+            let reader = stream.response.getReader()
+
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    showAnserAndHighlightCodeStr()
+                    return
+                }
+                let responseItem = new TextDecoder("utf-8").decode(value)
+               // console.error(responseItem)
+                responseItem = responseItem.split("\n\n");
+                console.warn(responseItem)
+                responseItem.forEach(item=>{
+                    try {
+                        if(item && item.startsWith("event:add") || item.startsWith("event:finish")){
+                            let ii =   item.replace(/data:/gi,"")
+                                .replace(/event:add/gi,"")
+                                .replace(/event:finish/gi,"")
+                                .trim();
+                            if(ii){
+                                showAnserAndHighlightCodeStr(ii)
+                            }
+                        }
+
+                    }catch (ex){
+                        console.error(item)
+                    }
+                })
+
+                return reader.read().then(processText)
+            },function (reason) {
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            })
+        })
+
+
+    }
+
+
+    //ChatGLM相关 ----start-----
 
     let pizzaSecret;
     async function setPizzakey() {
