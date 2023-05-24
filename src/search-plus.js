@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.3
+// @version      2.5.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -148,7 +148,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.3';
+    let JSver = '2.5.4';
 
 
     function getGPTMode() {
@@ -251,7 +251,14 @@
            details.onabort = (res)=>{
                reject(res)
            };
-           GM_xmlhttpRequest(details)
+
+           //中断支持
+           if(details.responseType === "stream"){
+               abortXml = GM_xmlhttpRequest(details)
+           }else{
+               GM_xmlhttpRequest(details)
+           }
+
         });
     }
 
@@ -275,7 +282,12 @@
             details.onabort = abortCallback;
         }
         console.log(details)
-        GM_xmlhttpRequest(details);
+        //中断支持
+        if(details.responseType === "stream"){
+            abortXml = GM_xmlhttpRequest(details)
+        }else{
+            GM_xmlhttpRequest(details)
+        }
     }
 
     //封装GM_xmlhttpRequest ---end---
@@ -815,8 +827,6 @@
     }
 
     function do_it() {
-        let finalResult
-        let normalArray
 
         isShowRaw = false; //设置显示原文
         rawAns = undefined;//设置显示原文
@@ -827,100 +837,8 @@
         let GPTMODE = getGPTMode()
         if (GPTMODE && GPTMODE === "CHATGPT") {
             console.log("当前模式CHATGPT")
-            if (!localStorage.getItem("openAIkey")) {
-                let manualInput = confirm("openAIkey不存在 请更新,或者使用你自己的key");
-                if (manualInput) {
-                    let aikey = prompt("请输入您的openAIkey", "");
-                    if (aikey) localStorage.setItem("openAIkey", aikey)
-                } else {
-                    return
-                }
-
-            }
-            abortXml = GM_xmlhttpRequest({
-                method: "POST",
-                // url: "http://gpt008.com/backend-api/conversation",
-                url: "https://freechatgpt.xgp.one/backend-api/conversation",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer null",
-                    "Referer": "https://freechatgpt.xgp.one/",
-                    // "Host":"gpt008.com",
-                    "accept": "text/event-stream",
-                    "x-openai-api-key": localStorage.getItem("openAIkey"),
-                },
-                data: JSON.stringify({//抓包conversation就可以看到这个结构
-                    action: "next",
-                    messages: [
-                        {
-                            id: uuid(),
-                            author: {role: "user"},
-                            role: "user",
-                            content: {
-                                content_type: "text",
-                                parts: [your_qus],
-                            },
-                        },
-                    ],
-                    model: "text-davinci-002-render",
-                    parent_message_id: uuid(),
-                }),
-                //    onprogress: function(msg){console.log(msg)},
-                //     onreadystatechange:function(msg){log(msg)},
-                onloadstart: (stream) => { //肝了好久，终于找到油猴接受SSE的接受方法了
-                    let result = "";
-                    const reader = stream.response.getReader();
-                    //     console.log(reader.read)
-                    let charsReceived = 0;
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            highlightCodeStr()
-                            return;
-                        }
-
-                        charsReceived += value.length;
-                        const chunk = value;
-                        result += chunk;
-                        normalArray = chunk
-
-                        try {
-                            let byteArray = new Uint8Array(chunk);
-                            let decoder = new TextDecoder('utf-8');
-                            const matchResults = decoder.decode(byteArray).match(/"parts":\s*\["(.+?)"\]/g);
-                            let nowResult = matchResults[matchResults.length - 1];
-                            nowResult = /\[\"(.*?)\"\]/g.exec(nowResult)[1];
-
-                            console.log(nowResult)
-
-
-                            if (nowResult !== "DONE") {//not done
-                                finalResult = nowResult
-                                showAnserAndHighlightCodeStr(finalResult)
-                            } else {
-                                console.log(nowResult)
-                                showAnserAndHighlightCodeStr(finalResult)
-                            }
-
-
-                        } catch (ex) {
-                            showAnserAndHighlightCodeStr(ex)
-                            console.log(ex)
-                        }
-
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            })
-
-
+            GPT()
+            //end if
             return;
         } else if (GPTMODE && GPTMODE === "ANZZ") {
             console.log("当前模式ANZZ")
@@ -1262,6 +1180,87 @@
 
     }
 
+
+    function GPT(){
+        let finalResult
+        if (!localStorage.getItem("openAIkey")) {
+            let manualInput = confirm("openAIkey不存在 请更新,或者使用你自己的key");
+            if (manualInput) {
+                let aikey = prompt("请输入您的openAIkey", "");
+                if (aikey) localStorage.setItem("openAIkey", aikey)
+            } else {
+                return
+            }
+
+        }
+        abortXml = GM_xmlhttpRequest({
+            method: "POST",
+            // url: "http://gpt008.com/backend-api/conversation",
+            url: "https://freechatgpt.xgp.one/backend-api/conversation",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer null",
+                "Referer": "https://freechatgpt.xgp.one/",
+                // "Host":"gpt008.com",
+                "accept": "text/event-stream",
+                "x-openai-api-key": localStorage.getItem("openAIkey"),
+            },
+            data: JSON.stringify({//抓包conversation就可以看到这个结构
+                action: "next",
+                messages: [
+                    {
+                        id: uuid(),
+                        author: {role: "user"},
+                        role: "user",
+                        content: {
+                            content_type: "text",
+                            parts: [your_qus],
+                        },
+                    },
+                ],
+                model: "text-davinci-002-render",
+                parent_message_id: uuid(),
+            }),
+            //    onprogress: function(msg){console.log(msg)},
+            //     onreadystatechange:function(msg){log(msg)},
+            onloadstart: (stream) => {
+                const reader = stream.response.getReader();
+                //     console.log(reader.read)
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        return;
+                    }
+
+                    try {
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        const matchResults = decoder.decode(byteArray).match(/"parts":\s*\["(.+?)"\]/g);
+                        let nowResult = matchResults[matchResults.length - 1];
+                        nowResult = /\[\"(.*?)\"\]/g.exec(nowResult)[1];
+                        console.log(nowResult)
+                        if (nowResult !== "DONE") {//not done
+                            showAnserAndHighlightCodeStr(nowResult)
+                        }
+
+                    } catch (ex) {
+                        showAnserAndHighlightCodeStr(ex)
+                        console.log(ex)
+                    }
+
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+            },
+            ontimeout: function (err) {
+                console.log(err)
+            }
+        })
+    }
+
     //默认线路
     function AIGCFUN() {
         showAnserAndHighlightCodeStr("该线路较慢，请稍后")
@@ -1345,8 +1344,8 @@
       <option value="TIANGONG">天工AI</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="XBOAT">XBOAT[兼容]</option>
-      <option value="ANZZ">ANZZ</option>
-      <option value="THEBAI">THEBAI</option>
+      <option value="ANZZ">ANZZ[挂]</option>
+      <option value="THEBAI">THEBAI[科学]</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="HAOHUOLA">HAOHUOLA</option>
       <option value="BNU120">BNU120</option>
@@ -1430,6 +1429,11 @@
        <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="8" stroke="#909399" stroke-width="4" fill="none"></circle>
     </svg>原文切换</a>
+    
+    <a id="stopAns" style="cursor: pointer" href="javascript:void(0)">
+       <svg width="13" height="13" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path fill="#909399" d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm6.7 15.3c-.2.2-.5.2-.7 0L12 12.7l-6.1 4.6c-.2.2-.5.2-.7 0-.2-.2-.2-.5 0-.7l6.1-4.6-6.1-4.6c-.2-.2-.2-.5 0-.7s.5-.2.7 0L12 11.3l6.1-4.6c.2-.2.5-.2.7 0 .2.2.2.5 0 .7l-6.1 4.6 6.1 4.6c.2.2.2.5 0 .7z"></path>
+    </svg>中断回答</a>
 
 </span>`;
             resolve(divE)
@@ -1597,6 +1601,18 @@
                isShowRaw = false;
            }
 
+        })
+
+        //中断回答
+        document.getElementById('stopAns').addEventListener('click', (ev) => {
+           try{
+               if(abortXml){
+                   abortXml.abort();
+                   abortXml = undefined;
+               }
+           }catch(ex){
+               console.error("中断失败：",ex)
+           }
         })
 
         //复制答案
