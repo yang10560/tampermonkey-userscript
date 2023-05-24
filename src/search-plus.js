@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.5.5
+// @version      2.5.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -148,7 +148,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.5.5';
+    let JSver = '2.5.6';
 
 
     function getGPTMode() {
@@ -575,8 +575,9 @@
     //顶级配置
     let webSessionId
     let autoClick = localStorage.getItem("autoClick")
-    let your_qus
-    let abortXml
+    let autoTips = localStorage.getItem("autoTips")? localStorage.getItem("autoTips") :'on';
+    let your_qus;
+    let abortXml;
     let regx = /search.*?\.cf/g;
     if (window.location.href.indexOf("bing.com") > -1) {
 
@@ -1395,6 +1396,9 @@
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、GPT、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
 	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
+	<p class="chatHide" id="autoTipsP" style="margin: 10px"><a id="autoTips"  href="javascript:void(0)"><svg width="1em" height="1em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path fill="currentColor" d="M12 2 L12 6 Q12 8 14 9 Q15 10 15 12 Q15 14 14 15 L10 15 Q9 15 9 14 Q9 13 10 13 Q11 13 11 12 L11 9"></path>
+      <circle cx="12" cy="19" r="2" fill="currentColor"></circle></svg>自动提示开关</a>:用于设置是否开启提示</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
 	    <hr>
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
@@ -1499,12 +1503,25 @@
         document.getElementById("gptInput").value = search_content || ''
         document.getElementById('button_GPT').addEventListener('click', () => {
             your_qus = document.getElementById("gptInput").value
+
+            //字体设置
+            if(your_qus.startsWith("/font-size:")){
+                let fontSize = your_qus.substring("/font-size:".length)
+                document.querySelector("#gptDiv").style.fontSize = fontSize;
+                localStorage.setItem("gpt_font_size",fontSize)
+                showAnserAndHighlightCodeStr(`设置成功:${fontSize}`)
+                return
+            }
+
             do_it()
 
         })
 
         //搜索建议
         document.getElementById('gptInput').addEventListener('keyup', () => {
+            console.log("autoTips:",autoTips)
+            if(autoTips !== 'on') return
+
             let current;
             let word = document.getElementById('gptInput').value;
             if(!word) return;
@@ -1549,6 +1566,20 @@
                 localStorage.setItem("autoClick", "开启")
                 autoClick = "开启"
                 showAnserAndHighlightCodeStr("自动点击已经开启")
+            }
+        })
+
+        document.getElementById('autoTips').addEventListener('click', () => {
+            if(autoTips === 'on'){
+                //关闭
+                localStorage.setItem("autoTips", "off")
+                autoTips = "off"
+                showAnserAndHighlightCodeStr("自动提示已关")
+            }else{
+                //开启
+                localStorage.setItem("autoTips", "on")
+                autoTips = "on"
+                showAnserAndHighlightCodeStr("自动提示已开启")
             }
         })
 
@@ -1653,6 +1684,7 @@
                  document.querySelector("#autoClickP").classList.remove("chatHide")
                  document.querySelector("#darkThemeP").classList.remove("chatHide")
                  document.querySelector("#website").classList.remove("chatHide")
+                 document.querySelector("#autoTipsP").classList.remove("chatHide")
              }catch (e) {
                  console.log(e)
              }
@@ -1665,6 +1697,7 @@
                   document.querySelector("#autoClickP").classList.add("chatHide")
                   document.querySelector("#darkThemeP").classList.add("chatHide")
                   document.querySelector("#website").classList.add("chatHide")
+                  document.querySelector("#autoTipsP").classList.add("chatHide")
               }catch (e) {
                   console.log(e)
               }
@@ -6463,6 +6496,7 @@
     }
 
 
+    //默认设置
     setTimeout(()=>{
         if(localStorage.getItem('GPTMODE')){
             const selectEl = document.getElementById('modeSelect');
@@ -6473,6 +6507,10 @@
                     break;
                 }
             }
+        }
+
+        if(localStorage.getItem('gpt_font_size')){
+            document.querySelector("#gptDiv").style.fontSize = localStorage.getItem('gpt_font_size');
         }
     },1000)
 
