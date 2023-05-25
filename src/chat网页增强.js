@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.44
+// @version      4.45
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -40,7 +40,7 @@
 // @connect   www.phind.com
 // @connect   easyai.one
 // @connect   chat2.wuguokai.cn
-// @connect   www.gtpcleandx.xyz
+// @connect   vipcleandx.xyz
 // @connect   gpt.esojourn.org
 // @connect   free-api.cveoy.top
 // @connect   chatcleand.xyz
@@ -72,7 +72,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.44"
+    let JSVer = "v4.45"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2009,14 +2009,14 @@
     }
 
 
-    //http://www.gtpcleandx.xyz/#/home/chat
-    var cleandxid = generateRandomString(21);
-    var cleandxList = [];
+
+    let cleandxid = generateRandomString(21);
+    let cleandxList = [];
     function CLEANDX(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
 
-        let Baseurl = "http://www.chatcleand.xyz/";
+        let Baseurl = "http://vipcleandx.xyz/";
         console.log(formatTime())
         cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
         cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
@@ -2030,7 +2030,7 @@
             url: Baseurl + "v1/chat/gpt/",
             headers: {
                 "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
+                "X-Forwarded-For": generateRandomIP(),
                 "Referer": Baseurl,
                 "accept": "application/json, text/plain, */*"
             },

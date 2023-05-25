@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.0
+// @version      2.6.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -81,7 +81,7 @@
 // @connect   supremes.pro
 // @connect   bnu120.space
 // @connect   chat7.aifks001.online
-// @connect   officechat.top
+// @connect   vipcleandx.xyz
 // @connect   ai.usesless.com
 // @connect   www.ftcl.store
 // @connect   sunls.me
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.0';
+    let JSver = '2.6.1';
 
 
     function getGPTMode() {
@@ -1357,7 +1357,7 @@
       <option value="ChatGLM">ChatGLM</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="XBOAT">XBOAT[兼容]</option>
-      <option value="ANZZ">ANZZ[挂]</option>
+      <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI[科学]</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="HAOHUOLA">HAOHUOLA</option>
@@ -1389,9 +1389,9 @@
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ</option>
-      <option value="HEHANWANG">HEHANWANG[挂]</option>
+      <option value="HEHANWANG">HEHANWANG</option>
       <option value="XIAOWENZI">XIAOWENZI</option>
-      <option value="GAMEJX">GAMEJX</option>
+      <option value="GAMEJX">GAMEJX[挂]</option>
       <option value="AIFKS">AIFKS[挂]</option>
       <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
@@ -1418,13 +1418,13 @@
         <a target="_blank"  href="https://tongyi.aliyun.com/">通义</a>
         <a target="_blank"  href="https://www.tiangong.cn/">天工</a>
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>
-        <a target="_blank"  href="https://chat.openai.com/chat">OPENAI</a>
-        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">Bing AI</a>
+        <a target="_blank"  href="https://chat.openai.com/chat">OpenAI</a>
+        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">必应</a>
         <hr>
-        <a target="_blank"  href="https://bard.google.com/">Google Bard</a>
+        <a target="_blank"  href="https://bard.google.com/">Bard</a>
         <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>
-        <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新脚本</a>
-        <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">用爱发电</a>
+        <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新</a>
+        <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">爱发电</a>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">领红包</a>
         <hr>
 	</div>
@@ -1435,21 +1435,21 @@
        <svg width="20" height="20" viewBox="0 0 17 16">
           <path d="M9 16.5v-9l6 4.5-6 4.5z" fill="#909399"></path>
           <path d="M0 0h24v24H0z" fill="none"></path>
-    </svg>朗读答案</a>
+    </svg>朗读</a>
     
     <a id="copyAns" style="cursor: pointer" href="javascript:void(0)" >
        <svg width="12" height="12" data-v-13fede38="" t="1679666016648" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6241" class="icon"><path data-v-13fede38="" d="M661.333333 234.666667A64 64 0 0 1 725.333333 298.666667v597.333333a64 64 0 0 1-64 64h-469.333333A64 64 0 0 1 128 896V298.666667a64 64 0 0 1 64-64z m-21.333333 85.333333H213.333333v554.666667h426.666667v-554.666667z m191.829333-256a64 64 0 0 1 63.744 57.856l0.256 6.144v575.701333a42.666667 42.666667 0 0 1-85.034666 4.992l-0.298667-4.992V149.333333H384a42.666667 42.666667 0 0 1-42.368-37.674666L341.333333 106.666667a42.666667 42.666667 0 0 1 37.674667-42.368L384 64h447.829333z" fill="#909399" p-id="6242"></path></svg>
-       复制答案</a>
+       复制</a>
     
     <a id="rawAns" style="cursor: pointer" href="javascript:void(0)" >
        <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="8" stroke="#909399" stroke-width="4" fill="none"></circle>
-    </svg>原文切换</a>
+    </svg>原文</a>
     
     <a id="stopAns" style="cursor: pointer" href="javascript:void(0)">
        <svg width="13" height="13" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path fill="#909399" d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm6.7 15.3c-.2.2-.5.2-.7 0L12 12.7l-6.1 4.6c-.2.2-.5.2-.7 0-.2-.2-.2-.5 0-.7l6.1-4.6-6.1-4.6c-.2-.2-.2-.5 0-.7s.5-.2.7 0L12 11.3l6.1-4.6c.2-.2.5-.2.7 0 .2.2.2.5 0 .7l-6.1 4.6 6.1 4.6c.2.2.2.5 0 .7z"></path>
-    </svg>中断回答</a>
+    </svg>中断</a>
 
 </span>`;
             resolve(divE)
@@ -2525,15 +2525,16 @@
     }
 
     let messageChain_zhulei = [];
+    let zhulei_count = 0;
     function ZHULEI() {
         addMessageChain(messageChain_zhulei, {role: "user", content: your_qus})//连续话
-
+        zhulei_count++;
         GM_fetch({
             method: "POST",
             url: "https://chathub.zhulei.xyz/api",
             headers: {
                 "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
+                "cookie": `BBBBB=${zhulei_count}`,
                 "Referer": "https://chathub.zhulei.xyz/",
                 "accept": "application/json, text/plain, */*"
             },
@@ -3042,7 +3043,7 @@
                         let decoder = new TextDecoder('utf-8');
                         let nowResult = decoder.decode(byteArray)
 
-                        finalResult.push(nowResult.replace(/fxopenai\.win/gi,""))
+                        finalResult.push(nowResult.replace(/fxopenai/gi,""))
                         showAnserAndHighlightCodeStr(finalResult.join(""))
 
 
@@ -6020,11 +6021,11 @@
 
 
 
-    //http://www.gtpcleandx.xyz/#/home/chat
+    //https://vipcleandx.xyz/
     let cleandxid = generateRandomString(21);
     let cleandxList = [];
     function CLEANDX() {
-        let Baseurl = "http://www.chatcleand.xyz/";
+        let Baseurl = "https://vipcleandx.xyz/";
 
         console.log(formatTime())
         cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
@@ -6039,7 +6040,7 @@
             url: Baseurl + "v1/chat/gpt/",
             headers: {
                 "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
+                "X-Forwarded-For": generateRandomIP(),
                 "Referer": Baseurl,
                 "accept": "application/json, text/plain, */*"
             },
