@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.1
+// @version      2.6.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.1';
+    let JSver = '2.6.2';
 
 
     function getGPTMode() {
@@ -3213,6 +3213,10 @@
             //AILS
             ails_clientv = result.ails.clientv
             console.log("ails_clientv:",ails_clientv)
+
+            //eso
+            eso_access_code = result.eso.accesscode
+            console.log("eso_access_code:",eso_access_code)
         } else {
             console.error(rr)
         }
@@ -5312,6 +5316,7 @@
     }
 
     //https://gpt.esojourn.org/api/chat-stream https://0505.betai55.uk/api/chat-stream
+    let eso_access_code;
     function ESO() {
 
         let baseURL = "https://gpt.esojourn.org/";
@@ -5321,7 +5326,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "586-481-535C",
+                "access-code": eso_access_code ? eso_access_code: "586-484-535D",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },

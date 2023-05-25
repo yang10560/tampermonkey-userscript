@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.45
+// @version      4.46
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -72,7 +72,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.45"
+    let JSVer = "v4.46"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2085,6 +2085,7 @@
     }
 
     //https://gpt.esojourn.org/api/chat-stream
+    let eso_access_code;
     function ESO(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
@@ -2095,7 +2096,7 @@
             url: baseURL + "api/chat-stream",
             headers: {
                 "Content-Type": "application/json",
-                "access-code": "586-481-535C",
+                "access-code": eso_access_code ? eso_access_code: "586-484-535D",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
             },
@@ -2882,6 +2883,10 @@
             //AILS
             ails_clientv = result.ails.clientv
             console.log("ails_clientv:",ails_clientv)
+
+            //eso
+            eso_access_code = result.eso.accesscode
+            console.log("eso_access_code:",eso_access_code)
         } else {
             console.error(rr)
         }
