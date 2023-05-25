@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.46
+// @version      4.47
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -72,7 +72,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.46"
+    let JSVer = "v4.47"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2208,19 +2208,21 @@
 
 
     //var promptboom_did = generateRandomString(32)
-    var promptboom_did = 'dd633043916550bea93f56e1af08debd'
-    var messageChain10 = []
+    let promptboom_did = 'dd633043916550bea93f56e1af08debd'
+    let promptboom_token = ''
+    let promptboom_url = ''
+    let messageChain10 = []
     async function PRTBOOM(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
         addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
 
         const t = Date.now()
-        const r = t + ":" + "question" + ":contact_me_and_let_us_make_money_together_thanks"
+        const r = t + ":" + "question:" + promptboom_token
         const sign = CryptoJS.SHA256(r).toString();
         console.log(sign)
         let request_json = {
-            'did': promptboom_did,
+            'did': promptboom_did ? promptboom_did : 'dd633043916550bea93f56e1af08debd',
             'chatList': messageChain10,
             'special': {
                 'time': t,
@@ -2234,7 +2236,54 @@
         };
 
         console.log(raw_requst_json)
-        let rootDomain = "promptboom.com";
+
+        GM_fetch({
+            method: "POST",
+            url: promptboom_url ? promptboom_url : 'https://api2.promptboom.com/cfdoctetstream',
+            headers: {
+                "Content-Type": "application/json",
+                "origin": "https://www.promptboom.com",
+                "Referer": "https://www.promptboom.com/",
+                "accept": "*/*"
+            },
+            data: JSON.stringify(raw_requst_json),
+            responseType: "stream"
+        }).then((stream) => {
+            GM_simulateBotResponse("请稍后...")
+            let result = [];
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    let finalResult = result.join("")
+                    try {
+                        console.log(finalResult)
+                        addMessageChain(messageChain10, {
+                            role: "assistant",
+                            content: finalResult
+                        })
+                        GM_fillBotResponseAndSave(finalResult)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    result.push(d.replace(/<strong.*?<\/strong>/gi,''))
+                    GM_fillBotResponse(result.join(""))
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },(reason)=>{
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        });
+
+        /*let rootDomain = "promptboom.com";
 
         let apiList = [`https://api2.${rootDomain}/cfdoctetstream`, `https://api2.${rootDomain}/cfdoctetstream2`, `https://api2.${rootDomain}/cfdoctetstream3`]
         apiList.sort(() => Math.random() - 0.5);
@@ -2245,53 +2294,9 @@
 
         for (let cfdoctetstream_url of finalApiList) {
             console.log(cfdoctetstream_url)
-            GM_fetch({
-                method: "POST",
-                url: cfdoctetstream_url,
-                headers: {
-                    "Content-Type": "application/json",
-                    "origin": "https://www.promptboom.com",
-                    "Referer": "https://www.promptboom.com/",
-                    "accept": "*/*"
-                },
-                data: JSON.stringify(raw_requst_json),
-                responseType: "stream"
-            }).then((stream) => {
-                GM_simulateBotResponse("请稍后...")
-                let result = [];
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain10, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            GM_fillBotResponseAndSave(finalResult)
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d.replace(/<strong.*?<\/strong>/gi,''))
-                        GM_fillBotResponse(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
 
-                    return reader.read().then(processText);
-                });
-            },(reason)=>{
-                console.log(reason)
-            }).catch((ex)=>{
-                console.log(ex)
-            });
             break;
-        }
+        }*/
 
 
 
@@ -2887,6 +2892,14 @@
             //eso
             eso_access_code = result.eso.accesscode
             console.log("eso_access_code:",eso_access_code)
+
+            //ptrboom
+            promptboom_did = result.ptrboom.did
+            promptboom_token = result.ptrboom.token
+            promptboom_url = result.ptrboom.url
+            console.log("promptboom_did:",promptboom_did)
+            console.log("promptboom_url:",promptboom_url)
+
         } else {
             console.error(rr)
         }
