@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.48
+// @version      4.49
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -71,7 +71,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.48"
+    let JSVer = "v4.49"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 

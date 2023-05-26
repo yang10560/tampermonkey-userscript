@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.5
+// @version      2.6.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -120,6 +120,7 @@
 // @connect   51mskd.com
 // @connect   forwardminded.xyz
 // @connect   1chat.cc
+// @connect   a3r.fun
 // @connect   cytsee.com
 // @connect   skybyte.me
 // @connect   alllinkai1.com
@@ -149,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.5';
+    let JSver = '2.6.6';
 
 
     function getGPTMode() {
@@ -3033,7 +3034,7 @@
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        showAnserAndHighlightCodeStr(finalResult.join(""))
+                        showAnserAndHighlightCodeStr(finalResult.join("").replace(/fxopenai/gi,""))
                         return;
                     }
                     try {
@@ -3357,6 +3358,7 @@
 
 
     let parentID_chat1;
+    //fix 2023年5月26日 1.1ai.fun
     function CHAT1() {
         let ops = {};
         if (parentID_chat1) {
@@ -3366,10 +3368,10 @@
         let finalResult = [];
         GM_httpRequest({
             method: "POST",
-            url: "https://1chat.cc/api/chat-process",
+            url: "https://chatapicn.a3r.fun/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://1chat.cc/",
+                "Referer": "https://2chat.c3r.ink/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
