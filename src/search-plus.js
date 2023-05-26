@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.4
+// @version      2.6.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -71,7 +71,7 @@
 // @connect   ai.ls
 // @connect   letsearches.com
 // @connect   zhulei.xyz
-// @connect   gpt.wobcw.com
+// @connect   wobcw.com
 // @connect   chat.68686.ltd
 // @connect   t66.ltd
 // @connect   www.aitianhu.com
@@ -85,7 +85,6 @@
 // @connect   ai.usesless.com
 // @connect   www.ftcl.store
 // @connect   sunls.me
-// @connect   chat.wobcw.com
 // @connect   www.pizzagpt.it
 // @connect   www.phind.com
 // @connect   chat.bushiai.com
@@ -150,7 +149,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.4';
+    let JSver = '2.6.5';
 
 
     function getGPTMode() {
@@ -4942,10 +4941,10 @@
 
     function WOBCW() {
         GM_xmlhttpRequest({
-            url: "https://chat.wobcw.com/chat",
+            url: "https://chat1.wobcw.com/chat",
             headers: {
                 "accept": "*/*",
-                "referrer": "https://chat.wobcw.com/",
+                "referrer": "https://chat1.wobcw.com/",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundarybrMK1QixymFcNJzK"
             },
             data: `------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundarybrMK1QixymFcNJzK--\r\n`,
@@ -4957,11 +4956,11 @@
                 console.log(chat_id)
                 abortXml = GM_xmlhttpRequest({
                     method: "GET",
-                    url: `https://chat.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
+                    url: `https://chat1.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
                     headers: {
                         "Content-Type": "application/json",
                         // "Authorization": "Bearer null",
-                        "Referer": "https://chat.wobcw.com/",
+                        "Referer": "https://chat1.wobcw.com/",
                         "accept": "text/event-stream"
                     },
                     onloadstart: (stream) => {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.47
+// @version      4.48
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -19,7 +19,7 @@
 // @connect    ai5.wuguokai.top
 // @connect    chat.aidutu.cn
 // @connect    chat86.cn
-// @connect    gpt.wobcw.com
+// @connect    wobcw.com
 // @connect    chat.68686.ltd
 // @connect    t66.ltd
 // @connect    ai.ls
@@ -33,7 +33,6 @@
 // @connect   sunls.me
 // @connect   theb.ai
 // @connect   www.ftcl.store
-// @connect   chat.wobcw.com
 // @connect   chatgpt.qdymys.cn
 // @connect   chat.bushiai.com
 // @connect   www.pizzagpt.it
@@ -72,7 +71,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.47"
+    let JSVer = "v4.48"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1052,10 +1051,10 @@
         GM_handleUserInput(null)
 
         GM_xmlhttpRequest({
-            url: "https://chat.wobcw.com/chat",
+            url: "https://chat1.wobcw.com/chat",
             headers: {
                 "accept": "*/*",
-                "referrer": "https://chat.wobcw.com/",
+                "referrer": "https://chat1.wobcw.com/",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundarybrMK1QixymFcNJzK"
             },
             data: `------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundarybrMK1QixymFcNJzK--\r\n`,
@@ -1067,11 +1066,11 @@
                 console.log(chat_id)
                  GM_xmlhttpRequest({
                     method: "GET",
-                    url: `https://chat.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
+                    url: `https://chat1.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
                     headers: {
                         "Content-Type": "application/json",
                         // "Authorization": "Bearer null",
-                        "Referer": "https://chat.wobcw.com/",
+                        "Referer": "https://chat1.wobcw.com/",
                         //"Host":"www.aiai.zone",
                         "accept": "text/event-stream"
                     },
