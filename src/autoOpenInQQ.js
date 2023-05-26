@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         QQ链接自动打开
 // @namespace    http://yeyu1024.xyz
-// @version      1.1
+// @version      1.3
 // @description  PC上使用QQ、QQ邮箱点开链接，浏览器提示非QQ官方链接页面时自动打开对应的链接。
 // @author       夜雨
 // @match        *://c.pc.qq.com/*
@@ -14,17 +14,35 @@
 (function() {
     'use strict';
 
+    function getParams(name){
+        let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        let r = window.location.search.substr(1).match(reg);
+        if (r != null) return decodeURIComponent(r[2]);
+        return '';
+    }
+
+
     let linkUrl = ""
 
     if(location.href.includes('c.pc.qq.com')){
-        linkUrl = document.querySelector("div#url").innerText;
-        linkUrl && (window.location.href = linkUrl) ;
+        linkUrl = getParams('pfurl');
     }
 
     if(location.href.includes('mail.qq.com')){
-        linkUrl = document.querySelector("div.safety-url").innerText;
-        linkUrl && (window.location.href = linkUrl) ;
+
+        try{
+            goUrl(1);
+            console.log("goUrl: ")
+            return;
+        }catch (e) {
+            console.log("exception:", e)
+            linkUrl = document.querySelector("div.safety-url").innerText;
+            linkUrl && (window.location.href = linkUrl) ;
+        }
+
     }
+
+    linkUrl && (window.location.href = linkUrl.startsWith("http")? linkUrl:`http://${linkUrl}`) ;
 
 
 })();
