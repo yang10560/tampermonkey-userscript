@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.6
+// @version      2.6.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.6';
+    let JSver = '2.6.7';
 
 
     function getGPTMode() {
@@ -1372,15 +1372,15 @@
       <option value="CHAT1">CHAT1</option>
       <option value="OFFICECHAT">OFFICECHAT[挂]</option>
       <option value="CHATWEB1">CHATWEB1</option>
-      <option value="LINKAI">LINKAI</option>
+      <option value="LINKAI">LINKAI[挂]</option>
       <option value="CHATZHANG">CHATZHANG</option>
-      <option value="MINDED">MINDED</option>
+      <option value="MINDED">MINDED[挂]</option>
       <option value="CYTSEE">CYTSEE</option>
-      <option value="QDYMYS">QDYMYS</option>
+      <option value="QDYMYS">QDYMYS[挂]</option>
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI</option>
       <option value="T66">T66</option>
-      <option value="ZHULEI">ZHULEI[兼容]</option>
+      <option value="ZHULEI">ZHULEI[挂]</option>
       <option value="CHATDDD">CHATDDD</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
@@ -1388,7 +1388,7 @@
       <option value="COOLAI">COOLAI[兼容]</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
-      <option value="EXTKJ">EXTKJ</option>
+      <option value="EXTKJ">EXTKJ[国内]</option>
       <option value="HEHANWANG">HEHANWANG</option>
       <option value="XIAOWENZI">XIAOWENZI</option>
       <option value="GAMEJX">GAMEJX[挂]</option>
@@ -1423,6 +1423,7 @@
         <hr>
         <a target="_blank"  href="https://bard.google.com/">Bard</a>
         <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>
+        <a target="_blank"  href="https://chatglm.cn/chat">ChatGLM</a>
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新</a>
         <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">爱发电</a>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">领红包</a>
@@ -2626,6 +2627,7 @@
 
     let chatzhang_key;
     let chatzhang_ip = generateRandomIP();
+    let chatzhang_cookie = ''
     setTimeout(()=>{
         if(getGPTMode() !== 'CHATZHANG'){
             return
@@ -2635,9 +2637,10 @@
             url: "http://chat.chatzhang.top/index.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.chatzhang.top/",
+                "Referer": "http://chat.chatzhang.top/index.php?id=1",
                 "x-requested-with": "XMLHttpRequest",
-                "X-Forwarded-For" : chatzhang_ip
+                "X-Forwarded-For" : chatzhang_ip,
+                "cookie":chatzhang_cookie
             }
         }).then(res=>{
             chatzhang_key = res.responseHeaders.match(/key=(.*?);/)[1];
@@ -2653,9 +2656,10 @@
             url: "http://chat.chatzhang.top/setsession.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.chatzhang.top/",
+                "Referer": "http://chat.chatzhang.top/index.php?id=1",
                 "x-requested-with": "XMLHttpRequest",
-                "X-Forwarded-For" : chatzhang_ip
+                "X-Forwarded-For" : chatzhang_ip,
+                "cookie":chatzhang_cookie
             },
             data: `message=+${encodeURI(your_qus)}&context=%5B%5D&key=${chatzhang_key}`
         })
@@ -2665,10 +2669,11 @@
             url: "http://chat.chatzhang.top/stream.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.chatzhang.top/",
+                "Referer": "http://chat.chatzhang.top/index.php?id=1",
                 "accept": "text/event-stream",
                 "x-requested-with": "XMLHttpRequest",
-                "X-Forwarded-For" : chatzhang_ip
+                "X-Forwarded-For" : chatzhang_ip,
+                "cookie":chatzhang_cookie
             },
             responseType: "stream"
         }).then((stream) => {
@@ -3224,6 +3229,11 @@
             promptboom_url = result.ptrboom.url
             console.log("promptboom_did:",promptboom_did)
             console.log("promptboom_url:",promptboom_url)
+
+            //chatzhang
+            chatzhang_cookie = result.chatzhang.cookie
+            console.log("chatzhang_cookie:",chatzhang_cookie)
+
         } else {
             console.error(rr)
         }
@@ -4279,7 +4289,7 @@
             }else{
                 document.querySelector('div[class="title"]').innerText = `invite_Token获取失败，请再次刷新`
             }
-            setTimeout(initTGtoken,5000)
+            setTimeout(initTGtoken,2500)
         } else {
             tg_invite_Token = GM_getValue("tg_invite_Token")
             tg_token = GM_getValue("tg_token")
@@ -4359,7 +4369,7 @@
             showAnserAndHighlightCodeStr("invite_Token失效。请至官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
 /*            let result = await waitAccess();
             showAnserAndHighlightCodeStr(result)*/
-            initTGtoken()
+            await initTGtoken()
             return
         }
 
@@ -4621,7 +4631,10 @@
             console.log("chatgml_token:",chatgml_token)
         }
     }
-    setTimeout(init_chatgml_token)
+    setTimeout(()=>{
+        init_chatgml_token()
+        setInterval(init_chatgml_token,5000)
+    })
 
     let chatgml_first = true;
     let chatgml_task_id;
@@ -5494,14 +5507,21 @@
 
 
     let parentID_extkj;
-
+    let extkj_key = '806.i4.dds764&65eyeadnf';
+    let extkj_auth = 'chatextkj.cn.joe.fe;p2kf;e'
     function EXTKJ() {
         let ops = {};
         if (parentID_extkj) {
             ops = {parentMessageId: parentID_extkj};
         }
+        let sendData = JSON.stringify({
+            auth: extkj_auth,
+            prompt: your_qus,
+            options: ops,
+            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.`
+        });
         console.log(ops)
-        let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__I>EO)$__M*&.fsee").toString()
+        let pt = CryptoJS.AES.encrypt(sendData, extkj_key).toString()
         console.log("aes:" + pt)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
@@ -5513,27 +5533,21 @@
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                prompt: pt,
-                options: ops,
-                systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.`
+                data: pt
             }),
             onloadstart: (stream) => {
-                let result = "";
                 const reader = stream.response.getReader();
                 let finalResult = [];
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        highlightCodeStr()
                         return;
                     }
 
-                    const chunk = value;
-                    result += chunk;
                     try {
                         // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
+                        let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
+                        console.warn(decoder.decode(byteArray))
                         let nowResult = decoder.decode(byteArray)
 
                         if (nowResult) {
@@ -5547,7 +5561,7 @@
                         }
 
                     } catch (e) {
-                        console.log(e)
+                        console.error(e)
                     }
 
                     return reader.read().then(processText);
