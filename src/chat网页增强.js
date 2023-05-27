@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.49
+// @version      4.50
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -24,7 +24,7 @@
 // @connect    t66.ltd
 // @connect    ai.ls
 // @connect    chat.ohtoai.com
-// @connect    mirrorchat.extkj.cn
+// @connect   extkj.cn
 // @connect    free.anzz.top
 // @connect   supremes.pro
 // @connect   bnu120.space
@@ -71,7 +71,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.49"
+    let JSVer = "v4.50"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1498,7 +1498,9 @@
         });
     }
 
-    var parentID_extkj;
+    let parentID_extkj;
+    let extkj_key = '';
+    let extkj_auth = ''
     function EXTKJ(question){
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
@@ -1506,9 +1508,16 @@
         if (parentID_extkj) {
             ops = {parentMessageId: parentID_extkj};
         }
+        let sendData = JSON.stringify({
+            auth: extkj_auth ? extkj_auth : 'chatextkj.cn.joe.fe;p2kf;e',
+            prompt: your_qus,
+            options: ops,
+            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.`
+        });
         console.log(ops)
-        let pt = CryptoJS.AES.encrypt(JSON.stringify(your_qus), "__CRYPTO_SECRET__I>EO)$__M*&.fsee").toString()
+        let pt = CryptoJS.AES.encrypt(sendData, extkj_key ? extkj_key : '806.i4.dds764&65eyeadnf').toString()
         console.log("aes:" + pt)
+
         GM_xmlhttpRequest({
             method: "POST",
             url: "https://chat.extkj.cn/api/chat-stream",
@@ -1518,9 +1527,7 @@
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                prompt: pt,
-                options: ops,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
+                data: pt
             }),
             onloadstart: (stream) => {
                 let result = "";
@@ -2898,6 +2905,13 @@
             promptboom_url = result.ptrboom.url
             console.log("promptboom_did:",promptboom_did)
             console.log("promptboom_url:",promptboom_url)
+
+            //extkj
+            extkj_key = result.extkj.key
+            extkj_auth = result.extkj.auth
+            console.log("extkj_key:",extkj_key)
+            console.log("extkj_auth:",extkj_auth)
+
 
         } else {
             console.error(rr)

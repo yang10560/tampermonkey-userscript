@@ -106,7 +106,7 @@
 // @connect   toyaml.com
 // @connect   38.47.97.76
 // @connect   lbb.ai
-// @connect   xiaowenzi.xyz
+// @connect   lovebaby.today
 // @connect   gamejx.cn
 // @connect   chat86.cn
 // @connect   ai001.live
@@ -1400,7 +1400,7 @@
       <option value="CLEANDX">CLEANDX</option>
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
-      <option value="XCBL">XCBL</option>
+      <option value="XCBL">XCBL[挂]</option>
       <option value="HZIT">HZIT[兼容]</option>
       <option value="TOYAML">TOYAML</option>
       <option value="CHATGPT">GPT</option>
@@ -3233,6 +3233,12 @@
             //chatzhang
             chatzhang_cookie = result.chatzhang.cookie
             console.log("chatzhang_cookie:",chatzhang_cookie)
+
+            //extkj
+            extkj_key = result.extkj.key
+            extkj_auth = result.extkj.auth
+            console.log("extkj_key:",extkj_key)
+            console.log("extkj_auth:",extkj_auth)
 
         } else {
             console.error(rr)
@@ -5507,21 +5513,21 @@
 
 
     let parentID_extkj;
-    let extkj_key = '806.i4.dds764&65eyeadnf';
-    let extkj_auth = 'chatextkj.cn.joe.fe;p2kf;e'
+    let extkj_key = '';
+    let extkj_auth = ''
     function EXTKJ() {
         let ops = {};
         if (parentID_extkj) {
             ops = {parentMessageId: parentID_extkj};
         }
         let sendData = JSON.stringify({
-            auth: extkj_auth,
+            auth: extkj_auth ? extkj_auth : 'chatextkj.cn.joe.fe;p2kf;e',
             prompt: your_qus,
             options: ops,
             systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.`
         });
         console.log(ops)
-        let pt = CryptoJS.AES.encrypt(sendData, extkj_key).toString()
+        let pt = CryptoJS.AES.encrypt(sendData, extkj_key ? extkj_key : '806.i4.dds764&65eyeadnf').toString()
         console.log("aes:" + pt)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
@@ -5575,9 +5581,9 @@
     }
 
 
-    //5.21
+    //5.27 update https://gpt.lovebaby.today/
     function XIAOWENZI() {
-        let baseURL = "http://srgfdfsf.xiaowenzi.xyz/";
+        let baseURL = "https://fasdsgdfsg97986agagyk656.lovebaby.today/";
         addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
@@ -5585,7 +5591,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "accept": "text/event-stream",
-                "origin": "http://srgfdfsf.xiaowenzi.xyz",
+                "origin": "https://fasdsgdfsg97986agagyk656.lovebaby.today/",
                 "Referer": baseURL
             },
             data: JSON.stringify({
@@ -5653,7 +5659,7 @@
             headers: {
                 "Referer": "https://ai.pp2pdf.com/chat",
                 "X-Forwarded-For": easyai_ip,
-                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV6bmJhTnlKa3RUalgza3BBcy1EOFJBIiwiZXhwIjoxNjg0MTM4MTI4LCJ1c2VySWQiOjEzNTV9.PdO-9ozH4aixDYifAt4hnSMkb8WfZmcHw-dZY_1eQ8g",
+                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV3cl9OQVluSEtFM1RfblhJZEtOdFdBIiwiZXhwIjoxNjg2ODkwMjY3LCJ1c2VySWQiOjEwODJ9.UNPie9wMHNdvmZnAu-akntngJsPYn-YmHBmzOioycw4",
                 "accept": "text/event-stream"
             },
             onloadstart: (stream) => {
