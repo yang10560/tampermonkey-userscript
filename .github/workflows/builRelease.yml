@@ -11,3 +11,21 @@ jobs:
           type: 'zip'
           filename: 'release.zip'
           exclusions: '*.git* test.js'
+      - name: Create Release With Asset
+        id: Release-AIO
+        uses: Hs1r1us/Release-AIO@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          asset_files: './release.zip'
+      - name: Duplicate Release With Asset to public_Repo
+        id: Release-AIO
+        uses: Hs1r1us/Release-AIO@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # You need a new token to access the target Repository
+        with:
+          tag_name: 'inherit' # Must use 'inherit' to get the latest release
+          body: 'release zip' # Will be added in the new release
+          repo: 'yang10560/tampermonkey-userscript' # The format is like owner/repo
+          asset_files: './release.zip' # Will be added in the new release
