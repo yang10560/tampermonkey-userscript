@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.50
+// @version      4.51
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -71,7 +71,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.50"
+    let JSVer = "v4.51"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1419,18 +1419,6 @@
 
     let bnuKey;
     let bnuInt = 0;
-    setTimeout(async () => {
-
-        for (let i = 0; i < 5 ; i++) {
-            bnuInt = i;
-            try {
-                bnuKey = await setNormalKey(`https://chat.${bnuInt}.bnu120.space`);
-                break;
-            }catch (e) {
-
-            }
-        }
-    });
     let messageChain9 = []
     //https://chat.bnu120.space/
     function BNU120(question) {
@@ -2911,6 +2899,12 @@
             extkj_auth = result.extkj.auth
             console.log("extkj_key:",extkj_key)
             console.log("extkj_auth:",extkj_auth)
+
+            //bnuList
+            bnuInt = result.bnu.bnuInt
+            bnuKey = result.bnu.bnukey
+            console.log("bnuInt:",bnuInt)
+            console.log("bnuKey:",bnuKey)
 
 
         } else {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.7
+// @version      2.6.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -150,7 +150,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.7';
+    let JSver = '2.6.8';
 
 
     function getGPTMode() {
@@ -362,16 +362,16 @@
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
                 bnuInt = (bnuInt + 1) > 6 ? 0 : (bnuInt + 1)
-                showAnserAndHighlightCodeStr(`正在更新.若无法更新,则多点几次,当前：${bnuInt}，共6`)
                 try {
-                    bnuKey = await setNormalKey(`https://chat.${bnuInt}.bnu120.space`);
+                    bnuKey = bnuList[bnuInt].key;
                     if(bnuKey){
-                        showAnserAndHighlightCodeStr(`BNU120：更新成功,KEY:${bnuKey}`)
+                        showAnserAndHighlightCodeStr(`BNU120：当前：${bnuInt}，共6。更新成功,KEY:${bnuKey}`)
                         localStorage.setItem("bnuInt", bnuInt)
+                        localStorage.setItem("bnuKey", bnuKey)
                     }else {
                         showAnserAndHighlightCodeStr("BNU120：更新失败")
                         localStorage.removeItem("bnuInt")
-                        bnuInt = Math.floor(Math.random() * 7)
+                        localStorage.removeItem("bnuKey")
                     }
                 }catch (e) {
                     showAnserAndHighlightCodeStr(`错误了。请重试`)
@@ -1060,7 +1060,7 @@
             return;
             //end if
         }else if (GPTMODE && GPTMODE === "BNU120") {
-            console.log("BNU120")
+            console.log("BNU120：",bnuInt)
             BNU120();
 
             return;
@@ -3239,6 +3239,14 @@
             extkj_auth = result.extkj.auth
             console.log("extkj_key:",extkj_key)
             console.log("extkj_auth:",extkj_auth)
+
+            //bnuList
+            bnuList = result.bnu.list
+            console.log("bnuList:",bnuList)
+
+            setTimeout(async () => {
+                bnuKey = bnuList[bnuInt].key;
+            });
 
         } else {
             console.error(rr)
@@ -5753,11 +5761,10 @@
         return key
     }
 
-    let bnuKey;
+    let bnuKey = localStorage.getItem("bnuKey");
+    let bnuList;
     let bnuInt = localStorage.getItem("bnuInt") || Math.floor(Math.random() * 7);
-    setTimeout(async () => {
-        bnuKey = await setNormalKey(`https://chat.${bnuInt}.bnu120.space`);
-    });
+
     //https://ic.muspimerol.site/
     function BNU120() {
 
@@ -5810,7 +5817,7 @@
                         let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                         result.push(d)
                         showAnserAndHighlightCodeStr(result.join("")
-                            .replace(/muspimerol.site/gi,""))
+                            .replace(/muspimerol/gi,""))
                     } catch (e) {
                         console.log(e)
                     }
