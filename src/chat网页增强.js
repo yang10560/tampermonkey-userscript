@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.52
+// @version      4.53
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -62,6 +62,7 @@
 // @connect   haohuola.com
 // @connect   cytsee.com
 // @connect   yeyu1024.xyz
+// @connect   gptgo.ai
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -72,7 +73,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.52"
+    let JSVer = "v4.53"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2298,6 +2299,71 @@
     }
 
 
+    async function ChatGO(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let response = await GM_fetch({
+            method: "GET",
+            url: `https://gptgo.ai/action_get_token.php?q=${encodeURIComponent(your_qus)}&hlgpt=default`,
+            headers: {
+                "Referer": "https://gptgo.ai/?hl=zh",
+                "origin": "https://gptgo.ai/",
+            }
+        });
+        let resp = response.responseText;
+        if(!resp){
+            return ;
+        }
+        let tk = JSON.parse(resp).token;
+        console.log("tk:",tk)
+        GM_fetch({
+            method: "GET",
+            url: `https://gptgo.ai/action_ai_gpt.php?token=${tk}`,
+            headers: {
+                "Referer": "https://gptgo.ai/?hl=zh",
+                "origin": "https://gptgo.ai/",
+                "accept": "text/event-stream"
+            },
+            responseType:"stream"
+        }).then((stream)=>{
+            let result = []
+            GM_simulateBotResponse("...")
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.warn(d)
+                    d.split("\n").forEach(item=>{
+                        try {
+                            let chunk = JSON.parse(item.replace(/data:/,"").trim())
+                                .choices[0].delta.content;
+                            result.push(chunk)
+                        }catch (ex){
+
+                        }
+                    })
+                    GM_fillBotResponse(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },reason => {
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+
+    }
+
+
+
     //https://ai1.chagpt.fun/
     function CVEOY(question) {
         let your_qus = question;//你的问题
@@ -3113,6 +3179,10 @@
                     console.log("CYTSEE")
                     CYTSEE(qus);
                     break;
+             case "ChatGO":
+                    console.log("ChatGO")
+                    ChatGO(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -3129,6 +3199,7 @@
  <option value="tdchat">tdchat</option>
  <option value="LEMURCHAT">狐猴内置</option>
  <option value="HAOHUOLA">HAOHUOLA</option>
+ <option value="ChatGO">ChatGO</option>
  <option value="CYTSEE">CYTSEE</option>
  <option value="QDYMYS">QDYMYS</option>
  <option value="wgk">wgk</option>

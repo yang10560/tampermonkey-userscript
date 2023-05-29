@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.8
+// @version      2.6.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -137,6 +137,7 @@
 // @connect   neice.tiangong.cn
 // @connect   yeyu1024.xyz
 // @connect   chatglm.cn
+// @connect   gptgo.ai
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -150,7 +151,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.8';
+    let JSver = '2.6.9';
 
 
     function getGPTMode() {
@@ -1185,6 +1186,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "ChatGO") {
+            console.log("ChatGO")
+            ChatGO()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1356,6 +1363,7 @@
       <option value="TIANGONG">天工AI</option>
       <option value="ChatGLM">ChatGLM</option>
       <option value="GPTPLUS">GPTPLUS</option>
+      <option value="ChatGO">ChatGO</option>
       <option value="XBOAT">XBOAT[兼容]</option>
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI[科学]</option>
@@ -4807,6 +4815,69 @@
         }
 
     }
+
+
+
+    async function ChatGO() {
+        let response = await GM_fetch({
+            method: "GET",
+            url: `https://gptgo.ai/action_get_token.php?q=${encodeURIComponent(your_qus)}&hlgpt=default`,
+            headers: {
+                "Referer": "https://gptgo.ai/?hl=zh",
+                "origin": "https://gptgo.ai/",
+            }
+        });
+        let resp = response.responseText;
+        if(!resp){
+            return ;
+        }
+        let tk = JSON.parse(resp).token;
+        console.log("tk:",tk)
+        GM_fetch({
+            method: "GET",
+            url: `https://gptgo.ai/action_ai_gpt.php?token=${tk}`,
+            headers: {
+                "Referer": "https://gptgo.ai/?hl=zh",
+                "origin": "https://gptgo.ai/",
+                "accept": "text/event-stream"
+            },
+            responseType:"stream"
+        }).then((stream)=>{
+            let result = []
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.warn(d)
+                    d.split("\n").forEach(item=>{
+                        try {
+                            let chunk = JSON.parse(item.replace(/data:/,"").trim())
+                                .choices[0].delta.content;
+                            result.push(chunk)
+                        }catch (ex){
+
+                        }
+                    })
+                    showAnserAndHighlightCodeStr(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },reason => {
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+
+    }
+
     setTimeout(setPizzakey);
 
     function PIZZA() {
