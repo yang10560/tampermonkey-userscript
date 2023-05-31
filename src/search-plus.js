@@ -4828,7 +4828,11 @@
                         try{
                             if(item.startsWith("data")){
                                 let i =  item.replace(/data: /gi,"")
-                                result.push(i)
+                                if(i.trim()){
+                                    result.push(i)
+                                }else{
+                                    result.push("\n")
+                                }
                             }
                         }catch (e) {}
                     })
