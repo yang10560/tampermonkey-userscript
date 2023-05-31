@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.6.9
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、Fsou、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI。即刻体验AI，无需翻墙，无需注册，无需等待！
+// @version      2.7.0
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
 // @match      https://www.bing.com/*
@@ -138,6 +138,7 @@
 // @connect   yeyu1024.xyz
 // @connect   chatglm.cn
 // @connect   gptgo.ai
+// @connect   chat.360.cn
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -151,7 +152,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.6.9';
+    let JSver = '2.7.0';
 
 
     function getGPTMode() {
@@ -1192,6 +1193,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "Zhinao360") {
+            console.log("Zhinao360")
+            Zhinao360()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1362,6 +1369,7 @@
       <option value="SPARK">讯飞星火</option>
       <option value="TIANGONG">天工AI</option>
       <option value="ChatGLM">ChatGLM</option>
+      <option value="Zhinao360">360智脑</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="ChatGO">ChatGO</option>
       <option value="XBOAT">XBOAT[兼容]</option>
@@ -3047,7 +3055,7 @@
                 const reader = stream.response.getReader();
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        showAnserAndHighlightCodeStr(finalResult.join("").replace(/fxopenai/gi,""))
+                        showAnserAndHighlightCodeStr(finalResult.join("").replace(/fx.*?ai/gi,""))
                         return;
                     }
                     try {
@@ -4455,7 +4463,7 @@
 
 
         //获取信息信息
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 120; i++) {
             let req2 = await GM_fetch({
                 method: "POST",
                 timeout: 3000,
@@ -4778,6 +4786,69 @@
 
 
     //ChatGLM相关 ----start-----
+
+
+    //360智脑 -------start------
+
+
+    let conversation_id = `con-${uuidv4()}`
+    async function Zhinao360(){
+        showAnserAndHighlightCodeStr("请稍后...该线路为官网线路，使用该线路，请确保已经登录[360智脑](https://chat.360.cn/)")
+        const sendData = JSON.stringify({
+            "prompt": your_qus,
+            "conversation_id": conversation_id,
+            "source_type": "prophet_web",
+            "message_id": `msg-${uuidv4()}`,
+            "is_so": false
+        });
+
+        GM_fetch({
+            method: "POST",
+            url: `https://chat.360.cn/backend-api/api/common/chat`,
+            headers: {
+                "accept": "text/event-stream",
+                "origin": "https://chat.360.cn",
+                "referer": `https://chat.360.cn/index`,
+                "content-type": "application/json",
+            },
+            data: sendData,
+            responseType:"stream"
+        }).then((stream)=> {
+            let reader = stream.response.getReader()
+            let result = []
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    return
+                }
+                let responseItem = new TextDecoder("utf-8").decode(value)
+                // console.error(responseItem)
+                console.warn(responseItem)
+                if(responseItem){
+                    responseItem.split("\r\n").forEach(item=>{
+                        try{
+                            if(item.startsWith("data")){
+                                let i =  item.replace(/data: /gi,"")
+                                result.push(i)
+                            }
+                        }catch (e) {}
+                    })
+                    showAnserAndHighlightCodeStr(result.join(""))
+                }
+
+                return reader.read().then(processText)
+            },function (reason) {
+                console.log(reason)
+            }).catch((ex)=>{
+                console.log(ex)
+            })
+        })
+
+    }
+
+    //360智脑 -------end------
+
+
+
 
     let pizzaSecret;
     async function setPizzakey() {
