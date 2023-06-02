@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.1
+// @version      2.7.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -131,6 +131,7 @@
 // @connect   bing.com
 // @connect   openai.com
 // @connect   tongyi.aliyun.com
+// @connect   qianwen.aliyun.com
 // @connect   haohuola.com
 // @connect   xinghuo.xfyun.cn
 // @connect   geetest.com
@@ -152,7 +153,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.7.1';
+    let JSver = '2.7.2';
 
 
     function getGPTMode() {
@@ -1431,7 +1432,7 @@
 	    <hr>
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
         <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>
-        <a target="_blank"  href="https://tongyi.aliyun.com/">通义</a>
+        <a target="_blank"  href="https://qianwen.aliyun.com/">通义</a>
         <a target="_blank"  href="https://www.tiangong.cn/">天工</a>
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>
         <a target="_blank"  href="https://chat.openai.com/chat">OpenAI</a>
@@ -3918,10 +3919,10 @@
    async function setCsrfToken(){
        let req1 = await GM_fetch({
            method: "GET",
-           url: "https://tongyi.aliyun.com/chat",
+           url: "https://qianwen.aliyun.com/chat",
            headers: {
-               "origin":"https://tongyi.aliyun.com",
-               "referer":"https://tongyi.aliyun.com/chat"
+               "origin":"https://qianwen.aliyun.com",
+               "referer":"https://qianwen.aliyun.com/chat"
            }
        })
        let r = req1.responseText;
@@ -3946,10 +3947,10 @@
         if(tongyi_first){
            let req1 = await GM_fetch({
                method: "POST",
-               url: "https://tongyi.aliyun.com/qianwen/addSession",
+               url: "https://qianwen.aliyun.com/addSession",
                headers: {
-                   "origin":"https://tongyi.aliyun.com",
-                   "referer":"https://tongyi.aliyun.com/chat",
+                   "origin":"https://qianwen.aliyun.com/",
+                   "referer":"https://qianwen.aliyun.com/chat",
                    "Content-Type": "application/json",
                    "x-xsrf-token": csrfToken
                },
@@ -3965,7 +3966,7 @@
                tongyi_first = false;
            }catch (e) {
                tongyi_first = true;
-               showAnserAndHighlightCodeStr("出错,请确认已登录通义官网[通义](https://tongyi.aliyun.com/chat)")
+               showAnserAndHighlightCodeStr("出错,请确认已登录通义官网[通义](https://qianwen.aliyun.com/chat)")
                setTimeout(setCsrfToken)
            }
        }
@@ -3987,10 +3988,10 @@
        })
        GM_fetch({
            method: 'POST',
-           url: 'https://tongyi.aliyun.com/qianwen/conversation',
+           url: 'https://qianwen.aliyun.com/conversation',
            headers: {
-               "origin":"https://tongyi.aliyun.com",
-               "referer":"https://tongyi.aliyun.com/chat",
+               "origin":"https://qianwen.aliyun.com/",
+               "referer":"https://qianwen.aliyun.com/chat",
                "Content-Type": "application/json",
                "accept": "text/event-stream",
                "x-xsrf-token": csrfToken
