@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.0
+// @version      2.7.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -152,7 +152,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.7.0';
+    let JSver = '2.7.1';
 
 
     function getGPTMode() {
@@ -5666,21 +5666,17 @@
     }
 
 
-    let parentID_extkj;
+    let message_extkj = [{role: 'assistant', content: '你好！有什么我可以帮助你的吗？'}];
     let extkj_key = '';
     let extkj_auth = ''
     function EXTKJ() {
-        let ops = {};
-        if (parentID_extkj) {
-            ops = {parentMessageId: parentID_extkj};
-        }
+        addMessageChain(message_extkj,{role: 'user', content: your_qus}, 10)
         let sendData = JSON.stringify({
             auth: extkj_auth ? extkj_auth : 'chatextkj.cn.joe.fe;p2kf;e',
             prompt: your_qus,
-            options: ops,
-            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.`
+            messages: message_extkj
         });
-        console.log(ops)
+        console.log(sendData)
         let pt = CryptoJS.AES.encrypt(sendData, extkj_key ? extkj_key : '806.i4.dds764&65eyeadnf').toString()
         console.log("aes:" + pt)
         abortXml = GM_xmlhttpRequest({
@@ -5700,6 +5696,7 @@
                 let finalResult = [];
                 reader.read().then(function processText({done, value}) {
                     if (done) {
+                        addMessageChain(message_extkj, {role: 'assistant', content: finalResult}, 10)
                         return;
                     }
 
@@ -5714,9 +5711,7 @@
                             let jsonLine = nowResult.split("\n");
                             let jsonObj = JSON.parse(jsonLine[jsonLine.length - 1]);
                             finalResult = jsonObj.text;
-                            if (jsonObj.id) {
-                                parentID_extkj = jsonObj.id;
-                            }
+
                             showAnserAndHighlightCodeStr(finalResult)
                         }
 

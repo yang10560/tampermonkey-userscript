@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.53
+// @version      4.54
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -73,7 +73,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.53"
+    let JSVer = "v4.54"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1488,23 +1488,18 @@
         });
     }
 
-    let parentID_extkj;
+    let message_extkj = [{role: 'assistant', content: '你好！有什么我可以帮助你的吗？'}];
     let extkj_key = '';
     let extkj_auth = ''
     function EXTKJ(question){
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
-        let ops = {};
-        if (parentID_extkj) {
-            ops = {parentMessageId: parentID_extkj};
-        }
+        addMessageChain(message_extkj,{role: 'user', content: your_qus}, 10)
         let sendData = JSON.stringify({
             auth: extkj_auth ? extkj_auth : 'chatextkj.cn.joe.fe;p2kf;e',
             prompt: your_qus,
-            options: ops,
-            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.`
+            messages: message_extkj
         });
-        console.log(ops)
         let pt = CryptoJS.AES.encrypt(sendData, extkj_key ? extkj_key : '806.i4.dds764&65eyeadnf').toString()
         console.log("aes:" + pt)
 
@@ -1527,6 +1522,7 @@
                 reader.read().then(function processText({done, value}) {
                     if (done) {
                         GM_fillBotResponse(finalResult)
+                        addMessageChain(message_extkj, {role: 'assistant', content: finalResult}, 10)
                         return;
                     }
 
