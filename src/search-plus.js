@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.2
+// @version      2.7.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -153,7 +153,7 @@
     //  GM_addStyle(GM_getResourceText("markdownCss"));
     // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.7.2';
+    let JSver = '2.7.3';
 
 
     function getGPTMode() {
@@ -4313,8 +4313,8 @@
             tg_invite_Token = localStorage.getItem("formNatureQueueWaitToken");
             //token: "Bearer " + c("formNatureResearchToken"),
             tg_token = localStorage.getItem("formNatureResearchToken");
-            GM_setValue("tg_invite_Token", tg_invite_Token)
-            GM_setValue("tg_token", tg_token)
+            await GM_setValue("tg_invite_Token", tg_invite_Token)
+            await GM_setValue("tg_token", tg_token)
             if(tg_invite_Token){
                 document.querySelector('div[class="title"]').innerText = `invite_Token获取成功:${tg_invite_Token}`
             }else{
@@ -4322,8 +4322,8 @@
             }
             setTimeout(initTGtoken,2500)
         } else {
-            tg_invite_Token = GM_getValue("tg_invite_Token")
-            tg_token = GM_getValue("tg_token")
+            tg_invite_Token = await GM_getValue("tg_invite_Token")
+            tg_token = await GM_getValue("tg_token")
         }
     }
 
@@ -4353,12 +4353,12 @@
         })
         let r = req1.responseText;
         console.log(r)
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 tg_invite_Token = JSON.parse(r).resp_data.invite_token;
-                GM_setValue("waitAccess tg_invite_Token",tg_invite_Token)
+                await GM_setValue("waitAccess tg_invite_Token", tg_invite_Token)
                 resolve("更新成功，请再次点击")
-            }catch (e) {
+            } catch (e) {
                 resolve("waitAccess 异常 请到官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
             }
         })
@@ -4647,19 +4647,19 @@
     //https://chatglm.cn
 
     let chatgml_token;
-    function init_chatgml_token() {
+    async function init_chatgml_token() {
         if (location.href.includes("chatglm.cn")) {
-            chatgml_token = getCookieValue(document.cookie,"chatglm_token")
-            GM_setValue("chatgml_token", chatgml_token)
-            if(chatgml_token){
-                document.querySelector('textarea').value  = `chatgml_token获取成功:${chatgml_token}`
-            }else{
-                document.querySelector('textarea').value  = `invite_Token获取失败，请再次刷新`
+            chatgml_token = getCookieValue(document.cookie, "chatglm_token")
+            await GM_setValue("chatgml_token", chatgml_token)
+            if (chatgml_token) {
+                console.log(`chatgml_token获取成功:${chatgml_token}`)
+            } else {
+                console.log('invite_Token获取失败，请再次刷新')
             }
 
         } else {
-            chatgml_token = GM_getValue("chatgml_token")
-            console.log("chatgml_token:",chatgml_token)
+            chatgml_token =  await GM_getValue("chatgml_token")
+            console.log("chatgml_token:", chatgml_token)
         }
     }
     setTimeout(()=>{
