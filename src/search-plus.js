@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.3
+// @version      2.7.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -59,8 +59,8 @@
 // @connect    luntianxia.uk
 // @connect    chat.51buygpt.com
 // @connect    extkj.cn
-// @connect    api.tdchat0.com
-// @connect    bxgav.tdchat0.com
+// @connect    tdchat0.com
+// @connect    zw7.lol
 // @connect    xeasy.me
 // @connect   chat.wuguokai.cn
 // @connect   ai5.wuguokai.top
@@ -145,15 +145,15 @@
 
 // ==/UserScript==
 
+import {
+    GM_registerMenuCommand,GM_openInTab,GM_xmlhttpRequest,GM_setValue,GM_getValue,
+    GM_setClipboard,GM_addStyle
+}  from "../jslib/tampermonkey";
 (function () {
     'use strict';
-    // grant       GM_getResourceText
-    // resource markdownCss https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.css
-    // resource highlightCss https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css
-    //  GM_addStyle(GM_getResourceText("markdownCss"));
-    // GM_addStyle(GM_getResourceText("highlightCss"));
 
-    let JSver = '2.7.3';
+
+    let JSver = '2.7.4';
 
 
     function getGPTMode() {
@@ -3265,6 +3265,10 @@
                 bnuKey = bnuList[bnuInt].key;
             });
 
+            //pizaa
+            pizzaSecret = result.pizza.secret
+            console.log("pizzaSecret:",pizzaSecret)
+
         } else {
             console.error(rr)
         }
@@ -4854,46 +4858,6 @@
 
 
 
-
-    let pizzaSecret;
-    async function setPizzakey() {
-        try {
-
-            let source = await GM_fetch({
-                method: "GET",
-                nocache: true,
-                url: "https://www.pizzagpt.it/",
-                headers: {
-                    "Referer": `www.pizzagpt.it`
-                }
-            })
-            console.log(source)
-            let reqJS = source.responseText.match("index.*?\.js")[0];
-
-            GM_fetch({
-                method: "GET",
-                nocache: true,
-                synchronous: true,
-                url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
-                headers: {
-                    //"Content-Type": "application/json",
-                    "Referer": `www.pizzagpt.it`
-                }
-            }).then((response)=> {
-                let resp = response.responseText;
-                pizzaSecret = resp.match("x=\"(.*?)\"")[1]
-                console.log("pizzaSecret:", pizzaSecret)
-            }).catch((e) => {
-                console.log(e)
-            })
-        } catch (e) {
-            console.log(e)
-        }
-
-    }
-
-
-
     async function ChatGO() {
         let response = await GM_fetch({
             method: "GET",
@@ -4954,8 +4918,8 @@
 
     }
 
-    setTimeout(setPizzakey);
 
+    let pizzaSecret;
     function PIZZA() {
         abortXml = GM_xmlhttpRequest({
             method: "POST",
@@ -6598,10 +6562,10 @@
     function TDCHAT(){
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "http://bxgav.tdchat0.com/",
+            url: "http://wes.zw7.lol/chat.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "Referer": "http://tdchat0.com/",
+                "Referer": "http://wes.zw7.lol/chat",
                 "accept": "application/json, text/plain, */*"
             },
             data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g, '‰')}&length=${your_qus.length}&stream=1`,

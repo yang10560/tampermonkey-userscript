@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.54
+// @version      4.55
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -13,8 +13,8 @@
 // @connect    chatai.to
 // @connect    luntianxia.uk
 // @connect    pp2pdf.com
-// @connect    api.tdchat0.com
-// @connect    bxgav.tdchat0.com
+// @connect    tdchat0.com
+// @connect    zw7.lol
 // @connect    xeasy.me
 // @connect    api.aigcfun.com
 // @connect    ai5.wuguokai.top
@@ -73,7 +73,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.54"
+    let JSVer = "v4.55"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -380,43 +380,8 @@
     }
 
 
-    var pizzaSecret;
-    async function setPizzakey() {
-        try {
+    let pizzaSecret;
 
-            let source = await GM_fetch({
-                method: "GET",
-                nocache: true,
-                url: "https://www.pizzagpt.it/",
-                headers: {
-                    "Referer": `www.pizzagpt.it`
-                }
-            })
-            console.log(source)
-            let reqJS = source.responseText.match("index.*?\.js")[0];
-
-            GM_fetch({
-                method: "GET",
-                nocache: true,
-                synchronous: true,
-                url: "https://www.pizzagpt.it/_nuxt/" + reqJS.trim(),
-                headers: {
-                    //"Content-Type": "application/json",
-                    "Referer": `www.pizzagpt.it`
-                }
-            }).then((response)=> {
-                let resp = response.responseText;
-                pizzaSecret = resp.match("x=\"(.*?)\"")[1]
-                console.log("pizzaSecret:", pizzaSecret)
-            }).catch((e) => {
-                console.log(e)
-            })
-        } catch (e) {
-            console.log(e)
-        }
-
-    }
-    setTimeout(setPizzakey);
 
     function PIZZA(question) {
         let your_qus = question;//你的问题
@@ -640,11 +605,11 @@
         GM_xmlhttpRequest({
             method: "POST",
             //http://5p2ag.tdchat0.com/
-            url: "http://bxgav.tdchat0.com/",
+            url: "http://wes.zw7.lol/chat.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                 // "Authorization": "Bearer null",
-                "Referer": "http://tdchat0.com/",
+                "Referer": "http://wes.zw7.lol/",
                 //"Host":"www.aiai.zone",
                 "accept": "application/json, text/plain, */*"
             },
@@ -2968,6 +2933,10 @@
             bnuKey = result.bnu.bnukey
             console.log("bnuInt:",bnuInt)
             console.log("bnuKey:",bnuKey)
+
+            //pizaa
+            pizzaSecret = result.pizza.secret
+            console.log("pizzaSecret:",pizzaSecret)
 
 
         } else {
