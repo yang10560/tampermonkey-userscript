@@ -145,10 +145,10 @@
 
 // ==/UserScript==
 
-import {
-    GM_registerMenuCommand,GM_openInTab,GM_xmlhttpRequest,GM_setValue,GM_getValue,
-    GM_setClipboard,GM_addStyle
-}  from "../jslib/tampermonkey";
+// import {
+//     GM_registerMenuCommand,GM_openInTab,GM_xmlhttpRequest,GM_setValue,GM_getValue,
+//     GM_setClipboard,GM_addStyle
+// }  from "../jslib/tampermonkey";
 (function () {
     'use strict';
 
