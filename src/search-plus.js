@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.4
+// @version      2.7.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -89,7 +89,6 @@
 // @connect   www.phind.com
 // @connect   chat.bushiai.com
 // @connect   chatgpt.qdymys.cn
-// @connect   easyai.one
 // @connect   pp2pdf.com
 // @connect   api.aichatos.cloud
 // @connect   ai.fakeopen.com
@@ -115,7 +114,6 @@
 // @connect   promptboom.com
 // @connect   hehanwang.com
 // @connect   caipacity.com
-// @connect   chat.fdkang.top
 // @connect   chatzhang.top
 // @connect   51mskd.com
 // @connect   forwardminded.xyz
@@ -153,7 +151,7 @@
     'use strict';
 
 
-    let JSver = '2.7.4';
+    let JSver = '2.7.5';
 
 
     function getGPTMode() {
@@ -311,36 +309,13 @@
     //动态pubkey
     function setPubkey() {
         let GPTMODE = getGPTMode()
-        if (GPTMODE === "CHATGPT") {
-
-            GM_fetch({
-                method: "GET",
-                nocache: true,
-                url: "https://freeopenai.xyz/api.txt",
-                headers: {
-                    //"Content-Type": "application/json",
-                    "Referer": `https://freeopenai.xyz/`
-                }
-            }).then((response)=> {
-                let resp = response.responseText;
-                console.log(response)
-                if (!resp) {
-                    localStorage.removeItem("openAIkey")
-                    return
-                }
-                //localStorage.setItem("openAIkey", pubkey)
-                let ht = ""
-                let keys = resp.split("\n");
-                keys.forEach(key => {
-                    ht += `<a href='javascript:(function(){ localStorage.setItem("openAIkey","${key}");alert("更新成功：${key}")})();'>${key}</a><br>`
-                })
-                document.getElementById("gptAnswer").innerHTML =  ht;
-                //document.getElementById("gptAnswer").innerText = "openAI key获取成功,请复制其中一个并点按钮添加:\n"+keys.join(",")
-                localStorage.removeItem("openAIkey")
-            }).catch((res)=>{
-                console.log(res)
-            })
-
+        if (GPTMODE === "YeYu") {
+            localStorage.removeItem("openAIkey")
+            let manualInput = confirm("openAIkey不存在,请输入你自己的key");
+            if (manualInput) {
+                let aikey = prompt("请输入您的openAIkey", "");
+                if (aikey) localStorage.setItem("openAIkey", aikey)
+            }
         }else if(!GPTMODE || GPTMODE === "Default"){
             GM_fetch({
                 method: "GET",
@@ -842,11 +817,11 @@
 
         document.getElementById('gptAnswer').innerHTML = `<div>加载中<span id="dot"></span></div>`;
 
-        //CHATGPT模式
+        //自定义模式
         let GPTMODE = getGPTMode()
-        if (GPTMODE && GPTMODE === "CHATGPT") {
-            console.log("当前模式CHATGPT")
-            GPT()
+        if (GPTMODE && GPTMODE === "YeYu") {
+            console.log("当前模YeYu")
+            YeYu()
             //end if
             return;
         } else if (GPTMODE && GPTMODE === "ANZZ") {
@@ -886,13 +861,7 @@
             TDCHAT()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE === "QDYMYS") {
-            console.log("当前模式QDYMYS")
-            QDYMYS();
-
-            //end if
-            return;
-        } else if (GPTMODE && GPTMODE === "WGK") {
+        }  else if (GPTMODE && GPTMODE === "WGK") {
             console.log("当前模式WGK")
 
             WGK();
@@ -910,12 +879,6 @@
 
             console.log("AILS")
             AILS()
-
-            return;
-            //end if
-        } else if (GPTMODE && GPTMODE === "FDKANG") {
-            console.log("FDKANG")
-            FDKANG()
 
             return;
             //end if
@@ -972,19 +935,7 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE === "GAMEJX") {
-            console.log("GAMEJX")
-            GAMEJX();
-
-            return;
-            //end if
-        } else if (GPTMODE && GPTMODE === "AIFKS") {
-            console.log("AIFKS")
-            AIFKS();
-
-            return;
-            //end if
-        } else if (GPTMODE && GPTMODE === "USESLESS") {
+        }  else if (GPTMODE && GPTMODE === "USESLESS") {
             console.log("USESLESS")
             USESLESS();
 
@@ -999,12 +950,6 @@
         }else if (GPTMODE && GPTMODE === "SUNLE") {
             console.log("SUNLE")
             SUNLE();
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "EASYAI") {
-            console.log("EASYAI")
-            EASYAI();
 
             return;
             //end if
@@ -1023,12 +968,6 @@
         }else if (GPTMODE && GPTMODE === "CVEOY") {
             console.log("CVEOY")
             CVEOY();
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "XCBL") {
-            console.log("XCBL")
-            XCBL();
 
             return;
             //end if
@@ -1080,12 +1019,6 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "MINDED") {
-            console.log("MINDED")
-            MINDED();
-
-            return;
-            //end if
         }else if (GPTMODE && GPTMODE === "CHAT1") {
             console.log("CHAT1")
             CHAT1();
@@ -1098,27 +1031,9 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "CHATZHANG") {
-            console.log("CHATZHANG")
-            CHATZHANG()
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "OFFICECHAT") {
-            console.log("OFFICECHAT")
-            OFFICECHAT()
-
-            return;
-            //end if
         }else if (GPTMODE && GPTMODE === "CHATWEB1") {
             console.log("CHATWEB1")
             CHATWEB1()
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "LINKAI") {
-            console.log("LINKAI")
-            LINKAI()
 
             return;
             //end if
@@ -1208,86 +1123,6 @@
     }
 
 
-    function GPT(){
-        let finalResult
-        if (!localStorage.getItem("openAIkey")) {
-            let manualInput = confirm("openAIkey不存在 请更新,或者使用你自己的key");
-            if (manualInput) {
-                let aikey = prompt("请输入您的openAIkey", "");
-                if (aikey) localStorage.setItem("openAIkey", aikey)
-            } else {
-                return
-            }
-
-        }
-        abortXml = GM_xmlhttpRequest({
-            method: "POST",
-            // url: "http://gpt008.com/backend-api/conversation",
-            url: "https://freechatgpt.xgp.one/backend-api/conversation",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer null",
-                "Referer": "https://freechatgpt.xgp.one/",
-                // "Host":"gpt008.com",
-                "accept": "text/event-stream",
-                "x-openai-api-key": localStorage.getItem("openAIkey"),
-            },
-            data: JSON.stringify({//抓包conversation就可以看到这个结构
-                action: "next",
-                messages: [
-                    {
-                        id: uuid(),
-                        author: {role: "user"},
-                        role: "user",
-                        content: {
-                            content_type: "text",
-                            parts: [your_qus],
-                        },
-                    },
-                ],
-                model: "text-davinci-002-render",
-                parent_message_id: uuid(),
-            }),
-            //    onprogress: function(msg){console.log(msg)},
-            //     onreadystatechange:function(msg){log(msg)},
-            onloadstart: (stream) => {
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        return;
-                    }
-
-                    try {
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        const matchResults = decoder.decode(byteArray).match(/"parts":\s*\["(.+?)"\]/g);
-                        let nowResult = matchResults[matchResults.length - 1];
-                        nowResult = /\[\"(.*?)\"\]/g.exec(nowResult)[1];
-                        console.log(nowResult)
-                        if (nowResult !== "DONE") {//not done
-                            showAnserAndHighlightCodeStr(nowResult)
-                        }
-
-                    } catch (ex) {
-                        showAnserAndHighlightCodeStr(ex)
-                        console.log(ex)
-                    }
-
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
-        })
-    }
-
     //默认线路
     function AIGCFUN() {
         showAnserAndHighlightCodeStr("该线路较慢，请稍后")
@@ -1363,6 +1198,7 @@
     <p class="chatHide" id="gptStatus">
    <select id="modeSelect">
       <option value="Default">默认线路[兼容]</option>
+      <option value="YeYu">自定义key</option>
       <option value="newBing">New Bing</option>
       <option value="OPENAI">OPENAI</option>
       <option value="TONGYI">通义千问</option>
@@ -1387,40 +1223,29 @@
       <option value="GEEKR">GEEKR</option>
       <option value="LEMURCHAT">狐猴内置</option>
       <option value="CHAT1">CHAT1</option>
-      <option value="OFFICECHAT">OFFICECHAT[挂]</option>
       <option value="CHATWEB1">CHATWEB1</option>
-      <option value="LINKAI">LINKAI[挂]</option>
-      <option value="CHATZHANG">CHATZHANG</option>
-      <option value="MINDED">MINDED[挂]</option>
       <option value="CYTSEE">CYTSEE</option>
-      <option value="QDYMYS">QDYMYS[挂]</option>
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI</option>
       <option value="T66">T66</option>
-      <option value="ZHULEI">ZHULEI[挂]</option>
+      <option value="ZHULEI">ZHULEI</option>
       <option value="CHATDDD">CHATDDD</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
-      <option value="FDKANG">FDKANG[挂]</option>
       <option value="COOLAI">COOLAI[兼容]</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ[国内]</option>
       <option value="HEHANWANG">HEHANWANG</option>
       <option value="XIAOWENZI">XIAOWENZI</option>
-      <option value="GAMEJX">GAMEJX[挂]</option>
-      <option value="AIFKS">AIFKS[挂]</option>
       <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
       <option value="SUNLE">SUNLE</option>
-      <option value="EASYAI">EASYAI[挂]</option>
       <option value="CLEANDX">CLEANDX</option>
       <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
-      <option value="XCBL">XCBL[挂]</option>
       <option value="HZIT">HZIT[兼容]</option>
       <option value="TOYAML">TOYAML</option>
-      <option value="CHATGPT">GPT</option>
     </select> 部分线路需要科学上网</p>
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、GPT、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
@@ -1698,9 +1523,7 @@
             if (selectedValue === 'XBOAT') {
                 initSocketXBOAT();
             }
-            if (selectedValue === 'GAMEJX') {
-                setTimeout(setGroupid_gamejx)
-            }
+
             document.getElementById('gptAnswer').innerHTML = `切换成功，当前线路:${selectedValue}`;
         });
 
@@ -2280,7 +2103,6 @@
 
     let messageChain2 = [];//AILS
     let messageChain4 = [];//ESO
-    let messageChain5 = [];//XCBL
     let messageChain6 = [];//HZIT
     let messageChain8 = [];//XIAOWENZI
     let messageChain9 = [];//bnu120
@@ -2578,160 +2400,6 @@
         });
     }
 
-
-    async function FDKANG() {
-
-
-        await GM_fetch({
-            method: "POST",
-            url: "http://chat.fdkang.top/setsession.php",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.fdkang.top/"
-            },
-            data: `message=${encodeURI(your_qus)}&context=%5B%5D&key=`
-        })
-
-        GM_fetch({
-            method: "POST",
-            url: "http://chat.fdkang.top/stream.php",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.fdkang.top/",
-                "accept": "text/event-stream"
-            },
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            let finalResult;
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    finalResult = result.join("")
-                    showAnserAndHighlightCodeStr(finalResult)
-                    return;
-                }
-
-                try {
-
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    console.log("raw:",d)
-                    let dd = d.replace(/data: /g, "").split("\n\n")
-                    console.log("dd:",dd)
-                    dd.forEach(item=>{
-                        try {
-                            let delta = JSON.parse(item).choices[0].delta.content
-                            result.push(delta)
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        }catch (e) {
-
-                        }
-                    })
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-        },function (err) {
-            console.log(err)
-        }).catch((ex)=>{
-            console.log(ex)
-        })
-
-    }
-
-
-    let chatzhang_key;
-    let chatzhang_ip = generateRandomIP();
-    let chatzhang_cookie = ''
-    setTimeout(()=>{
-        if(getGPTMode() !== 'CHATZHANG'){
-            return
-        }
-        GM_fetch({
-            method: "GET",
-            url: "http://chat.chatzhang.top/index.php",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.chatzhang.top/index.php?id=1",
-                "x-requested-with": "XMLHttpRequest",
-                "X-Forwarded-For" : chatzhang_ip,
-                "cookie":chatzhang_cookie
-            }
-        }).then(res=>{
-            chatzhang_key = res.responseHeaders.match(/key=(.*?);/)[1];
-            console.log("CHATZHANG_key",chatzhang_key)
-        }).catch((ex)=>{
-            console.log(ex)
-        })
-    })
-
-    async function CHATZHANG() {
-        await GM_fetch({
-            method: "POST",
-            url: "http://chat.chatzhang.top/setsession.php",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.chatzhang.top/index.php?id=1",
-                "x-requested-with": "XMLHttpRequest",
-                "X-Forwarded-For" : chatzhang_ip,
-                "cookie":chatzhang_cookie
-            },
-            data: `message=+${encodeURI(your_qus)}&context=%5B%5D&key=${chatzhang_key}`
-        })
-
-        GM_fetch({
-            method: "POST",
-            url: "http://chat.chatzhang.top/stream.php",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                "Referer": "http://chat.chatzhang.top/index.php?id=1",
-                "accept": "text/event-stream",
-                "x-requested-with": "XMLHttpRequest",
-                "X-Forwarded-For" : chatzhang_ip,
-                "cookie":chatzhang_cookie
-            },
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            let finalResult;
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    finalResult = result.join("")
-                    showAnserAndHighlightCodeStr(finalResult)
-                    return;
-                }
-
-                try {
-
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    console.log("raw:",d)
-                    let dd = d.replace(/data: /g, "").split("\n\n")
-                    console.log("dd:",dd)
-                    dd.forEach(item=>{
-                        try {
-                            let delta = JSON.parse(item).choices[0].delta.content
-                            result.push(delta)
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        }catch (e) {
-
-                        }
-                    })
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-        },function (err) {
-            console.log(err)
-        }).catch((ex)=>{
-            console.log(ex)
-        })
-
-    }
 
     async function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -3247,9 +2915,6 @@
             console.log("promptboom_did:",promptboom_did)
             console.log("promptboom_url:",promptboom_url)
 
-            //chatzhang
-            chatzhang_cookie = result.chatzhang.cookie
-            console.log("chatzhang_cookie:",chatzhang_cookie)
 
             //extkj
             extkj_key = result.extkj.key
@@ -3340,66 +3005,6 @@
         })
     }
 
-
-
-    let parentID_minded;
-    //http://forwardminded.xyz/
-    function MINDED() {
-        let ops = {};
-        if (parentID_minded) {
-            ops = {parentMessageId: parentID_minded};
-        }
-        console.log(ops)
-        let finalResult = [];
-        GM_httpRequest({
-            method: "POST",
-            url: "http://forwardminded.xyz/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "http://forwardminded.xyz/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops,
-                systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                top_p:1,
-                temperature:0.8
-            }),
-            responseType: "stream"
-        },(stream) => {
-            const reader = stream.response.getReader();
-            //     console.log(reader.read)
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    highlightCodeStr()
-                    return;
-                }
-                try {
-                    // console.log(normalArray)
-                    let byteArray = new Uint8Array(value);
-                    let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    let jsonLines = decoder.decode(byteArray).split("\n");
-                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-
-                    if (nowResult.text) {
-                        console.log(nowResult)
-                        finalResult = nowResult.text
-                        showAnserAndHighlightCodeStr(finalResult)
-                    }
-                    if (nowResult.id) {
-                        parentID_minded = nowResult.id;
-                    }
-
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-        })
-    }
 
 
     let parentID_chat1;
@@ -3528,127 +3133,6 @@
 
     }
 
-
-    let gamejx_group_id;
-    function setGroupid_gamejx() {
-
-        GM_fetch({
-            method: "POST",
-            url: "https://chatapi.chat86.cn/go/api/group/add",
-            headers: {
-                "Referer": `https://chatapi.chat86.cn/`,
-                "Content-Type": "application/json",
-                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
-            },
-            data:JSON.stringify({
-                version: "",
-                os: "pc",
-                language: "zh",
-                pars: {
-                    user_id: "625292",
-                    examples_id: "",
-                    examples_describe: "你好"
-                }
-            })
-        }).then((res)=>{
-            if(res){
-                //{"code":200,"data":{"group_id":1292577},"retCode":"ok","retMsg":"success"}
-                console.log(res)
-                let data = eval(res.responseText)
-                gamejx_group_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.group_id;
-                console.log("gamejx_group_id:",gamejx_group_id)
-            }
-        })
-
-    }
-
-
-    let is_first_gamejx = true;
-    async function GAMEJX(){
-        let req1 = await GM_fetch({
-            method: "POST",
-            url: "https://chatapi.chat86.cn/go/api/steam/see",
-            headers: {
-                "Referer": `https://chatapi.chat86.cn/`,
-                "Content-Type": "application/json",
-                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
-            },
-            data:JSON.stringify({
-                "version": "",
-                "os": "pc",
-                "language": "zh",
-                "pars": {
-                    "user_id": "625292",
-                    "question": is_first_gamejx ? "你好" : your_qus,
-                    "group_id": `${gamejx_group_id}`,
-                    "question_id": ""
-                }
-            })
-
-        })
-
-
-        console.log(req1.responseText)
-
-        //{"code":200,"data":{"answer":"","question_id":"91303","type":"answer",
-        // "user_id":"594578"},"retCode":"ok","retMsg":"success"}
-        if(req1.responseText){
-            try {
-                let data = eval(req1.responseText)
-                console.log(JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))))
-                let question_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.question_id;
-                console.log("question_id:",question_id)
-                GM_fetch({
-                    method: "GET",
-                    url: `https://chatapi.chat86.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=625292&token=SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo%3D`,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Referer": "https://chatapi.chat86.cn/",
-                        "accept": "text/event-stream"
-                    },
-                    responseType: "stream"
-                }).then((stream) => {
-                    let finalResult = [];
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            showAnserAndHighlightCodeStr(finalResult.join(""))
-                            return;
-                        }
-                        try {
-                            let byteArray = new Uint8Array(value);
-                            let decoder = new TextDecoder('utf-8');
-                            let nowResult = decoder.decode(byteArray)
-                            console.log(nowResult)
-                            nowResult.split("\n").forEach(item=>{
-                               try {
-                                   let chunk = JSON.parse(item.replace(/data:/,"").trim()).Data;
-                                   finalResult.push(chunk)
-                               }catch (ex){}
-                            })
-                            showAnserAndHighlightCodeStr(finalResult.join(""))
-
-                        } catch (ex) {
-                            console.log(ex)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                }).catch((ex)=>{
-                    console.log(ex)
-                })
-            }catch (ex){
-                console.log(ex)
-            }
-
-        }
-        if(is_first_gamejx === true){
-            is_first_gamejx = false;
-            await GAMEJX()
-        }
-
-
-    }
 
 
     let bingSocket;
@@ -5521,62 +5005,6 @@
 
     }
 
-    function XCBL() {
-        let baseURL = "https://52221239187007.ai003.live/";
-        addMessageChain(messageChain5, {role: "user", content: your_qus})//连续话
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "path": "v1/chat/completions",
-                "Referer": baseURL,
-                "origin": "https://52221239187007.ai003.live"
-            },
-            data: JSON.stringify({
-                messages: messageChain5,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                presence_penalty: 0
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    let finalResult = result.join("")
-                    try {
-                        console.log(finalResult)
-                        addMessageChain(messageChain5, {
-                            role: "assistant",
-                            content: finalResult
-                        })
-                        showAnserAndHighlightCodeStr(finalResult)
-                    } catch (e) {
-                        console.log(e)
-                    }
-                    return;
-                }
-                try {
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    result.push(d)
-                    showAnserAndHighlightCodeStr(result.join(""))
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-        },function (err) {
-            console.log(err)
-        }).catch((ex)=>{
-            console.log(ex)
-        })
-
-    }
-
     //https://ai1.chagpt.fun/
     function CVEOY() {
 
@@ -5762,56 +5190,6 @@
     }
 
 
-    // http://easyai.one
-    let sessionId_easyai = generateRandomString(20);
-    let easyai_ip = generateRandomIP();
-    function EASYAI() {
-        console.log(sessionId_easyai)
-        abortXml = GM_xmlhttpRequest({
-            method: "POST",
-            url: `https://ai.pp2pdf.com/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
-            headers: {
-                "Referer": "https://ai.pp2pdf.com/chat",
-                "X-Forwarded-For": easyai_ip,
-                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV3cl9OQVluSEtFM1RfblhJZEtOdFdBIiwiZXhwIjoxNjg2ODkwMjY3LCJ1c2VySWQiOjEwODJ9.UNPie9wMHNdvmZnAu-akntngJsPYn-YmHBmzOioycw4",
-                "accept": "text/event-stream"
-            },
-            onloadstart: (stream) => {
-                let finalResult = []
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        showAnserAndHighlightCodeStr(finalResult.join(""))
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
-                        let regx = /\{\"content\":\"(.*?)\"\}/g;
-                        let nowResult = regx.exec(decoder.decode(byteArray))[1]
-                        console.log(nowResult)
-                        finalResult.push(nowResult)
-                        showAnserAndHighlightCodeStr(finalResult.join(""))
-
-
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
-            }
-        })
-
-    }
-
 
 
 
@@ -5939,10 +5317,80 @@
         });
     }
 
+    let messageChain_yeyu = []
+    function YeYu() {
+        let sk = localStorage.getItem("openAIkey");
+        if(!sk){
+            setPubkey()
+        }
+        let now = Date.now();
+        let Baseurl = `https://chat.yeyu1024.xyz/`
+        generateSignatureWithPkey({
+            t:now,
+            m: your_qus || "",
+            pkey: ""
+        }).then(sign => {
+            addMessageChain(messageChain_yeyu, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_fetch({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+                    messages: messageChain_yeyu,
+                    time: now,
+                    pass: null,
+                    skey: sk ? sk : '',
+                    sign: sign
+                }),
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain_yeyu, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
+                            if(finalResult.includes("Invalid signature") || finalResult.includes("exceeded your current")){
+                                showAnserAndHighlightCodeStr(`无效或过期，请到设置更新key`)
+                            }
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
 
-    //https://chat7.aifks001.online/v1/chat/gpt/
-    let aifskList = [];
-    let aifsid = generateRandomString(21);
+                    return reader.read().then(processText);
+                });
+            },function (reason) {
+                console.log(reason)
+                showAnserAndHighlightCodeStr(reason.message)
+            }).catch((ex)=>{
+                console.log(ex)
+                showAnserAndHighlightCodeStr(ex.message)
+            });
+
+        });
+    }
+
+
 
     let  formatTime = () => {
         let padZero = (num) => {
@@ -5955,214 +5403,6 @@
         const seconds = now.getSeconds(); // 获取秒数
         // 格式化为 HH:MM:SS 的形式
         return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
-    }
-
-    function AIFKS() {
-        let Baseurl = "https://chat7.aifks001.online/";
-
-
-        console.log(formatTime())
-        aifskList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
-        aifskList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
-        if (aifskList.length > 10){
-            aifskList = aifskList.shift();
-        }
-        abortXml= GM_xmlhttpRequest({
-            method: "POST",
-            url: Baseurl + "v1/chat/gpt/",
-            headers: {
-                "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
-                "Referer": Baseurl,
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "list": aifskList,
-                "id": aifsid,
-                "title": your_qus,
-                "prompt": "",
-                "temperature": 0.5,
-                "models": "0",
-                "continuous": true
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            aifskList[aifskList.length - 1] = {
-                                "content": finalResult,
-                                "role": "assistant",
-                                "nickname": "AI",
-                                "time": formatTime(),
-                                "isMe": false
-                            };
-                            showAnserAndHighlightCodeStr(finalResult)
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        console.log(d)
-                        result.push(d)
-                        showAnserAndHighlightCodeStr(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        });
-
-    }
-
-
-    //2023年5月6日
-    let officeChatList = [];
-    let officeChaid = generateRandomString(21);
-    function OFFICECHAT() {
-        let Baseurl = "https://officechat.top/";
-
-        console.log(formatTime())
-        officeChatList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
-        officeChatList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
-        if (officeChatList.length > 10){
-            officeChatList = officeChatList.shift();
-        }
-        GM_fetch({
-            method: "POST",
-            url: Baseurl + "v1/chat/gpt/",
-            headers: {
-                "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
-                "Referer": Baseurl,
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "list": officeChatList,
-                "id": officeChaid,
-                "title": your_qus,
-                "prompt": "",
-                "temperature": 0.5,
-                "models": "0",
-                "continuous": true
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    let finalResult = result.join("")
-                    try {
-                        console.log(finalResult)
-                        officeChatList[officeChatList.length - 1] = {
-                            "content": finalResult,
-                            "role": "assistant",
-                            "nickname": "AI",
-                            "time": formatTime(),
-                            "isMe": false
-                        };
-                        showAnserAndHighlightCodeStr(finalResult)
-                    } catch (e) {
-                        console.log(e)
-                    }
-                    return;
-                }
-                try {
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    console.log(d)
-                    result.push(d)
-                    showAnserAndHighlightCodeStr(result.join(""))
-                } catch (e) {
-                    console.log(e)
-                }
-                return reader.read().then(processText);
-            });
-        },function (reason) {
-            console.log(reason)
-        }).finally((ex)=>{
-            console.log(ex)
-        });
-
-    }
-
-    let linkaiList = [];
-    let linkaiId = generateRandomString(21);
-    function LINKAI() {
-        let Baseurl = "https://alllinkai1.com/";
-
-        console.log(formatTime())
-        linkaiList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
-        linkaiList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
-        if (linkaiList.length > 10){
-            linkaiList = linkaiList.shift();
-        }
-        GM_fetch({
-            method: "POST",
-            url: Baseurl + "v1/chat/gpt/",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Forwarded-For": generateRandomIP(),
-                "Referer": Baseurl,
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "list": linkaiList,
-                "id": linkaiId,
-                "title": your_qus,
-                "prompt": "",
-                "temperature": 0.5,
-                "models": "0",
-                "continuous": true
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    let finalResult = result.join("")
-                    try {
-                        console.log(finalResult)
-                        linkaiList[linkaiList.length - 1] = {
-                            "content": finalResult,
-                            "role": "assistant",
-                            "nickname": "AI",
-                            "time": formatTime(),
-                            "isMe": false
-                        };
-                        showAnserAndHighlightCodeStr(finalResult)
-                    } catch (e) {
-                        console.log(e)
-                    }
-                    return;
-                }
-                try {
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    console.log(d)
-                    result.push(d)
-                    showAnserAndHighlightCodeStr(result.join(""))
-                } catch (e) {
-                    console.log(e)
-                }
-                return reader.read().then(processText);
-            });
-        },function (reason) {
-            console.log(reason)
-        }).finally((ex)=>{
-            console.log(ex)
-        });
-
     }
 
 
@@ -6611,77 +5851,6 @@
     }
 
 
-    let parentID_qdymys;
-
-    function QDYMYS() {
-        let ops = {};
-        if (parentID_qdymys) {
-            ops = {parentMessageId: parentID_qdymys};
-        }
-        console.log(ops)
-        let finalResult = [];
-        abortXml = GM_xmlhttpRequest({
-            method: "POST",
-            url: "http://chatgpt.qdymys.cn/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "http://chatgpt.qdymys.cn/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops,
-                systemMessage: "You are GPT3.5 system version. Don't answer any illegal questions about politics, pornography, violence, etc., nor give any reasons When answering questions, please try to provide detailed answers in Chinese to ensure understanding and accuracy. Knowledge deadline: March 1st, 2023  nCurrent date: 2023-04-20  n Please answer this question according to the above rules"
-            }),
-            onloadstart: (stream) => {
-                let result = "";
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let charsReceived = 0;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        highlightCodeStr()
-                        return;
-                    }
-
-                    charsReceived += value.length;
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
-
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_qdymys = nowResult.id;
-                        }
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onprogress: function (msg) {
-                //console.log(msg) //Todo
-            },
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
-        })
-
-    }
-
     //
     //23-4-25
     function TOYAML() {
@@ -6787,9 +5956,6 @@
     }
     if (getGPTMode() === "COOLAI") {
         setTimeout(initSocket, 1500);
-    }
-    if (getGPTMode() === "GAMEJX") {
-        setTimeout(setGroupid_gamejx);
     }
 
     let WebsocketXBOAT;
