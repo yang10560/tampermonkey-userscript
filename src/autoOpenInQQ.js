@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         QQ链接自动打开
 // @namespace    http://yeyu1024.xyz
-// @version      1.5
+// @version      1.6
 // @description  PC上使用QQ、QQ邮箱点开链接，浏览器提示非QQ官方链接页面时自动打开对应的链接。另外支持贴吧
 // @author       夜雨
 // @match        *://c.pc.qq.com/*
@@ -26,7 +26,8 @@
     let linkUrl = ""
 
     if(location.href.includes('c.pc.qq.com')){
-        linkUrl = getParams('pfurl');
+        linkUrl = getParams('pfurl') || getParams('url');
+        //debugger;
         if(!linkUrl){
             linkUrl = document.querySelector("div.safety-url").innerText;
         }
