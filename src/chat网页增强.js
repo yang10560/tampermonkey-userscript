@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.55
+// @version      4.56
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://blog.yeyusmile.top/gpt.html*
@@ -63,6 +63,7 @@
 // @connect   cytsee.com
 // @connect   yeyu1024.xyz
 // @connect   gptgo.ai
+// @connect   mixerbox.com
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -73,7 +74,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.55"
+    let JSVer = "v4.56"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2292,6 +2293,7 @@
             const reader = stream.response.getReader();
             reader.read().then(function processText({done, value}) {
                 if (done) {
+                    GM_saveHistory(your_qus,result.join(""))
                     return;
                 }
                 try {
@@ -2307,6 +2309,78 @@
                         }
                     })
                     GM_fillBotResponse(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },reason => {
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+
+    }
+
+
+    async function MixerBox(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        GM_fetch({
+            method: "POST",
+            url: `https://chatai.mixerbox.com/api/chat/stream`,
+            headers: {
+                "Referer": "https://chatai.mixerbox.com/chat",
+                "origin": "https://chatai.mixerbox.com",
+                "accept": "*/*",
+                "content-type": "application/json",
+                "user-agent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0"
+            },
+            data:JSON.stringify({
+                "prompt": [
+                    {
+                        "role": "user",
+                        "content": your_qus
+                    }
+                ],
+                "lang": "zh",
+                "maxToken": 512,
+                "model": 3.5,
+                "webVersion": "0.2.0",
+                "userAgent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0",
+                "isExtension": false,
+                "isSummarize": false,
+                "initialMessages": null,
+                "baseUrl": ""
+            }),
+            responseType:"stream"
+        }).then((stream)=>{
+            let result = []
+            GM_simulateBotResponse("...")
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    GM_saveHistory(your_qus,result.join("").
+                    replace(/\[space\]/gi," ").replace(/\[NEWLINE\]/gi,"\n"))
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.warn(d)
+                    d.split("\n").forEach(item=>{
+                        try {
+                            if(item.startsWith("data")){
+                                result.push(item.replace(/data: /gi,""))
+                            }
+                        }catch (ex){
+
+                        }
+                    })
+                    GM_fillBotResponse(result.join("").
+                    replace(/\[space\]/gi," ").replace(/\[NEWLINE\]/gi,"\n"))
 
                 } catch (e) {
                     console.log(e)
@@ -3148,6 +3222,10 @@
                     console.log("ChatGO")
                     ChatGO(qus);
                     break;
+             case "MixerBox":
+                    console.log("MixerBox")
+                    MixerBox(qus);
+                    break;
                 default:
                     kill(qus);
             }
@@ -3165,6 +3243,7 @@
  <option value="LEMURCHAT">狐猴内置</option>
  <option value="HAOHUOLA">HAOHUOLA</option>
  <option value="ChatGO">ChatGO</option>
+ <option value="MixerBox">MixerBox</option>
  <option value="CYTSEE">CYTSEE</option>
  <option value="QDYMYS">QDYMYS</option>
  <option value="wgk">wgk</option>

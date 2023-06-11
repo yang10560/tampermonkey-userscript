@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.5
+// @version      2.7.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -138,6 +138,7 @@
 // @connect   chatglm.cn
 // @connect   gptgo.ai
 // @connect   chat.360.cn
+// @connect   mixerbox.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -151,7 +152,7 @@
     'use strict';
 
 
-    let JSver = '2.7.5';
+    let JSver = '2.7.6';
 
 
     function getGPTMode() {
@@ -1115,6 +1116,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "MixerBox") {
+            console.log("MixerBox")
+            MixerBox()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1209,6 +1216,7 @@
       <option value="Zhinao360">360智脑</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="ChatGO">ChatGO</option>
+      <option value="MixerBox">MixerBox</option>
       <option value="XBOAT">XBOAT[兼容]</option>
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI[科学]</option>
@@ -4386,6 +4394,73 @@
                         }
                     })
                     showAnserAndHighlightCodeStr(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },reason => {
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+
+    }
+
+
+    async function MixerBox() {
+        GM_fetch({
+            method: "POST",
+            url: `https://chatai.mixerbox.com/api/chat/stream`,
+            headers: {
+                "Referer": "https://chatai.mixerbox.com/chat",
+                "origin": "https://chatai.mixerbox.com",
+                "accept": "*/*",
+                "content-type": "application/json",
+                "user-agent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0"
+            },
+            data:JSON.stringify({
+                "prompt": [
+                    {
+                        "role": "user",
+                        "content": your_qus
+                    }
+                ],
+                "lang": "zh",
+                "maxToken": 512,
+                "model": 3.5,
+                "webVersion": "0.2.0",
+                "userAgent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0",
+                "isExtension": false,
+                "isSummarize": false,
+                "initialMessages": null,
+                "baseUrl": ""
+            }),
+            responseType:"stream"
+        }).then((stream)=>{
+            let result = []
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.warn(d)
+                    d.split("\n").forEach(item=>{
+                        try {
+                            if(item.startsWith("data")){
+                                result.push(item.replace(/data: /gi,""))
+                            }
+                        }catch (ex){
+
+                        }
+                    })
+                    showAnserAndHighlightCodeStr(result.join("").
+                    replace(/\[space\]/gi," ").replace(/\[NEWLINE\]/gi,"\n"))
 
                 } catch (e) {
                     console.log(e)
