@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.7
+// @version      2.7.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -153,7 +153,7 @@
     'use strict';
 
 
-    let JSver = '2.7.7';
+    let JSver = '2.7.8';
 
 
     function getGPTMode() {
@@ -1835,6 +1835,17 @@
         let converter = new showdown.Converter(); //增加拓展table
         converter.setOption('tables',
             true); //启用表格选项。从showdown 1.2.0版开始，表支持已作为可选功能移入核心拓展，showdown.table.min.js扩展已被弃用
+        converter.setOption('openLinksInNewWindow',true) //链接在新窗口打开
+        converter.setOption('strikethrough', true) //删除线
+        converter.setOption('emoji', true) //开启emoji
+
+        /***
+         * original: John Gruber 规范中的原始 Markdown 风格
+         * vanilla：对决基础风味（v1.3.1 起）
+         * github: GitHub 风格的 Markdown，或 GFM
+         */
+        showdown.setFlavor('github');
+
         return converter.makeHtml(rawData);
     }
 
