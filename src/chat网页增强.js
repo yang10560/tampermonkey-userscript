@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.56
+// @version      4.57
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
-// @match        *://blog.yeyusmile.top/gpt.html*
 // @match        *://yeyu1024.xyz/gpt.html*
 // @match        *://yeyu1024.xyz/gptlight.html*
 // @grant      GM_xmlhttpRequest
@@ -74,7 +73,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.56"
+    let JSVer = "v4.57"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -440,6 +439,7 @@
     }
 
     let ails_clientv;
+    let ails_signKey = 'WI,2rU#_r:r~aF4aJ36[.Z(/8Rv93Rf';
     function AILS(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
@@ -451,7 +451,7 @@
         }
 
         let now = vtime(new Date().getTime());
-        const pk = `OVbi[TPN{S#)c{36%9?g;usl)CL:${your_qus.length}`;//查看js的generateSignature函数中的key
+        const pk = `${ails_signKey}:${your_qus.length}`;//查看js的generateSignature函数中的key
         let Baseurl = "https://api.caipacity.com/"
         generateSignatureWithPkey({
             t: now,
@@ -1491,23 +1491,17 @@
                         addMessageChain(message_extkj, {role: 'assistant', content: finalResult}, 10)
                         return;
                     }
-
-                    const chunk = value;
-                    result += chunk;
                     try {
                         // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
+                        let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
+                        console.warn(decoder.decode(byteArray))
                         let nowResult = decoder.decode(byteArray)
 
                         if (nowResult) {
                             let jsonLine = nowResult.split("\n");
                             let jsonObj = JSON.parse(jsonLine[jsonLine.length - 1]);
                             finalResult = jsonObj.text;
-                            if(jsonObj.id){
-                                parentID_extkj = jsonObj.id;
-                            }
                             GM_fillBotResponse(finalResult)
                         }
 
@@ -1525,82 +1519,7 @@
         })
     }
 
-    //https://supremes.pro/
 
-    //4-25失效
-    function SUPREMES(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let now = Date.now();
-        let Baseurl = "https://supremes.pro/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: {}.PUBLIC_SECRET_KEY
-        }).then(sign => {
-            addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
-
-                    messages: messageChain8,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: ""
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    GM_simulateBotResponse("请稍后...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                console.log(finalResult)
-                                addMessageChain(messageChain8, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })
-                                GM_fillBotResponseAndSave(your_qus, finalResult);
-                            } catch (e) {
-                                console.log(e)
-                            }
-                            return;
-                        }
-                        try {
-                            let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                            result.push(d)
-                            GM_fillBotResponse(result.join(""))
-                        } catch (e) {
-                            console.log(e)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg)
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            });
-
-        });
-    }
 
     var parentID_nbai;
 
@@ -2983,7 +2902,9 @@
             }
             //AILS
             ails_clientv = result.ails.clientv
+            ails_signKey = result.ails.signKey
             console.log("ails_clientv:",ails_clientv)
+            console.log("ails_signKey:",ails_signKey)
 
             //eso
             eso_access_code = result.eso.accesscode

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.8
+// @version      2.7.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -153,7 +153,7 @@
     'use strict';
 
 
-    let JSver = '2.7.8';
+    let JSver = '2.7.9';
 
 
     function getGPTMode() {
@@ -2166,6 +2166,7 @@
 
 
     let ails_clientv;
+    let ails_signKey = 'WI,2rU#_r:r~aF4aJ36[.Z(/8Rv93Rf';
     function AILS() {
 
         let vtime = function converTimestamp(t) {
@@ -2176,7 +2177,7 @@
         }
 
         let now = vtime(new Date().getTime());
-        const pk = `OVbi[TPN{S#)c{36%9?g;usl)CL:${your_qus.length}`;//查看js的generateSignature函数中的key
+        const pk = `${ails_signKey}:${your_qus.length}`;//查看js的generateSignature函数中的key
         let Baseurl = "https://api.caipacity.com/"
         generateSignatureWithPkey({
             t: now,
@@ -2929,7 +2930,9 @@
 
             //AILS
             ails_clientv = result.ails.clientv
+            ails_signKey = result.ails.signKey
             console.log("ails_clientv:",ails_clientv)
+            console.log("ails_signKey:",ails_signKey)
 
             //eso
             eso_access_code = result.eso.accesscode
