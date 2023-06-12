@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.6
+// @version      2.7.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -139,6 +139,7 @@
 // @connect   gptgo.ai
 // @connect   chat.360.cn
 // @connect   mixerbox.com
+// @connect   ohmygpt.com
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -152,7 +153,7 @@
     'use strict';
 
 
-    let JSver = '2.7.6';
+    let JSver = '2.7.7';
 
 
     function getGPTMode() {
@@ -1122,6 +1123,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "OhMyGPT") {
+            console.log("OhMyGPT")
+            OhMyGPT()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1231,6 +1238,7 @@
       <option value="GEEKR">GEEKR</option>
       <option value="LEMURCHAT">狐猴内置</option>
       <option value="CHAT1">CHAT1</option>
+      <option value="OhMyGPT">OhMyGPT</option>
       <option value="CHATWEB1">CHATWEB1</option>
       <option value="CYTSEE">CYTSEE</option>
       <option value="WGK">WGK</option>
@@ -1255,7 +1263,7 @@
       <option value="HZIT">HZIT[兼容]</option>
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
-	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、GPT、BNU120线路</p>
+	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、自定义、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
 	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
 	<p class="chatHide" id="autoTipsP" style="margin: 10px"><a id="autoTips"  href="javascript:void(0)"><svg width="1em" height="1em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -2959,7 +2967,7 @@
         let finalResult = [];
         GM_httpRequest({
             method: "POST",
-            url: "https://wetabchat.haohuola.com/api/chat/conversation",
+            url: "https://wetabchat.haohuola.com/api/chat/conversation-v2",
             headers: {
                 "I-App":"hitab",
                 "I-Branch":"zh",
@@ -2968,7 +2976,7 @@
                 "I-Version":"1.0.43",
                 "Content-Type": "application/json;charset=UTF-8",
                 "Authorization": `Bearer ${tk_haohuola}`,
-                "Referer": "https://wetabchat.haohuola.com/api/chat/conversation",
+                "Referer": "https://wetabchat.haohuola.com/api/chat/conversation-v2",
                 "origin": "chrome-extension://aikflfpejipbpjdlfabpgclhblkpaafo",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
             },
@@ -4461,6 +4469,63 @@
                     })
                     showAnserAndHighlightCodeStr(result.join("").
                     replace(/\[space\]/gi," ").replace(/\[NEWLINE\]/gi,"\n"))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },reason => {
+            console.log(reason)
+        }).catch((ex)=>{
+            console.log(ex)
+        })
+
+
+    }
+
+
+    let ohmygpt_session_id = '53793dce-7805-45ac-a226-7bc62bc4aef4';
+    let ohmygpt_messageChain = [{"role":"system","content":"You are ChatGPT, a large language model trained by OpenAI."}]
+    async function OhMyGPT() {
+        addMessageChain(ohmygpt_messageChain, {"role":"user","content":your_qus},10)
+        const params = new URLSearchParams();
+        let sendData = {
+            session_id: ohmygpt_session_id,
+            content: JSON.stringify(ohmygpt_messageChain),
+            max_context_length: '5',
+            params: '{"model":"gpt-3.5-turbo","temperature":1,"max_tokens":2048,"presence_penalty":0,"frequency_penalty":0,"max_context_length":5,"voiceShortName":"zh-CN-XiaoxiaoNeural","rate":1,"pitch":1}'
+        }
+        for (const key in sendData) {
+            params.append(key, sendData[key]);
+        }
+        const encodedData = params.toString();
+
+        GM_fetch({
+            method: "POST",
+            url: `https://www.ohmygpt.com/api/v1/ai/chatgpt/chat`,
+            headers: {
+                "Referer": "https://www.ohmygpt.com/",
+                "authorization": "Bearer eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ0OTciLCJlbWFpbCI6InhpYW95YW5nNjY4OEBmb3htYWlsLmNvbSIsInB1cnBvc2UiOiJ3ZWIiLCJpYXQiOjE2ODY0NTMzODIsImV4cCI6MTY4NzY2Mjk4Mn0.AWywkwDRd6d3h4imvhG1SUn0eg3Rb_-MAqZkfoAQAsUJlznBkYP_mIHU2YWpJxS_XbdXt2TwZ5PIT9PgcnQu3Y4WAMWoBxJxFb0TIjJ5hmLp7aTeR6Hctp0-o3E87FrlEShvBOWoOXQPuAmIeNHaMv2nwtw-MShyn8J_RJ9lt2SCBWT6",
+                "origin": "https://www.ohmygpt.com",
+                "accept": "text/event-stream",
+                "content-type": 'application/x-www-form-urlencoded',
+            },
+            data: encodedData,
+            responseType:"stream"
+        }).then((stream)=>{
+            let result = []
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.warn(d)
+                    result.push(d)
+                    showAnserAndHighlightCodeStr(result.join(""))
 
                 } catch (e) {
                     console.log(e)
