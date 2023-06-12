@@ -2967,7 +2967,7 @@
         let finalResult = [];
         GM_httpRequest({
             method: "POST",
-            url: "https://wetabchat.haohuola.com/api/chat/conversation-v2",
+            url: "https://wetabchat.haohuola.com/api/chat/conversation",
             headers: {
                 "I-App":"hitab",
                 "I-Branch":"zh",
@@ -2976,7 +2976,7 @@
                 "I-Version":"1.0.43",
                 "Content-Type": "application/json;charset=UTF-8",
                 "Authorization": `Bearer ${tk_haohuola}`,
-                "Referer": "https://wetabchat.haohuola.com/api/chat/conversation-v2",
+                "Referer": "https://wetabchat.haohuola.com/api/chat/conversation",
                 "origin": "chrome-extension://aikflfpejipbpjdlfabpgclhblkpaafo",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
             },
