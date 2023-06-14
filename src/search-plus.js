@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.0
+// @version      2.8.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -154,7 +154,7 @@
     'use strict';
 
 
-    let JSver = '2.8.0';
+    let JSver = '2.8.1';
 
 
     function getGPTMode() {
@@ -562,6 +562,7 @@
     let webSessionId
     let autoClick = localStorage.getItem("autoClick")
     let autoTips = localStorage.getItem("autoTips")? localStorage.getItem("autoTips") :'on';
+    let isFullScreen = false;
     let your_qus;
     let abortXml;
     let regx = /search.*?\.cf/g;
@@ -802,6 +803,18 @@
     
     pre .btn-pre-copy:hover{
         cursor: pointer;
+    }
+    
+    .fullScreen{
+        z-index: 999 !important;
+        position: fixed  !important;
+        top: 0  !important;
+        left: 0  !important;
+        right: 0  !important;
+        width: 100%  !important;
+        height: 100%  !important;
+        bottom: 0  !important;
+        overflow-y: scroll !important;
     }
     
     
@@ -1310,6 +1323,13 @@
        <svg width="13" height="13" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path fill="#909399" d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm6.7 15.3c-.2.2-.5.2-.7 0L12 12.7l-6.1 4.6c-.2.2-.5.2-.7 0-.2-.2-.2-.5 0-.7l6.1-4.6-6.1-4.6c-.2-.2-.2-.5 0-.7s.5-.2.7 0L12 11.3l6.1-4.6c.2-.2.5-.2.7 0 .2.2.2.5 0 .7l-6.1 4.6 6.1 4.6c.2.2.2.5 0 .7z"></path>
     </svg>中断</a>
+    
+    <a id="fullScreen" style="cursor: pointer" href="javascript:void(0)">
+       <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="4" width="18" height="14" rx="2" ry="2" stroke="black" fill="#909399"/>
+      <line x1="3" y1="8" x2="21" y2="8" stroke="black" stroke-width="2"/>
+      <line x1="3" y1="16" x2="21" y2="16" stroke="black" stroke-width="2"/>
+    </svg>全屏</a>
 
 </span>`;
             resolve(divE)
@@ -1515,6 +1535,22 @@
                }
            }catch(ex){
                console.error("中断失败：",ex)
+           }
+        })
+
+        //全屏
+        document.getElementById('fullScreen').addEventListener('click', (ev) => {
+           try{
+               if(!isFullScreen){
+                   document.getElementById("gptDiv").classList.add("fullScreen")
+                   isFullScreen = true;
+               }else {
+                   document.getElementById("gptDiv").classList.remove("fullScreen")
+                   isFullScreen = false;
+               }
+
+           }catch(ex){
+               console.error("ex：",ex)
            }
         })
 
