@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.7.9
+// @version      2.8.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -140,6 +140,7 @@
 // @connect   chat.360.cn
 // @connect   mixerbox.com
 // @connect   ohmygpt.com
+// @connect   muspimerol.site
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -153,7 +154,7 @@
     'use strict';
 
 
-    let JSver = '2.7.9';
+    let JSver = '2.8.0';
 
 
     function getGPTMode() {
@@ -1093,9 +1094,9 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "XIAMI") {
-            console.log("XIAMI")
-            XIAMI()
+        }else if (GPTMODE && GPTMODE === "ANSEAPP") {
+            console.log("ANSEAPP")
+            ANSEAPP()
 
             return;
             //end if
@@ -1230,7 +1231,7 @@
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="HAOHUOLA">HAOHUOLA</option>
       <option value="BNU120">BNU120</option>
-      <option value="XIAMI">XIAMI</option>
+      <option value="ANSEAPP">ANSEAPP</option>
       <option value="DOG2">DOG2</option>
       <option value="PIZZA">PIZZA[兼容]</option>
       <option value="AITIANHU">AITIANHU</option>
@@ -2924,9 +2925,7 @@
             } catch (e) {
                 console.error(e)
             }
-            //XIAMi
-            xiami_token = `sk-${result.xiami.token}`
-            console.log("xiami_token:",xiami_token)
+
 
             //AILS
             ails_clientv = result.ails.clientv
@@ -5812,30 +5811,26 @@
 
     }
 
-    //https://ct2.xiami.monster/
 
-    let messageChain_xiami = [];
-    let xiami_token;
-    async function XIAMI() {
-        //https://api.wer.plus/api/min?key&t=你好
+    let messageChain_anseapp = [];
+    async function ANSEAPP() {
 
-        let baseURL = "https://ai.fakeopen.com/";
-        addMessageChain(messageChain_xiami, {role: "user", content: your_qus})//连续话
+        let baseURL = "https://forward.openai.muspimerol.site/";
+        addMessageChain(messageChain_anseapp, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
             url: baseURL + "v1/chat/completions",
             headers: {
                 "Content-Type": "application/json",
-                "authorization": `Bearer ${xiami_token}`,
-                "Referer": 'https://ct2.xiami.monster/'
+                "authorization": `Bearer undefined`,
+                "Referer": 'https://anse.app.bnu120.space/'
             },
             data: JSON.stringify({
-                messages: messageChain_xiami,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                max_tokens: 2000,
-                presence_penalty: 0
+                "model": "gpt-3.5-turbo",
+                "messages": messageChain_anseapp,
+                "temperature": 0.7,
+                "max_tokens": 4096,
+                "stream": true
             }),
             responseType: "stream"
         }).then((stream) => {
@@ -5845,7 +5840,10 @@
             reader.read().then(function processText({done, value}) {
                 if (done) {
                     finalResult = result.join("")
-                    showAnserAndHighlightCodeStr(finalResult.replace(/tdchat/gi, ""))
+                    addMessageChain(messageChain_anseapp,
+                        {role: "assistant", content: finalResult.replace(/muspimerol/gi, "")}
+                    )//连续话
+                    showAnserAndHighlightCodeStr(finalResult.replace(/muspimerol/gi, ""))
                     return;
                 }
 
@@ -5858,7 +5856,7 @@
                         try {
                             let delta = JSON.parse(item).choices[0].delta.content
                             result.push(delta)
-                            showAnserAndHighlightCodeStr(result.join("").replace(/tdchat/gi, ""))
+                            showAnserAndHighlightCodeStr(result.join("").replace(/muspimerol/gi, ""))
                         } catch (e) {
 
                         }
