@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         百度文心一言去水印
 // @namespace    http://tampermonkey.net/
-// @version      2.3
+// @version      2.4
 // @description  去文心一言水印、去星火水印。去天工水印。去chatGLM水印。去通义千问水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。
 // @author       夜雨
 // @match        *://yiyan.baidu.com/*
@@ -38,7 +38,7 @@
 
         if (location.href.includes("360.cn")){
             divMask = document.querySelector(".water-mark")? document.querySelector(".water-mark") :divMask
-            divMask.remove()
+            divMask && divMask.remove()
         }
 
         if (divMask) {
@@ -47,7 +47,8 @@
             hideMask.innerHTML = `div[style^="pointer-events"]{height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`//overflow: hidden; or transform-origin: top left;
             if (location.href.includes("csdn.net")) hideMask.innerHTML = `#mask {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
             if (location.href.includes("xinghuo")) hideMask.innerHTML = `#watermark-wrapper div {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
-            if (location.href.includes("qianwen")) hideMask.innerHTML = `div[style*='pointer-events'] {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
+            if (location.href.includes("qianwen") || location.href.includes("360.cn"))
+                hideMask.innerHTML = `div[style*='pointer-events'] {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
             if (location.href.includes("tongyi")) hideMask.innerHTML = `.digit_watermark,div[style^="pointer-events"] {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
             if (location.href.includes("chatglm")) hideMask.innerHTML = `#wm_div_id {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
 
