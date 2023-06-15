@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.1
+// @version      2.8.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -48,7 +48,7 @@
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
-// @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.6/katex.min.js
 // @connect    api.forchange.cn
 // @connect    gpt008.com
 // @connect    chatforai.cc
@@ -154,7 +154,7 @@
     'use strict';
 
 
-    let JSver = '2.8.1';
+    let JSver = '2.8.2';
 
 
     function getGPTMode() {
@@ -193,7 +193,7 @@
         }
         if(!document.getElementById("katex-link")){
             $("head").append($(
-                '<link id="katex-link" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.4/katex.css" rel="stylesheet">'
+                '<link id="katex-link" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.6/katex.css" rel="stylesheet">'
             ));
         }
 
@@ -817,6 +817,25 @@
         overflow-y: scroll !important;
     }
     
+    .bgtransparent{
+        background-color: transparent !important;;
+    }
+    
+    .floating-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
+    }
+
+    .floating-button a {
+      text-decoration: none;
+      color: inherit;
+    }
     
     `)
                 break;
@@ -1279,23 +1298,29 @@
     </select> 部分线路需要科学上网</p>
 	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、自定义、BNU120线路</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
-	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑,可能不生效</p>
-	<p class="chatHide" id="autoTipsP" style="margin: 10px"><a id="autoTips"  href="javascript:void(0)"><svg width="1em" height="1em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path fill="currentColor" d="M12 2 L12 6 Q12 8 14 9 Q15 10 15 12 Q15 14 14 15 L10 15 Q9 15 9 14 Q9 13 10 13 Q11 13 11 12 L11 9"></path>
-      <circle cx="12" cy="19" r="2" fill="currentColor"></circle></svg>自动提示开关</a>:用于设置是否开启提示</p>
+	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑/白天</p>
+	<p class="chatHide" id="autoTipsP" style="margin: 10px"><a id="autoTips"  href="javascript:void(0)"><svg withd="15" height="15" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M12,2c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9S16.97,2,12,2z M12,18c-3.86,0-7-3.14-7-7s3.14-7,7-7s7,3.14,7,7S15.86,18,12,18z" fill="#fff" stroke="#000"></path>
+      <circle cx="12" cy="12" r="5" fill="#ffd700"></circle>
+      <path d="M12,17v1a1,1,0,0,1-2,0V17" stroke="#000" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M13,14.5h-2a.5.5,0,0,1-.5-.5v-1a.5.5,0,0,1,.5-.5h2a.5.5,0,0,1,.5.5v1A.5.5,0,0,1,13,14.5Z" fill="#fff" stroke="#000"></path>
+    </svg>自动提示开关</a>:用于设置是否开启提示</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
 	    <hr>
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
-        <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>
-        <a target="_blank"  href="https://qianwen.aliyun.com/">通义</a>
-        <a target="_blank"  href="https://www.tiangong.cn/">天工</a>
-        <a target="_blank"  href="https://xinghuo.xfyun.cn/">星火</a>
-        <a target="_blank"  href="https://chat.openai.com/chat">OpenAI</a>
-        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">必应</a>
+        <a target="_blank"  href="https://yiyan.baidu.com/">文心一言</a>
+        <a target="_blank"  href="https://qianwen.aliyun.com/">通义千问</a>
+        <a target="_blank"  href="https://www.tiangong.cn/">天工AI</a>
+        <a target="_blank"  href="https://xinghuo.xfyun.cn/">讯飞星火</a>
         <hr>
-        <a target="_blank"  href="https://bard.google.com/">Bard</a>
+        <a target="_blank"  href="https://chat.openai.com/chat">Open AI</a>
+        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">必应</a>
+        <a target="_blank"  href="https://bard.google.com/">Google Bard</a>
         <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>
         <a target="_blank"  href="https://chatglm.cn/chat">ChatGLM</a>
+        <hr>
+        <a target="_blank"  href="https://chat.360.cn/">360智脑</a>
+        <a target="_blank"  href="https://poe.com/">Poe</a>
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新</a>
         <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">爱发电</a>
         <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">领红包</a>
@@ -1330,6 +1355,12 @@
       <line x1="3" y1="8" x2="21" y2="8" stroke="black" stroke-width="2"/>
       <line x1="3" y1="16" x2="21" y2="16" stroke="black" stroke-width="2"/>
     </svg>全屏</a>
+    
+    <a id="hideGptDiv" style="cursor: pointer" href="javascript:void(0)">
+       <svg width="13" height="13" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" fill="#909399"></circle>
+      <circle cx="12" cy="12" r="5" fill="#fff"></circle>
+    </svg>隐藏</a>
 
 </span>`;
             resolve(divE)
@@ -1549,6 +1580,19 @@
                    isFullScreen = false;
                }
 
+           }catch(ex){
+               console.error("ex：",ex)
+           }
+        })
+        //隐藏
+        document.getElementById('hideGptDiv').addEventListener('click', (ev) => {
+           try{
+               $("body").append(`<div class="floating-button"><a href="javascript:void(0)">显示</a></div>`)
+               $(".floating-button a").click(function() {
+                   $("#gptDiv").show();
+                   $(".floating-button").remove()
+               });
+               $("#gptDiv").hide();
            }catch(ex){
                console.error("ex：",ex)
            }
