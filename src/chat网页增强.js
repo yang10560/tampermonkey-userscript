@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.57
+// @version      4.58
 // @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -22,6 +22,7 @@
 // @connect    wobcw.com
 // @connect    chat.68686.ltd
 // @connect    t66.ltd
+// @connect    t-chat.cn
 // @connect    ai.ls
 // @connect    chat.ohtoai.com
 // @connect   extkj.cn
@@ -39,7 +40,7 @@
 // @connect   www.phind.com
 // @connect   easyai.one
 // @connect   chat2.wuguokai.cn
-// @connect   vipcleandx.xyz
+// @connect   a0.chat
 // @connect   gpt.esojourn.org
 // @connect   free-api.cveoy.top
 // @connect   chatcleand.xyz
@@ -73,7 +74,7 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.57"
+    let JSVer = "v4.58"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1103,16 +1104,26 @@
         let finalResult = [];
          GM_fetch({
             method: "POST",
-            url: "https://t66.ltd/api/chat-process",
+            url: "https://api.t-chat.cn:1500/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
                 "Referer": "https://t66.ltd/",
+                "origin": "https://t66.ltd",
               //  "X-Forwarded-For": generateRandomIP(),
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                prompt: your_qus,
-                options: ops
+                "prompt": your_qus,
+                "options": ops,
+                "config": {
+                    "temperature": 0.5,
+                    "topP": 1,
+                    "apiType": 0,
+                    "model": "gpt-3.5-turbo",
+                    "maxContextCount": 5,
+                    "online": false
+                },
+                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
             }),
             responseType: "stream"
         }).then((stream) => {
@@ -1229,13 +1240,18 @@
 
                         let byteArray = new Uint8Array(chunk);
                         let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
+                        let d = decoder.decode(byteArray);
+
+                        let dd = d.split("\n");
+                        console.log(dd[dd.length - 1])
+                        let nowResult = JSON.parse(dd[dd.length - 1])
 
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
-                            GM_fillBotResponse(finalResult)
+                            GM_fillBotResponse(finalResult.replace(/hello-ai.anzz.top/gi,"")
+                                .replace(/hello-ai/gi,"")
+                                .replace(/xxxily/gi,""))
                         }
                         if (nowResult.id) {
                             parentID_anzz = nowResult.id;
@@ -1893,10 +1909,10 @@
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
 
-        let Baseurl = "http://vipcleandx.xyz/";
+        let Baseurl = "https://c3.a0.chat/";
         console.log(formatTime())
-        cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
-        cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        cleandxList.push({"content": your_qus, "role": "user", "nickname": "我", "time": `${formattedDate()} ${formatTime()}`, "isMe": true})
+        cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"小助手","time": `${formattedDate()} ${formatTime()}`,"isMe":false})
         console.log(cleandxList)
         console.log(cleandxid)
         if (cleandxList.length > 6){
@@ -1917,6 +1933,7 @@
                 "title": your_qus,
                 "prompt": "",
                 "temperature": 0.5,
+                "time": `${formattedDate()} ${formatTime()}`,
                 "models": "0",
                 "continuous": true
             }),
@@ -1932,8 +1949,8 @@
                             cleandxList[cleandxList.length - 1] = {
                                 "content": finalResult,
                                 "role": "assistant",
-                                "nickname": "AI",
-                                "time": formatTime(),
+                                "nickname": "小助手",
+                                "time": `${formattedDate()} ${formatTime()}`,
                                 "isMe": false
                             };
                             GM_fillBotResponseAndSave(your_qus, finalResult);
@@ -2388,6 +2405,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
+                "token": "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",
                 "origin": "https://20220508.6bbs.cn",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
@@ -2415,6 +2433,7 @@
                     headers: {
                         "Content-Type": "application/json",
                         "accept": "*/*",
+                        "token": "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",
                         "origin": "https://20220508.6bbs.cn",
                         "path": "v1/chat/completions",
                         "Referer": baseURL
@@ -2565,129 +2584,7 @@
     }
 
 
-    var gamejx_group_id;
-    function setGroupid_gamejx() {
-        GM_fetch({
-            method: "POST",
-            url: "https://chatapi.chat86.cn/go/api/group/add",
-            headers: {
-                "Referer": `https://chat.gamejx.cn/`,
-                "Content-Type": "application/json",
-                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
-            },
-            data:JSON.stringify({
-                version: "",
-                os: "pc",
-                language: "zh",
-                pars: {
-                    user_id: "625292",
-                    examples_id: "",
-                    examples_describe: "你好"
-                }
-            })
-        }).then((res)=>{
-            if(res){
-                //{"code":200,"data":{"group_id":1292577},"retCode":"ok","retMsg":"success"}
-                console.log(res)
-                let data = eval(res.responseText)
-                gamejx_group_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.group_id;
-                console.log("gamejx_group_id:",gamejx_group_id)
-            }
-        })
 
-    }
-
-    setTimeout(setGroupid_gamejx)
-
-    let is_first_gamejx = true;
-    async function GAMEJX(question){
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let req1 = await GM_fetch({
-            method: "POST",
-            url: "https://chatapi.chat86.cn/go/api/steam/see",
-            headers: {
-                "Referer": `https://chat.gamejx.cn/`,
-                "Content-Type": "application/json",
-                "Authorization": "SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo="
-            },
-            data:JSON.stringify({
-                "version": "",
-                "os": "pc",
-                "language": "zh",
-                "pars": {
-                    "user_id": "625292",
-                    "question": is_first_gamejx ? "你好" : your_qus,
-                    "group_id": `${gamejx_group_id}`,
-                    "question_id": ""
-                }
-            })
-
-        })
-
-
-        console.log(req1.responseText)
-
-        //{"code":200,"data":{"answer":"","question_id":"91303","type":"answer",
-        // "user_id":"625292"},"retCode":"ok","retMsg":"success"}
-        if(req1.responseText){
-            try {
-                let data = eval(req1.responseText)
-                console.log(JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))))
-                let question_id = JSON.parse(AES_CBC.decrypt(data.slice(16), data.slice(0, 16))).data.question_id;
-                console.log("question_id:",question_id)
-                GM_fetch({
-                    method: "GET",
-                    url: `https://chatapi.chat86.cn/go/api/event/see?question_id=${question_id}&group_id=${gamejx_group_id}&user_id=625292&token=SyLdSbZqeF9ine9qvVlDI+Q0v+456kVjd/5BRZTP5Vo%3D`,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Referer": "https://chat.gamejx.cn/",
-                        "accept": "text/event-stream"
-                    },
-                    responseType: "stream"
-                }).then((stream) => {
-                    let finalResult = [];
-                    GM_simulateBotResponse("...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            GM_fillBotResponseAndSave(finalResult.join(""))
-                            return;
-                        }
-                        try {
-                            let byteArray = new Uint8Array(value);
-                            let decoder = new TextDecoder('utf-8');
-                            let nowResult = decoder.decode(byteArray)
-                            console.log(nowResult)
-                            nowResult.split("\n").forEach(item=>{
-                                try {
-                                    let chunk = JSON.parse(item.replace(/data:/,"").trim()).Data;
-                                    finalResult.push(chunk)
-                                }catch (ex){}
-                            })
-                            GM_fillBotResponse(finalResult.join(""))
-
-                        } catch (ex) {
-                            console.log(ex)
-                        }
-
-                        return reader.read().then(processText);
-                    });
-                }).catch((ex)=>{
-                    console.log(ex)
-                })
-            }catch (ex){
-                console.log(ex)
-            }
-
-        }
-        if(is_first_gamejx === true){
-            is_first_gamejx = false;
-            await GAMEJX()
-        }
-
-
-    }
 
     var parentID_thebai;
 
@@ -3111,10 +3008,6 @@
                     console.log("YQCLOUD")
                     YQCLOUD(qus);
                     break;
-                case "GAMEJX":
-                    console.log("GAMEJX")
-                    GAMEJX(qus);
-                    break;
                 case "PRTBOOM":
                     console.log("PRTBOOM")
                     PRTBOOM(qus);
@@ -3156,7 +3049,6 @@
         document.getElementById("modeSelect").innerHTML = `<option selected value="Defalut">默认</option>
  <option value="PIZZA">PIZZA</option>
  <option value="YQCLOUD">YQCLOUD</option>
- <option value="GAMEJX">GAMEJX</option>
  <option value="THEBAI">THEBAI</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>

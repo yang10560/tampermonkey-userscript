@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.2
+// @version      2.8.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -74,6 +74,7 @@
 // @connect   wobcw.com
 // @connect   chat.68686.ltd
 // @connect   t66.ltd
+// @connect   t-chat.cn
 // @connect   www.aitianhu.com
 // @connect   free.anzz.top
 // @connect   chat.ohtoai.com
@@ -81,7 +82,7 @@
 // @connect   supremes.pro
 // @connect   bnu120.space
 // @connect   chat7.aifks001.online
-// @connect   vipcleandx.xyz
+// @connect   a0.chat
 // @connect   ai.usesless.com
 // @connect   www.ftcl.store
 // @connect   sunls.me
@@ -154,7 +155,7 @@
     'use strict';
 
 
-    let JSver = '2.8.2';
+    let JSver = '2.8.3';
 
 
     function getGPTMode() {
@@ -1278,14 +1279,14 @@
       <option value="NBAI">NBAI</option>
       <option value="T66">T66</option>
       <option value="ZHULEI">ZHULEI</option>
-      <option value="CHATDDD">CHATDDD</option>
+      <option value="CHATDDD">CHATDDD[x]</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
-      <option value="COOLAI">COOLAI[兼容]</option>
+      <option value="COOLAI">COOLAI[x]</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ[国内]</option>
-      <option value="HEHANWANG">HEHANWANG</option>
+      <option value="HEHANWANG">HEHANWANG[x]</option>
       <option value="XIAOWENZI">XIAOWENZI</option>
       <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
@@ -1989,16 +1990,26 @@
         let finalResult = [];
         GM_fetch({
             method: "POST",
-            url: "https://t66.ltd/api/chat-process",
+            url: "https://api.t-chat.cn:1500/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
                 "Referer": "https://t66.ltd/",
+                "origin": "https://t66.ltd",
                // "X-Forwarded-For": generateRandomIP(),
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                prompt: your_qus,
-                options: ops
+                "prompt": your_qus,
+                "options": ops,
+                "config": {
+                    "temperature": 0.5,
+                    "topP": 1,
+                    "apiType": 0,
+                    "model": "gpt-3.5-turbo",
+                    "maxContextCount": 5,
+                    "online": false
+                },
+                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
             }),
             responseType: "stream"
         }).then((stream) => {
@@ -2013,8 +2024,8 @@
                         // console.log(normalArray)
                         let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
                         let d = decoder.decode(byteArray);
+                        console.log(d)
                         /*let dd = d.split("-^&^-");
                         if(dd.length === 2){
                             let nowResult = JSON.parse(dd[0])
@@ -2072,16 +2083,19 @@
         let finalResult = [];
        GM_fetch({
             method: "POST",
-            url: "https://b3bot1.skybyte.me/api/chat-process",
+            url: "https://b6bot1.skybyte.me/api/chat-process",//https://bots.skybyte.me/
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://b3bot1.skybyte.me/",
-                "origin": "https://b3bot1.skybyte.me",
+                "Referer": "https://b6bot1.skybyte.me/",
+                "origin": "https://b6bot1.skybyte.me",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                prompt: your_qus,
-                options: ops
+                "prompt": your_qus,
+                "options": ops,
+                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                "temperature": 0.8,
+                "top_p": 1
             }),
             responseType: "stream"
         }).then((stream) => {
@@ -2089,15 +2103,17 @@
                 //     console.log(reader.read)
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        highlightCodeStr()
                         return;
                     }
                     try {
                         // console.log(normalArray)
                         let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
+                        let d = decoder.decode(byteArray);
 
+                        let dd = d.split("\n");
+                        console.log(dd[dd.length - 1])
+                        let nowResult = JSON.parse(dd[dd.length - 1])
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
@@ -2106,6 +2122,7 @@
                         if (nowResult.id) {
                             parentID_chatWeb1 = nowResult.id;
                         }
+
 
                     } catch (e) {
                     }
@@ -2514,6 +2531,7 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    //fix 2023年6月15日
    async function HZIT() {
 
         let baseURL = "https://20220508.6bbs.cn/";
@@ -2524,6 +2542,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "accept": "*/*",
+                "token": "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",
                 "origin": "https://20220508.6bbs.cn",
                 "path": "v1/chat/completions",
                 "Referer": baseURL
@@ -2550,6 +2569,7 @@
                    headers: {
                        "Content-Type": "application/json",
                        "accept": "*/*",
+                       "token": "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",
                        "origin": "https://20220508.6bbs.cn",
                        "path": "v1/chat/completions",
                        "Referer": baseURL
@@ -3042,6 +3062,12 @@
             //pizaa
             pizzaSecret = result.pizza.secret
             console.log("pizzaSecret:",pizzaSecret)
+
+            //xiaowenzi
+            xwz_token = result.xiaowenzi.token
+            xwz_url = result.xiaowenzi.url
+            console.log("xwz_token:",xwz_token)
+            console.log("xwz_url:",xwz_url)
 
         } else {
             console.error(rr)
@@ -4254,7 +4280,7 @@
                 console.log('invite_Token获取失败，请再次刷新')
             }
 
-        } else {
+        } else if(getGPTMode() === 'ChatGLM') {
             chatgml_token =  await GM_getValue("chatgml_token")
             console.log("chatgml_token:", chatgml_token)
         }
@@ -5010,7 +5036,6 @@
                 let finalResult;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        highlightCodeStr()
                         return;
                     }
 
@@ -5020,17 +5045,24 @@
 
                         let byteArray = new Uint8Array(chunk);
                         let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
 
+                        let d = decoder.decode(byteArray);
+
+                        let dd = d.split("\n");
+                        console.log(dd[dd.length - 1])
+                        let nowResult = JSON.parse(dd[dd.length - 1])
                         if (nowResult.text) {
                             console.log(nowResult)
                             finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult.replace(/hello-ai.anzz.top/gi,""))
+                            showAnserAndHighlightCodeStr(finalResult.replace(/hello-ai.anzz.top/gi,"")
+                                .replace(/hello-ai/gi,"")
+                                .replace(/xxxily/gi,""))
                         }
                         if (nowResult.id) {
                             parentID_anzz = nowResult.id;
                         }
+
+
 
                     } catch (e) {
                     }
@@ -5356,9 +5388,11 @@
     }
 
 
-    //5.27 update https://gpt.lovebaby.today/
+    //6.15 fix update https://gpt.lovebaby.today/
+    let xwz_token = 'ak-oneperfect520'
+    let xwz_url = 'https://fasd131fssoi7896agou79ip6.lovebaby.today/'
     function XIAOWENZI() {
-        let baseURL = "https://fasdsgdfsg97986agagyk656.lovebaby.today/";
+        let baseURL = xwz_url;
         addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
@@ -5366,8 +5400,10 @@
             headers: {
                 "Content-Type": "application/json",
                 "accept": "text/event-stream",
-                "origin": "https://fasdsgdfsg97986agagyk656.lovebaby.today/",
-                "Referer": baseURL
+                "origin": "https://fasdsgdfsg97986agagyk656.lovebaby.today",
+                "Referer": baseURL,
+                "authorization": `Bearer ${xwz_token}`,
+                "x-requested-with": "XMLHttpRequest"
             },
             data: JSON.stringify({
                 messages: messageChain8,
@@ -5640,15 +5676,14 @@
 
 
 
-    //https://vipcleandx.xyz/
     let cleandxid = generateRandomString(21);
     let cleandxList = [];
     function CLEANDX() {
-        let Baseurl = "https://vipcleandx.xyz/";
+        let Baseurl = "https://c3.a0.chat/";
 
         console.log(formatTime())
-        cleandxList.push({"content": your_qus, "role": "user", "nickname": "", "time": formatTime(), "isMe": true})
-        cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"AI","time": formatTime(),"isMe":false})
+        cleandxList.push({"content": your_qus, "role": "user", "nickname": "我", "time": `${formattedDate()} ${formatTime()}`, "isMe": true})
+        cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"小助手","time": `${formattedDate()} ${formatTime()}`,"isMe":false})
         console.log(cleandxList)
         console.log(cleandxid)
         if (cleandxList.length > 6){
@@ -5670,6 +5705,7 @@
                 "prompt": "",
                 "temperature": 0.5,
                 "models": "0",
+                "time": `${formattedDate()} ${formatTime()}`,
                 "continuous": true
             }),
             onloadstart: (stream) => {
@@ -5683,8 +5719,8 @@
                             cleandxList[cleandxList.length - 1] = {
                                 "content": finalResult,
                                 "role": "assistant",
-                                "nickname": "AI",
-                                "time": formatTime(),
+                                "nickname": "小助手",
+                                "time": `${formattedDate()} ${formatTime()}`,
                                 "isMe": false
                             };
                             showAnserAndHighlightCodeStr(finalResult)
