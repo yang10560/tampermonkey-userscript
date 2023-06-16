@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.3
+// @version      2.8.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -155,7 +155,7 @@
     'use strict';
 
 
-    let JSver = '2.8.3';
+    let JSver = '2.8.4';
 
 
     function getGPTMode() {
@@ -1533,8 +1533,26 @@
                return;
            }
            if(ans){
-               let speakText = encodeURIComponent(ans.innerText);
-               speakAudio = new Audio(`https://fanyi.sogou.com/reventondc/synthesis?text=${speakText}&speed=1&lang=zh-CHS&from=translateweb&speaker=5`);
+              // let speakText = encodeURIComponent(ans.innerText);
+               let speakText = ans.innerText;
+
+               //new sogou api
+
+               let f = JSON.stringify({
+                   curTime: Date.now(),
+                   rate: "0.8",
+                   spokenDialect: "zh-CHS",
+                   text: speakText
+               })
+
+              let sParam =  CryptoJS.AES.encrypt(f.replace(/^"|"$/g, ""), CryptoJS.enc.Utf8.parse("76350b1840ff9832eb6244ac6d444366"), {
+                   "iv": CryptoJS.enc.Utf8.parse(atob("AAAAAAAAAAAAAAAAAAAAAA==") || "76350b1840ff9832eb6244ac6d444366"),
+                   "mode": CryptoJS.mode.CBC,
+                   "pad": CryptoJS.pad.Pkcs7
+               }).toString();
+
+
+               speakAudio = new Audio(`https://fanyi.sogou.com/openapi/external/getWebTTS?S-AppId=102356845&S-Param=${encodeURIComponent(sParam)}`);
                speakAudio.play()
                isPlayend = false;
                speakAudio.addEventListener("ended",function() {
