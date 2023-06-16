@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.4
+// @version      2.8.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -155,7 +155,7 @@
     'use strict';
 
 
-    let JSver = '2.8.4';
+    let JSver = '2.8.5';
 
 
     function getGPTMode() {
@@ -1091,9 +1091,15 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "OPENAI") {
-            console.log("OPENAI")
-            OPENAI()
+        }else if (GPTMODE && GPTMODE === "OPENAI" || GPTMODE === "OPENAI-3.5") {
+            console.log("OPENAI-3.5")
+            OPENAI("text-davinci-002-render-sha")
+
+            return;
+            //end if
+        }else if (GPTMODE && GPTMODE === "OPENAI-4.0") {
+            console.log("OPENAI-4.0")
+            OPENAI("gpt-4")
 
             return;
             //end if
@@ -1248,7 +1254,8 @@
       <option value="Default">默认线路[兼容]</option>
       <option value="YeYu">自定义key</option>
       <option value="newBing">New Bing</option>
-      <option value="OPENAI">OPENAI</option>
+      <option value="OPENAI-3.5">OPENAI-3.5</option>
+      <option value="OPENAI-4.0">OPENAI-4.0</option>
       <option value="TONGYI">通义千问</option>
       <option value="YIYAN">百度文心</option>
       <option value="SPARK">讯飞星火</option>
@@ -1433,7 +1440,16 @@
                 let fontSize = your_qus.substring("/font-size:".length)
                 document.querySelector("#gptDiv").style.fontSize = fontSize;
                 localStorage.setItem("gpt_font_size",fontSize)
-                showAnserAndHighlightCodeStr(`设置成功:${fontSize}`)
+                showAnserAndHighlightCodeStr(`字体设置成功:${fontSize}`)
+                return
+            }
+
+            //禁用历史记录
+            if(your_qus.startsWith("/history_disable:")){
+                let dis = your_qus.substring("/history_disable:".length)
+                history_disable = (dis === 'true' ? true : false);
+                localStorage.setItem("history_disable", dis)
+                showAnserAndHighlightCodeStr(`禁用历史记录设置成功:${history_disable}`)
                 return
             }
 
@@ -3462,20 +3478,25 @@
         })
         return uuid
     }
-    //OPENAI 2023年5月12
-   let messageChain_openai = [];
-   async function OPENAI(){
-       addMessageChain(messageChain_openai,{
-           "role": "user",
-           "id": uuidv4(),
-           "content": {
-               "content_type": "text",
-               "parts": [
-                   your_qus
-               ]
-           }
-       },20)
-       showAnserAndHighlightCodeStr("此线路为OpenAI官网线路，使用前确定有访问权限且登录账号：[OPENAI官网](https://chat.openai.com/)")
+
+    //OPENAI fix 2023年6月16
+   //let messageChain_openai = [];
+   let openai_conversation_id ;
+   let openai_parent_message_id ;
+   let history_disable = false ;
+   async function OPENAI(GPTModel){
+       // addMessageChain(messageChain_openai,{
+       //     "role": "user",
+       //     "id": uuidv4(),
+       //     "content": {
+       //         "content_type": "text",
+       //         "parts": [
+       //             your_qus
+       //         ]
+       //     },
+       //     "metadata":{}
+       // },20)
+       showAnserAndHighlightCodeStr(`此线路为OpenAI官网线路：${GPTModel}，使用前确定有访问权限且登录账号：[OPENAI官网](https://chat.openai.com/)`)
        let req1 = await GM_fetch({
            method: "GET",
            url: "https://chat.openai.com/api/auth/session"
@@ -3493,17 +3514,47 @@
            showAnserAndHighlightCodeStr("验证出错,请确认有权限OPENAI官网[OPENAI](https://chat.openai.com/)")
        }
 
-       let sendData = JSON.stringify({
+       let paramObj = {
            action: "next",
-           messages: messageChain_openai,
-           model: "text-davinci-002-render",
-           parent_message_id: uuidv4(),
-           max_tokens: 4000
-       })
+           messages: [{
+               "author": {
+                    "role": "user"
+                },
+               "id": uuidv4(),
+               "content": {
+                   "content_type": "text",
+                   "parts": [
+                       your_qus
+                   ]
+               },
+               "metadata":{}
+           }],
+           model: GPTModel,
+           parent_message_id: openai_parent_message_id ? openai_parent_message_id : uuidv4(),
+           // max_tokens: 4000,
+           arkose_token: null,
+           history_and_training_disabled: history_disable,
+           timezone_offset_min: new Date().getTimezoneOffset()
+       }
+       if(openai_conversation_id){
+           try {
+               Reflect.set(paramObj,"conversation_id", openai_conversation_id)
+           }catch (ex) {
+               console.error(ex)
+           }
+       }
+       console.log(paramObj)
+
+       let sendData = JSON.stringify(paramObj)
        GM_fetch({
            method: 'POST',
            url: 'https://chat.openai.com/backend-api/conversation',
-           headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + accessToken},
+           headers: {
+               'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + accessToken,
+                'origin': 'https://chat.openai.com',
+                'Referer': 'https://chat.openai.com/',
+           },
            responseType: "stream",
            data: sendData
        }).then((stream)=> {
@@ -3512,16 +3563,17 @@
            reader.read().then(function processText({done, value}) {
                if (done) {
                    console.log("===done==")
-                   addMessageChain(messageChain_openai,{
-                       "role": "assistant",
-                       "id": uuidv4(),
-                       "content": {
-                           "content_type": "text",
-                           "parts": [
-                               answer
-                           ]
-                       }
-                   }, 20)
+                   // addMessageChain(messageChain_openai,{
+                   //     "role": "assistant",
+                   //     "id": uuidv4(),
+                   //     "content": {
+                   //         "content_type": "text",
+                   //         "parts": [
+                   //             answer
+                   //         ]
+                   //     },
+                   //     "metadata":{}
+                   // }, 20)
                    return
                }
                try{
@@ -3539,6 +3591,11 @@
                    if (responseItem.startsWith('data: {')) {
                        answer = JSON.parse(responseItem.slice(6)).message.content.parts[0]
                        showAnserAndHighlightCodeStr(answer)
+                       if(JSON.parse(responseItem.slice(6)).conversation_id){
+                           openai_conversation_id = JSON.parse(responseItem.slice(6)).conversation_id
+                           openai_parent_message_id = JSON.parse(responseItem.slice(6)).message.id
+                       }
+
                    } else if (responseItem.startsWith('data: [DONE]')) {
 
                        // return
@@ -6291,6 +6348,13 @@
         if(localStorage.getItem('gpt_font_size')){
             document.querySelector("#gptDiv").style.fontSize = localStorage.getItem('gpt_font_size');
         }
+
+        //禁用历史
+        if(localStorage.getItem('history_disable')){
+            let dis = localStorage.getItem('history_disable');
+            history_disable = (dis === 'true' ? true : false);
+        }
+
     },1000)
 
 
