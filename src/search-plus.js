@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.7
+// @version      2.8.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -156,7 +156,7 @@
     'use strict';
 
 
-    let JSver = '2.8.7';
+    let JSver = '2.8.8';
 
 
     function getGPTMode() {
@@ -220,7 +220,7 @@
 
     try {
         console.log(
-            `%c【chatGPT tools Plus】已加载`,
+            `%c【chatGPT tools Plus】${JSver} 已加载`,
             'color: yellow;font-size: large;font-weight: bold;background-color: darkblue;'
         );
         const menu_updateChat_id = GM_registerMenuCommand("更新Chat", function (event) {
@@ -228,7 +228,7 @@
         }, "updateChat");
         const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
             Toast.info("交流群7：817298021\n交流群6：792365186\n交流群4：745163513\n交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992",
-                "QQ交流群", {timeout: 10000} )
+                "QQ交流群", {timeOut: 15000} )
         }, "groupNum");
 
         const menu_pubkey_id = GM_registerMenuCommand("更新key", function (event) {
@@ -1258,7 +1258,7 @@
                 data: JSON.stringify({
                     messages: messageChain1,
                     tokensLength: your_qus.length + 10,
-                    model: "gpt-3.5-turbo"
+                    model: "gpt-3.5-turbo-16k"
                 }),
                 responseType: "text",
             }).then(function (res) {
@@ -1297,7 +1297,7 @@
             let pClass = document.createAttribute('class');
             pClass.value = 'textClass';
             pE.setAttributeNode(pClass)
-            let pText = document.createTextNode("chatGPT tools Plus 已启动");
+            let pText = document.createTextNode("");
             pE.appendChild(pText);
             divE.appendChild(pE);
             divE.classList.add("gpt-container");
@@ -2121,7 +2121,7 @@
                     "temperature": 0.5,
                     "topP": 1,
                     "apiType": 0,
-                    "model": "gpt-3.5-turbo",
+                    "model": "gpt-3.5-turbo-16k",
                     "maxContextCount": 5,
                     "online": false
                 },
@@ -2133,7 +2133,7 @@
                 //     console.log(reader.read)
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        highlightCodeStr()
+
                         return;
                     }
                     try {
@@ -2142,7 +2142,7 @@
                         let decoder = new TextDecoder('utf-8');
                         let d = decoder.decode(byteArray);
                         console.log(d)
-                        /*let dd = d.split("-^&^-");
+                        let dd = d.split("-^&^-");
                         if(dd.length === 2){
                             let nowResult = JSON.parse(dd[0])
                             if (nowResult.text) {
@@ -2155,9 +2155,9 @@
                         }else{
                             finalResult.push(d)
                             showAnserAndHighlightCodeStr(finalResult.join(""))
-                        }*/
+                        }
 
-                        let jsonLines = d.split("\n");
+                        /*let jsonLines = d.split("\n");
                         let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
 
                         if (nowResult.text) {
@@ -2167,7 +2167,7 @@
                         }
                         if (nowResult.id) {
                             parentID_68686 = nowResult.id;
-                        }
+                        }*/
 
 
 
@@ -2306,7 +2306,7 @@
             let finalResult;
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
+
                     return;
                 }
 
@@ -2416,7 +2416,7 @@
                     "accept": "application/json"
                 },
                 data: JSON.stringify({
-                    model: "gpt-3.5-turbo",
+                    model: "gpt-3.5-turbo-16k",
                     messages: messageChain2,
                     stream: true,
                     t: `${now}`,
@@ -2858,7 +2858,7 @@
             let result = [];
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
+
                     return;
                 }
                 try {
@@ -2928,7 +2928,7 @@
             let result = [];
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
+
                     addMessageChain(messageChain_cytsee, {
                         role: "assistant",
                         content: result.join("")
@@ -3232,7 +3232,7 @@
             //     console.log(reader.read)
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
+
                     return;
                 }
                 try {
@@ -3361,7 +3361,7 @@
             let finalResult = "";
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
+
                     return;
                 }
 
@@ -4549,7 +4549,6 @@
 
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    showAnserAndHighlightCodeStr()
                     return
                 }
                 let responseItem = new TextDecoder("utf-8").decode(value)
@@ -4798,7 +4797,7 @@
             session_id: ohmygpt_session_id,
             content: JSON.stringify(ohmygpt_messageChain),
             max_context_length: '5',
-            params: '{"model":"gpt-3.5-turbo","temperature":1,"max_tokens":2048,"presence_penalty":0,"frequency_penalty":0,"max_context_length":5,"voiceShortName":"zh-CN-XiaoxiaoNeural","rate":1,"pitch":1}'
+            params: '{"model":"gpt-3.5-turbo-16k","temperature":1,"max_tokens":2048,"presence_penalty":0,"frequency_penalty":0,"max_context_length":5,"voiceShortName":"zh-CN-XiaoxiaoNeural","rate":1,"pitch":1}'
         }
         for (const key in sendData) {
             params.append(key, sendData[key]);
@@ -5345,7 +5344,7 @@
             data: JSON.stringify({
                 messages: messageChain7,
                 model: {
-                    "id": "gpt-3.5-turbo",
+                    "id": "gpt-3.5-turbo-16k",
                     "name": "GPT-3.5",
                     "maxLength": 12000,
                     "tokenLimit": 4000
@@ -5411,7 +5410,7 @@
             data: JSON.stringify({
                 messages: messageChain4,
                 stream: true,
-                model: "gpt-3.5-turbo",
+                model: "gpt-3.5-turbo-16k",
                 temperature: 1,
                 max_tokens: 2000,
                 presence_penalty: 0
@@ -5750,7 +5749,7 @@
                             })
                             showAnserAndHighlightCodeStr(finalResult)
                             if(finalResult.includes("Invalid signature") || finalResult.includes("exceeded your current")){
-                                showAnserAndHighlightCodeStr(`请到设置更新key`)
+                                Toast.info(`请到设置更新key`)
                             }
                         } catch (e) {
                             console.log(e)
@@ -5824,7 +5823,7 @@
                             })
                             showAnserAndHighlightCodeStr(finalResult)
                             if(finalResult.includes("Invalid signature") || finalResult.includes("exceeded your current")){
-                                showAnserAndHighlightCodeStr(`无效或过期，请到设置更新key`)
+                                Toast.error(`无效或过期，请到设置更新key`)
                             }
                         } catch (e) {
                             console.log(e)
@@ -5986,7 +5985,7 @@
                 let finalResult;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        highlightCodeStr()
+
                         return;
                     }
 
@@ -6139,7 +6138,7 @@
                 "Referer": 'https://anse.app.bnu120.space/'
             },
             data: JSON.stringify({
-                "model": "gpt-3.5-turbo",
+                "model": "gpt-3.5-turbo-16k",
                 "messages": messageChain_anseapp,
                 "temperature": 0.7,
                 "max_tokens": 4096,
