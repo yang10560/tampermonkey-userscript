@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.58
-// @description  网页增强，网址已经更新 https://yeyu1024.xyz/gpt.html
+// @version      4.59
+// @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
 // @match        *://yeyu1024.xyz/gptlight.html*
@@ -74,7 +74,8 @@
 (function () {
     'use strict';
     console.log("======AI增强=====")
-    let JSVer = "v4.58"
+
+    let JSVer = "v4.59"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -100,6 +101,33 @@
     function GM_handleUserInput(InputType){
         handleUserInput(InputType)
     }
+
+    //toastr 封装  ----start----
+    const Toast = {
+
+        warn: function(msg, title, options) {
+            try {
+                toastr.warning(msg, title, options)
+            }catch (e) {}
+        },
+        info: function(msg, title, options) {
+            try {
+                toastr.info(msg, title, options)
+            }catch (e) {}
+        },
+        success: function(msg, title, options) {
+            try {
+                toastr.success(msg, title, options)
+            }catch (e) {}
+        },
+        error: function(msg, title, options) {
+            try {
+                toastr.error(msg, title, options)
+            }catch (e) {}
+        },
+    };
+    //toastr 封装  ----end----
+
 
 
     //封装GM_xmlhttpRequest ---start---
@@ -422,7 +450,7 @@
 
             responseType: "application/json;charset=UTF-8",
             onerror: function (err) {
-                GM_simulateBotResponse(`<div>some err happends,errinfo :<br>${err.messages}</div>`)
+                Toast.error(`some err happends,errinfo : ${err.messages}`)
             }
         });
     }
@@ -1080,7 +1108,7 @@
                     responseType: "stream",
                     onerror: function (err) {
                         console.log(err)
-                        GM_fillBotResponse("erro:", err)
+                        Toast.error("未知错误!" + err.message)
                     }
                 })
             }//end onload
@@ -1266,7 +1294,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                GM_simulateBotResponse("erro:", err)
+                Toast.error("未知错误!" + err.message)
             }
         })
 
@@ -1331,7 +1359,7 @@
     }
 
     function getAIgcKey() {
-        alert("此功能是更新接口2的key")
+        Toast.info("此功能是普通接口的key")
 
 
         GM_xmlhttpRequest({
@@ -1346,14 +1374,14 @@
                 let resp = response.responseText;
                 let gckey = JSON.parse(resp).data;
                 if (!gckey) {
-                    alert("更新失败")
+                    Toast.error("更新失败")
                     localStorage.removeItem("useKeyTime")
                     return
                 }
                 console.log("gckey:" + gckey);
                 localStorage.setItem("useKeyTime", 0)
                 localStorage.setItem("aigcfunkey", gckey)
-                alert("更新成功：" + gckey)
+                Toast.success("更新成功：" + gckey)
             }
         });
     }
@@ -1840,7 +1868,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                GM_simulateBotResponse("erro:", err)
+                Toast.error("未知错误!" + err.message)
             }
         })
 
@@ -1895,7 +1923,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                GM_simulateBotResponse("erro:", err)
+                Toast.error("未知错误!" + err.message)
             }
         })
 
@@ -2462,13 +2490,13 @@
                     break;
                 }else {
                     console.log(res)
-                    GM_fillBotResponse('访问失败了')
+                    Toast.error('访问失败了')
                 }
             }
 
         } else {
             console.log(res)
-            GM_simulateBotResponse('访问失败了')
+            Toast.error('访问失败了')
         }
 
     }
@@ -2517,7 +2545,7 @@
                 }
 
             } else {
-                GM_simulateBotResponse('访问失败了');
+                Toast.error('访问失败了');
             }
         },reason => {
             console.log(reason)
@@ -3106,5 +3134,5 @@
     }, 1500)
 
 
-    // Your code here...
+    Toast.success(`插件已经成功加载,版本: ${JSVer}`);
 })();
