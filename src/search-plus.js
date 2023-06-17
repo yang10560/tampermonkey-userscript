@@ -227,11 +227,12 @@
             GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
         }, "updateChat");
         const menu_groupNum_id = GM_registerMenuCommand("交流群", function (event) {
-            alert("交流群7：817298021\n交流群6：792365186\n交流群4：745163513\n交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992")
+            Toast.info("交流群7：817298021\n交流群6：792365186\n交流群4：745163513\n交流群3:177193765\n交流群2:734403992\n交流群1:710808464\n交流总群：249733992",
+                "QQ交流群", {timeout: 10000} )
         }, "groupNum");
 
         const menu_pubkey_id = GM_registerMenuCommand("更新key", function (event) {
-            alert("正在更新...")
+            Toast.info("正在更新...")
             setPubkey();
         }, "PUBKEY");
 
@@ -899,7 +900,7 @@
     `)
                 break;
             default:
-                alert("参数没设定")
+                Toast.error("参数没设定")
         }
 
     }
@@ -5607,7 +5608,7 @@
                     let finalResult = result.join("")
                     try {
                         console.log(finalResult)
-                        addMessageChain(messageChain5, {
+                        addMessageChain(messageChain8, {
                             role: "assistant",
                             content: finalResult
                         })
