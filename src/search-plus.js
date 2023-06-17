@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.9
+// @version      2.9.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -156,7 +156,7 @@
     'use strict';
 
 
-    let JSver = '2.8.9';
+    let JSver = '2.9.0';
 
 
     function getGPTMode() {
@@ -810,7 +810,27 @@
         border: 1px solid #c4c7ce;
         border-radius: 10px;
         margin: 3px;
-        margin-left: -1px;
+        text-align: center;
+        color: RGB(193,73,55);
+        -webkit-appearance: none;
+    }
+    
+    #modeSelect::-webkit-scrollbar {
+      width: 8px; /* 滚动条宽度 */
+    }
+    
+    #modeSelect::-webkit-scrollbar-thumb {
+      background-color: #888; /* 滚动条颜色 */
+      border-radius: 4px; /* 滚动条圆角 */
+    }
+    
+    #modeSelect::-webkit-scrollbar-thumb:hover {
+      background-color: #555; /* 滚动条悬停时颜色 */
+    }
+    
+    #modeSelect::-webkit-scrollbar-track {
+      background-color: #f1f1f1; /* 滚动条背景色 */
+      border-radius: 4px; /* 滚动条背景圆角 */
     }
     
     .chatSetting{
