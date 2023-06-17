@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.8.6
+// @version      2.8.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -49,6 +49,7 @@
 // @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.6/katex.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
 // @connect    api.forchange.cn
 // @connect    gpt008.com
 // @connect    chatforai.cc
@@ -155,7 +156,7 @@
     'use strict';
 
 
-    let JSver = '2.8.6';
+    let JSver = '2.8.7';
 
 
     function getGPTMode() {
@@ -205,6 +206,13 @@
             ));
         }
 
+        //toastr-css
+        if(!document.getElementById("toastr-css")){
+            $("head").append($(
+                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
+            ));
+        }
+
     }
     setTimeout(addHeadCss)
     setInterval(addHeadCss,5000)
@@ -215,10 +223,6 @@
             `%c【chatGPT tools Plus】已加载`,
             'color: yellow;font-size: large;font-weight: bold;background-color: darkblue;'
         );
-        //禁用console 未转义警告
-        hljs.configure({
-            ignoreUnescapedHTML: true
-        })
         const menu_updateChat_id = GM_registerMenuCommand("更新Chat", function (event) {
             GM_openInTab("https://greasyfork.org/zh-CN/scripts/459997")
         }, "updateChat");
@@ -230,9 +234,62 @@
             alert("正在更新...")
             setPubkey();
         }, "PUBKEY");
-    } catch (e) {
-        console.log(e)
+
+        //禁用console 未转义警告
+        hljs.configure({
+            ignoreUnescapedHTML: true
+        })
+
+        //toastr配置
+        toastr.options = {
+            // "closeButton": false,
+            // "debug": false,
+            // "newestOnTop": false,
+            // "progressBar": false,
+            "positionClass": "toast-top-right", // 提示框位置，这里填类名
+            // "preventDuplicates": false,
+            // "onclick": null,
+            "showDuration": "300",              // 提示框渐显所用时间
+            "hideDuration": "300",              // 提示框隐藏渐隐时间
+            "timeOut": "3000",                  // 提示框持续时间
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+
+
+    } catch (ex) {
+        console.error(ex)
     }
+
+    //toastr 封装  ----start----
+    const Toast = {
+
+        warn: function(msg, title, options) {
+            try {
+                toastr.warning(msg, title, options)
+            }catch (e) {}
+        },
+        info: function(msg, title, options) {
+            try {
+                toastr.info(msg, title, options)
+            }catch (e) {}
+        },
+        success: function(msg, title, options) {
+            try {
+                toastr.success(msg, title, options)
+            }catch (e) {}
+        },
+        error: function(msg, title, options) {
+            try {
+                toastr.error(msg, title, options)
+            }catch (e) {}
+        },
+    };
+
+    //toastr 封装  ----end----
 
     //封装GM_xmlhttpRequest ---start---
     async function GM_fetch(details) {
@@ -333,13 +390,13 @@
                 let resp = response.responseText;
                 let pubkey = JSON.parse(resp).data;
                 if (!pubkey) {
-                    document.getElementById("gptAnswer").innerText = "获取pubkey失败"
+                    Toast.error("获取pubkey失败")
                     return
                 }
                 console.log("pubkey:" + pubkey);
                 //GM_setValue("pubkey", pubkey)
                 localStorage.setItem("pubkey", pubkey)
-                document.getElementById("gptAnswer").innerText = "pubkey更新成功:" + pubkey
+                Toast.success("pubkey更新成功:" + pubkey)
             })
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
@@ -347,20 +404,20 @@
                 try {
                     bnuKey = bnuList[bnuInt].key;
                     if(bnuKey){
-                        showAnserAndHighlightCodeStr(`BNU120：当前：${bnuInt}，共6。更新成功,KEY:${bnuKey}`)
+                        Toast.success(`BNU120：当前：${bnuInt}，共6。更新成功,KEY:${bnuKey}`)
                         localStorage.setItem("bnuInt", bnuInt)
                         localStorage.setItem("bnuKey", bnuKey)
                     }else {
-                        showAnserAndHighlightCodeStr("BNU120：更新失败")
+                        Toast.error("BNU120：更新失败")
                         localStorage.removeItem("bnuInt")
                         localStorage.removeItem("bnuKey")
                     }
                 }catch (e) {
-                    showAnserAndHighlightCodeStr(`错误了。请重试`)
+                    Toast.error(`错误了。请重试`)
                 }
             });
         }else {
-            showAnserAndHighlightCodeStr("该线路不适用")
+            Toast.error("该线路不适用")
         }
 
     }
@@ -532,6 +589,7 @@
                        _this.innerText = '';
                        GM_setClipboard(pre.innerText, "text");
                         _this.innerText = '复制成功'
+                        Toast.success("复制成功!")
                        setTimeout(() =>{
                            _this.innerText = '复制代码'
                        },2000)
@@ -1179,7 +1237,7 @@
 
     //默认线路
     function AIGCFUN() {
-        showAnserAndHighlightCodeStr("该线路较慢，请稍后")
+        Toast.info("该线路较慢，请稍后...")
         const now = Date.now();
         console.log(now);
         generateSignature({
@@ -1214,13 +1272,15 @@
                             role: "assistant",
                             content: rest
                         })
-                    } catch (e) {}
+                    } catch (e) {
+                        Toast.error("未知错误!")
+                    }
 
                 } else {
-                    showAnserAndHighlightCodeStr('访问失败了')
+                    Toast.error('访问失败了')
                 }
             },function (reason){
-                showAnserAndHighlightCodeStr(`出错了:${reason.status},${reason.statusText}`)
+                Toast.error(`出错了:${reason.status},${reason.statusText}`)
             });
         });
     }
@@ -1440,7 +1500,7 @@
                 let fontSize = your_qus.substring("/font-size:".length)
                 document.querySelector("#gptDiv").style.fontSize = fontSize;
                 localStorage.setItem("gpt_font_size",fontSize)
-                showAnserAndHighlightCodeStr(`字体设置成功:${fontSize}`)
+                Toast.success(`字体设置成功:${fontSize}`)
                 return
             }
 
@@ -1449,7 +1509,7 @@
                 let dis = your_qus.substring("/history_disable:".length)
                 history_disable = (dis === 'true' ? true : false);
                 localStorage.setItem("history_disable", dis)
-                showAnserAndHighlightCodeStr(`禁用历史记录设置成功:${history_disable}`)
+                Toast.success(`禁用历史记录设置成功:${history_disable}`)
                 return
             }
 
@@ -1493,7 +1553,7 @@
         })
 
         document.getElementById('updatePubkey').addEventListener('click', () => {
-            document.getElementById("gptAnswer").innerText = "正在更新，请稍后..."
+            Toast.info("正在更新，请稍后...")
             setPubkey()
         })
 
@@ -1501,11 +1561,11 @@
             if(autoClick){
                 localStorage.removeItem("autoClick")
                 autoClick = undefined;
-                showAnserAndHighlightCodeStr("自动点击已经关闭")
+                Toast.error("自动点击已经关闭")
             }else{
                 localStorage.setItem("autoClick", "开启")
                 autoClick = "开启"
-                showAnserAndHighlightCodeStr("自动点击已经开启")
+                Toast.success("自动点击已经开启")
             }
         })
 
@@ -1514,12 +1574,12 @@
                 //关闭
                 localStorage.setItem("autoTips", "off")
                 autoTips = "off"
-                showAnserAndHighlightCodeStr("自动提示已关")
+                Toast.error("自动提示已关")
             }else{
                 //开启
                 localStorage.setItem("autoTips", "on")
                 autoTips = "on"
-                showAnserAndHighlightCodeStr("自动提示已开启")
+                Toast.success("自动提示已开启")
             }
         })
 
@@ -1532,21 +1592,23 @@
             if(darkTheme){
                 localStorage.removeItem("darkTheme")
                 darkTheme = undefined;
-                showAnserAndHighlightCodeStr("暗黑已经开启")
+                Toast.success("暗黑已经开启")
             }else{
                 localStorage.setItem("darkTheme", "关闭")
                 darkTheme = "关闭"
-                showAnserAndHighlightCodeStr("暗黑已经关闭")
+                Toast.error("暗黑已经关闭")
             }
         })
         //朗读
         document.getElementById('speakAnser').addEventListener('click', () => {
            let ans = document.querySelector("#gptAnswer");
            if(!isPlayend){
-               console.log('音频停止！');
+               Toast.success('已暂停播放!');
                speakAudio.pause();
                isPlayend = true;
                return;
+           }else {
+               Toast.warn('音频已停止,正在重新播放！')
            }
            if(ans){
               // let speakText = encodeURIComponent(ans.innerText);
@@ -1573,7 +1635,7 @@
                isPlayend = false;
                speakAudio.addEventListener("ended",function() {
                    isPlayend = true;
-                   console.log('音频已播放完毕！');
+                   Toast.success('音频已播放完毕！');
                })
            }
         })
@@ -1581,13 +1643,18 @@
         //原文切换
         document.getElementById('rawAns').addEventListener('click', (ev) => {
            let ans = document.querySelector("#gptAnswer");
-           if(!rawAns) return;
+           if(!rawAns) {
+               Toast.error("原文无内容")
+               return
+           };
            if(!isShowRaw){
                ans.innerText = rawAns;
                isShowRaw = true;
+               Toast.success("已为你显示原文")
            }else{
                showAnserAndHighlightCodeStr(rawAns)
                isShowRaw = false;
+               Toast.success("已为你显示非原文")
            }
 
         })
@@ -1598,9 +1665,12 @@
                if(abortXml){
                    abortXml.abort();
                    abortXml = undefined;
+               }else {
+                   Toast.error("无法中断!")
                }
            }catch(ex){
                console.error("中断失败：",ex)
+               Toast.error("中断失败!")
            }
         })
 
@@ -1617,6 +1687,7 @@
 
            }catch(ex){
                console.error("ex：",ex)
+               Toast.error("未知异常!")
            }
         })
         //隐藏
@@ -1630,6 +1701,7 @@
                $("#gptDiv").hide();
            }catch(ex){
                console.error("ex：",ex)
+               Toast.error("未知异常!")
            }
         })
 
@@ -1639,8 +1711,17 @@
            if(isShowRaw){
                GM_setClipboard(rawAns, "text");
            }else{
+               let cps = document.querySelectorAll(".btn-pre-copy");
+               for (let cp of cps){
+                   cp.innerText = ''
+               }
                GM_setClipboard(ans.innerText, "text");
+
+               for (let cp of cps){
+                   cp.innerText = '复制代码'
+               }
            }
+            Toast.success("复制成功!")
         })
 
         document.getElementById('modeSelect').addEventListener('change', () => {
@@ -1656,7 +1737,7 @@
                 initSocketXBOAT();
             }
 
-            document.getElementById('gptAnswer').innerHTML = `切换成功，当前线路:${selectedValue}`;
+            Toast.success(`切换成功，当前线路:${selectedValue}`)
         });
 
         let chatSetting = false;
@@ -2098,6 +2179,7 @@
             },
             (reason)=>{
                 console.log(reason)
+                Toast.error("未知异常!")
             }
         ).catch(ex => {
             console.log(ex)
@@ -2166,6 +2248,7 @@
             },
             (reason)=>{
                 console.log(reason)
+                Toast.error("未知异常!")
             }
         ).catch(ex => {
             console.log(ex)
@@ -2253,7 +2336,7 @@
             });
         },function (err) {
             console.log(err)
-            showAnserAndHighlightCodeStr("erro:", err.message)
+            Toast.error("未知异常!")
         })
 
     }
@@ -2380,6 +2463,7 @@
                 });
             },(reason)=>{
                 console.log(reason)
+                Toast.error("未知错误!")
             }).catch((ex)=>{
                 console.log(ex)
             });
@@ -2452,8 +2536,10 @@
             });
         },(reason)=>{
             console.log(reason)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         });
     }
 
@@ -2516,8 +2602,10 @@
                     return reader.read().then(processText);
                 });
             },(reason)=>{
+                Toast.error("未知错误!")
                 console.log(reason)
             }).catch((ex)=>{
+                Toast.error("未知错误!")
                 console.log(ex)
             });
 
@@ -2554,8 +2642,10 @@
                 showAnserAndHighlightCodeStr(r.responseText)
             }
         },(reason)=>{
+            Toast.error("未知错误!")
             console.log(reason)
         }).catch((ex)=>{
+            Toast.error("未知错误!")
             console.log(ex)
         });
     }
@@ -2632,13 +2722,13 @@
                    break;
                }else {
                    console.log(res)
-                   showAnserAndHighlightCodeStr('访问失败了')
+                   Toast.error('访问失败了!')
                }
            }
 
        } else {
            console.log(res)
-           showAnserAndHighlightCodeStr('访问失败了')
+           Toast.error('访问失败了!')
        }
 
     }
@@ -2704,14 +2794,16 @@
                 });
             },function (err) {
                 console.log(err)
+                Toast.error("未知错误!")
             }).catch((ex)=>{
                 console.log(ex)
+                Toast.error("未知错误!")
             })
 
 
         } else {
             console.log(res)
-            showAnserAndHighlightCodeStr('访问失败了')
+            Toast.error('访问失败了')
         }
 
     }
@@ -2791,8 +2883,10 @@
             });
         },function (err) {
             console.log(err)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         });
 
     }
@@ -2857,8 +2951,10 @@
 
         },function (err) {
             console.log(err)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         });
 
     }
@@ -2910,7 +3006,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
+                Toast.error("未知错误!")
             }
         })
 
@@ -2962,7 +3058,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("error:", err)
+                Toast.error("未知错误!")
             }
         })
 
@@ -3024,14 +3120,9 @@
                 });
             },
             responseType: "stream",
-            onprogress: function (msg) {
-                //console.log(msg) //Todo
-            },
             onerror: function (err) {
                 console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
+                Toast.error("未知错误!")
             }
         })
 
@@ -3209,7 +3300,6 @@
             //     console.log(reader.read)
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
                     return;
                 }
                 try {
@@ -3295,8 +3385,10 @@
                 return reader.read().then(processText);
             },(err)=> {
                 console.log(err)
+                Toast.error("未知错误!")
             }).catch((ex)=>{
                 console.log(ex)
+                Toast.error("未知错误!")
             })
         })
 
@@ -3607,8 +3699,10 @@
                return reader.read().then(processText)
            },function (reason) {
                console.log(reason)
+               Toast.error("未知错误!")
            }).catch((ex)=>{
                console.log(ex)
+               Toast.error("未知错误!")
            })
        })
    }
@@ -3629,7 +3723,7 @@
            csrfToken =  /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/g.exec(r)[0];
            console.log("csrfToken:",csrfToken)
        }catch (e) {
-           showAnserAndHighlightCodeStr("csrfToken获取失败")
+           Toast.error("csrfToken获取失败")
        }
     }
    setTimeout(()=>{
@@ -3718,8 +3812,10 @@
                return reader.read().then(processText)
            },function (reason) {
                console.log(reason)
+               Toast.error("未知错误!")
            }).catch((ex)=>{
                console.log(ex)
+               Toast.error("未知错误!")
            })
        })
 
@@ -3756,7 +3852,7 @@
             console.log("mainjs:",mainjs)
         }catch (e) {
             console.error(r)
-            showAnserAndHighlightCodeStr("出错了，js获取失败")
+            Toast.error("出错了，js获取失败")
         }
 
         if(mainjs){
@@ -3786,7 +3882,7 @@
                 console.log("sp_appId:",sp_appId)
             }catch (e) {
                 console.error(e)
-                showAnserAndHighlightCodeStr("出错了,sp_appId获取失败",)
+                Toast.error("出错了,sp_appId获取失败",)
             }
         }
 
@@ -3818,7 +3914,7 @@
             console.log("sp_chatId:",sp_chatId)
         }catch (e) {
             console.error(r)
-            showAnserAndHighlightCodeStr("sp_chatId获取失败")
+            Toast.error("sp_chatId获取失败")
         }
 
 
@@ -3989,8 +4085,10 @@
                 return reader.read().then(processText)
             },function (reason) {
                 console.log(reason)
+                Toast.error("未知错误!")
             }).catch((ex)=>{
                 console.log(ex)
+                Toast.error("未知错误!")
             })
         })
 
@@ -4330,8 +4428,10 @@
 
                 return reader.read().then(processText)
             },function (reason) {
+                Toast.error("未知错误!")
                 console.log(reason)
             }).catch((ex)=>{
+                Toast.error("未知错误!")
                 console.log(ex)
             })
         })
@@ -4474,8 +4574,10 @@
 
                 return reader.read().then(processText)
             },function (reason) {
+                Toast.error("未知错误!")
                 console.log(reason)
             }).catch((ex)=>{
+                Toast.error("未知错误!")
                 console.log(ex)
             })
         })
@@ -4541,7 +4643,9 @@
                 return reader.read().then(processText)
             },function (reason) {
                 console.log(reason)
+                Toast.error("未知错误!")
             }).catch((ex)=>{
+                Toast.error("未知错误!")
                 console.log(ex)
             })
         })
@@ -4605,8 +4709,10 @@
             });
         },reason => {
             console.log(reason)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         })
 
 
@@ -4672,8 +4778,10 @@
             });
         },reason => {
             console.log(reason)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         })
 
 
@@ -4729,8 +4837,10 @@
             });
         },reason => {
             console.log(reason)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         })
 
 
@@ -4768,7 +4878,7 @@
                 } else {
                     console.log('失败')
                     console.log(res)
-                    document.getElementById('gptAnswer').innerHTML = '访问失败了'
+                    Toast.error('访问失败了')
                 }
             },
 
@@ -4863,14 +4973,9 @@
                             });
                         },
                         responseType: "stream",
-                        onprogress: function (msg) {
-                            //console.log(msg)
-                        },
                         onerror: function (err) {
                             console.log(err)
-                        },
-                        ontimeout: function (err) {
-                            console.log(err)
+                            Toast.error("未知错误!")
                         }
                     });
 
@@ -4957,7 +5062,7 @@
                     responseType: "stream",
                     onerror: function (err) {
                         console.log(err)
-                        showAnserAndHighlightCodeStr("erro:", err)
+                        Toast.error("未知错误!")
                     }
                 })
             }//end onload
@@ -5018,7 +5123,6 @@
                 let finalResult;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        highlightCodeStr()
                         return;
                     }
 
@@ -5051,7 +5155,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
+                Toast.error("未知错误!")
             }
         })
 
@@ -5148,7 +5252,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
+                Toast.error("未知错误!")
             }
         })
 
@@ -5185,7 +5289,6 @@
             let finalResult;
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
                     return;
                 }
 
@@ -5216,8 +5319,10 @@
             });
         },(reason)=>{
             console.log(reason)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         });
 
     }
@@ -5278,8 +5383,10 @@
                 return reader.read().then(processText);
             },function (reason) {
                 console.log(reason)
+                Toast.error("未知错误!")
             }).catch((ex)=>{
                 console.log(ex)
+                Toast.error("未知错误!")
             });
         });
 
@@ -5340,6 +5447,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
+                Toast.error("未知错误!")
             }
         });
 
@@ -5372,6 +5480,7 @@
                             showAnserAndHighlightCodeStr(finalResult)
                         } catch (e) {
                             console.log(e)
+                            Toast.error("未知错误!")
                         }
                         return;
                     }
@@ -5393,6 +5502,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
+                Toast.error("未知错误!")
             }
         });
 
@@ -5458,6 +5568,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
+                Toast.error("未知错误!")
             }
         })
     }
@@ -5503,6 +5614,7 @@
                         showAnserAndHighlightCodeStr(finalResult)
                     } catch (e) {
                         console.log(e)
+                        Toast.error("未知错误!")
                     }
                     return;
                 }
@@ -5527,8 +5639,10 @@
             });
         },reason => {
             console.log(reason)
+            Toast.error("未知错误!")
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!")
         })
 
     }
@@ -5570,6 +5684,7 @@
         if (!jsurl) {
             //错误
             console.log(resp)
+            Toast.error("未知错误!")
             return
         }
        let rr = await GM_fetch({
@@ -5654,8 +5769,10 @@
                 });
             },function (reason) {
                 console.log(reason)
+                Toast.error("未知错误!")
             }).catch((ex)=>{
                 console.log(ex)
+                Toast.error("未知错误!")
             });
 
         });
@@ -5725,10 +5842,11 @@
                 });
             },function (reason) {
                 console.log(reason)
-                showAnserAndHighlightCodeStr(reason.message)
+                Toast.error("未知错误!" + reason.message)
+
             }).catch((ex)=>{
                 console.log(ex)
-                showAnserAndHighlightCodeStr(ex.message)
+                Toast.error("未知错误!" + ex.message)
             });
 
         });
@@ -5818,6 +5936,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
+                Toast.error("未知错误!" + err.message)
             }
         });
 
@@ -5896,7 +6015,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
+                Toast.error("未知错误!" + err.message)
             }
         })
 
@@ -5975,8 +6094,10 @@
             });
         },(reason)=>{
             console.log(reason)
+            Toast.error("未知错误!" + reason.message)
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!" + ex.message)
         });
 
 
@@ -6061,6 +6182,7 @@
             });
         },function (err) {
             console.error(err)
+            Toast.error("未知错误!" + err.message)
         })
 
     }
@@ -6135,7 +6257,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
-                showAnserAndHighlightCodeStr("erro:", err)
+                Toast.error("未知错误!" + err.message)
             }
         })
 
@@ -6188,6 +6310,7 @@
             responseType: "stream",
             onerror: function (err) {
                 console.log(err)
+                Toast.error("未知错误!" + err.message)
             }
         })
 
@@ -6212,7 +6335,6 @@
             const reader = stream.response.getReader();
             reader.read().then(function processText({done, value}) {
                 if (done) {
-                    highlightCodeStr()
                     return;
                 }
                 try {
@@ -6234,6 +6356,7 @@
             });
         }).catch((ex)=>{
             console.log(ex)
+            Toast.error("未知错误!" + ex.message)
         })
 
 
@@ -6253,7 +6376,7 @@
         socket.addEventListener('open', (event) => {
             console.log('连接成功');
 
-            showAnserAndHighlightCodeStr("COOLAI:ws已经连接")
+            Toast.success("COOLAI:ws已经连接")
         });
         let isFirst = false;
 
@@ -6312,7 +6435,7 @@
         socket.addEventListener('open', (event) => {
             console.log('连接成功');
 
-            showAnserAndHighlightCodeStr("WebsocketXBOAT:ws已经连接")
+            Toast.success("WebsocketXBOAT:ws已经连接")
         });
 
 
