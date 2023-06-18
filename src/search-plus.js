@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.9.0
+// @version      2.9.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -156,7 +156,7 @@
     'use strict';
 
 
-    let JSver = '2.9.0';
+    let JSver = '2.9.1';
 
 
     function getGPTMode() {
@@ -524,22 +524,47 @@
 
     //end
 
+    const katex_options = {displayMode: false, throwOnError: false}
+    function toRawText(exp){
+        //处理html标签
+        try {
+            exp =  exp.replace(/\&amp;/gi, "&").replace(/<br>/g,"\n").replace(/<br \/>/g,"\n")
+            // 处理矩阵
+            exp = exp.replace(/\\begin\{bmatrix\}(.*?)\\end\{bmatrix\}/g, (_, tex) => {
+                //debugger
+                return `\\begin\{bmatrix\}${tex.replace(/\\/g,"\\\\")}\\end\{bmatrix\}`;
+            })
+            exp = exp.replace(/\\begin\{pmatrix\}(.*?)\\end\{pmatrix\}/g, (_, tex) => {
+                //debugger
+                return `\\begin\{pmatrix\}${tex.replace(/\\/g,"\\\\")}\\end\{pmatrix\}`;
+            })
+        }catch (e) { }
+
+        return exp;
+    }
     function katexTohtml(rawHtml) {
        // console.log("========katexTohtml start=======")
-        let renderedHtml = rawHtml.replace(/<em>/g, "").replace(/<\/em>/g, "").replace(/\$\$(.*?)\$\$/g, (_, tex) => {
-            //debugger
-            return katex.renderToString(tex, {displayMode: false, throwOnError: false});
-        });
-        renderedHtml = renderedHtml.replace(/\$(.*?)\$/g, (_, tex) => {
-            //debugger
-            return katex.renderToString(tex, {displayMode: false, throwOnError: false});
-        });
+        let renderedHtml = rawHtml;
+        try {
+             renderedHtml = rawHtml.replace(/<em>/g, "").replace(/<\/em>/g, "").replace(/\$\$(.*?)\$\$/g, (_, tex) => {
+                //debugger
+                return katex.renderToString(toRawText(tex), katex_options);
+            });
+            renderedHtml = renderedHtml.replace(/\$(.*?)\$/g, (_, tex) => {
+                //debugger
+                return katex.renderToString(toRawText(tex), katex_options);
+            });
+        }catch (ex) {
+            console.error(ex)
+        }
+
        // console.log("========katexTohtml end=======")
         try {
             renderedHtml = filterXSS(renderedHtml) //filterXSS
         }catch (e) {
             console.warn(e)
         }
+        //console.log(renderedHtml)
 
         return renderedHtml;
     }
@@ -2064,7 +2089,13 @@
          */
         showdown.setFlavor('github');
 
-        return converter.makeHtml(rawData);
+        try {
+            return converter.makeHtml(rawData);
+        }catch (ex) {
+            console.error(ex)
+        }
+        return rawData;
+
     }
 
     //实时监控百度,360按钮消失
