@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.9.2
+// @version      2.9.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -155,7 +155,7 @@
     'use strict';
 
 
-    let JSver = '2.9.2';
+    let JSver = '2.9.3';
 
 
     function getGPTMode() {
@@ -573,11 +573,7 @@
         if(!codeStr) return
         rawAns = codeStr;//记录原文
         try {
-            if(!answerBox){
-                answerBox = document.getElementById('gptAnswer')
-            }else {
-                answerBox.innerHTML = mdConverter(codeStr)
-            }
+            document.getElementById('gptAnswer').innerHTML = mdConverter(codeStr)
         } catch (ex) {
             console.error(ex)
         }
@@ -629,7 +625,6 @@
     let your_qus;
     let abortXml;
     let regx = /search.*?\.cf/g;
-    let answerBox;
     if (window.location.href.indexOf("bing.com") > -1) {
 
         GM_add_box_style(0)
@@ -934,11 +929,7 @@
         isShowRaw = false; //设置显示原文
         rawAns = undefined;//设置显示原文
 
-        if(!answerBox){
-            answerBox = document.getElementById('gptAnswer')
-        }else {
-            answerBox.innerHTML = `<div>加载中<span id="dot"></span></div>`;
-        }
+        document.getElementById('gptAnswer').innerHTML = `<div>加载中<span id="dot"></span></div>`;
         //自定义模式
         let GPTMODE = getGPTMode()
         if (GPTMODE && GPTMODE === "YeYu") {
