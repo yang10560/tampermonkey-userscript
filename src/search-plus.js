@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.9.1
+// @version      2.9.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
+// @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
 // @match      https://www.bing.com/*
@@ -43,8 +44,6 @@
 // @grant      GM_setClipboard
 // @run-at     document-end
 // @require    https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
-// @require    https://cdn.bootcdn.net/ajax/libs/marked/4.3.0/marked.min.js
-// @require    https://cdn.bootcdn.net/ajax/libs/markdown-it/13.0.1/markdown-it.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/showdown/2.1.0/showdown.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/highlight.js/11.7.0/highlight.min.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
@@ -156,7 +155,7 @@
     'use strict';
 
 
-    let JSver = '2.9.1';
+    let JSver = '2.9.2';
 
 
     function getGPTMode() {
@@ -529,6 +528,7 @@
         //处理html标签
         try {
             exp =  exp.replace(/\&amp;/gi, "&").replace(/<br>/g,"\n").replace(/<br \/>/g,"\n")
+                .replace(/\&gt;/g,">").replace(/\&lt;/g,"<")
             // 处理矩阵
             exp = exp.replace(/\\begin\{bmatrix\}(.*?)\\end\{bmatrix\}/g, (_, tex) => {
                 //debugger
@@ -559,29 +559,12 @@
         }
 
        // console.log("========katexTohtml end=======")
-        try {
-            renderedHtml = filterXSS(renderedHtml) //filterXSS
-        }catch (e) {
-            console.warn(e)
-        }
         //console.log(renderedHtml)
 
         return renderedHtml;
     }
 
 
-    function filterXSS(input) {
-        //let output = input.replace(/<script[^>]*>.*?<script>/gi, '');
-        let output = input.replace(/<script/gi, '&lt;script');
-        //output = output.replace(/<\/script/gi, '&lt;&#x2F;script');
-        output = output.replace(/<meta/gi, '&lt;meta');
-       // output = output.replace(/<\/meta/gi, '&lt;&#x2F;meta');
-       /* output = output.replace(/<>]+?on\\\\w+=.*?>/gi, '');
-        output = output.replace(/<[^>]*>.*?<iframe>/gi, '');
-        output = output.replace(/<img[^>]+src=[\\']([^\\']+)[\\'][^>]*>/gi, '');
-        output = output.replace(/<link rel=[\\']stylesheet[\\'][^>]+>/gi, ''); */
-        return output;
-    }
 
     let rawAns = undefined;
     let isShowRaw = false;
@@ -590,13 +573,13 @@
         if(!codeStr) return
         rawAns = codeStr;//记录原文
         try {
-            document.getElementById('gptAnswer').innerHTML = `${katexTohtml(mdConverter(codeStr.replace(/\\n+/g, "\n")))}`
-        } catch (e) {
-            try {
-                document.getElementById('gptAnswer').innerHTML = `${mdConverter(codeStr.replace(/\\n+/g, "\n"))}`
-            }catch (e) {
-                console.log(e)
+            if(!answerBox){
+                answerBox = document.getElementById('gptAnswer')
+            }else {
+                answerBox.innerHTML = mdConverter(codeStr)
             }
+        } catch (ex) {
+            console.error(ex)
         }
         highlightCodeStr()//高亮
         //添加代码复制按钮 start
@@ -633,11 +616,6 @@
     //高亮代码函数
     function highlightCodeStr() {
         let gptAnswerDiv = document.querySelector("#gptAnswer");
-        for (let i = 0; i <= gptAnswerDiv.getElementsByTagName("code").length - 1; i++) {
-            gptAnswerDiv.getElementsByTagName("code")[i].setAttribute("class",
-                "hljs");
-            //hljs.highlightAll()
-        }
         gptAnswerDiv.querySelectorAll('pre code').forEach((el) => {
             hljs.highlightElement(el);
         });
@@ -651,6 +629,7 @@
     let your_qus;
     let abortXml;
     let regx = /search.*?\.cf/g;
+    let answerBox;
     if (window.location.href.indexOf("bing.com") > -1) {
 
         GM_add_box_style(0)
@@ -955,8 +934,11 @@
         isShowRaw = false; //设置显示原文
         rawAns = undefined;//设置显示原文
 
-        document.getElementById('gptAnswer').innerHTML = `<div>加载中<span id="dot"></span></div>`;
-
+        if(!answerBox){
+            answerBox = document.getElementById('gptAnswer')
+        }else {
+            answerBox.innerHTML = `<div>加载中<span id="dot"></span></div>`;
+        }
         //自定义模式
         let GPTMODE = getGPTMode()
         if (GPTMODE && GPTMODE === "YeYu") {
@@ -1383,7 +1365,7 @@
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
       <option value="GEEKR">GEEKR</option>
-      <option value="LEMURCHAT">狐猴内置</option>
+      <option value="LEMURCHAT">LEMURCHAT</option>
       <option value="CHAT1">CHAT1</option>
       <option value="OhMyGPT">OhMyGPT</option>
       <option value="CHATWEB1">CHATWEB1</option>
@@ -2074,8 +2056,102 @@
         return str;
     }
 
+
+    (function (extension) {
+        if (typeof showdown !== 'undefined') {
+            // global (browser or node.js global)
+            extension(showdown);
+        } else if (typeof define === 'function' && define.amd) {
+            // AMD
+            define(['showdown'], extension);
+        } else if (typeof exports === 'object') {
+            // Node, CommonJS-like
+            module.exports = extension(require('showdown'));
+        } else {
+            // showdown was not found so an error is thrown
+            throw Error('Could not find showdown library');
+        }
+    }(function (showdown) {
+        // loading extension into showdown
+        showdown.extension('myext', function () {
+            return [
+                //to katex
+                {
+                    type:   'output',
+                    filter: function (source, converter, options) {
+                        //debugger
+                        return katexTohtml(source);
+                    }
+                },
+                // filter xss
+                {
+                    type:  'output',
+                    filter: function (source, converter, options) {
+                        //debugger
+                        return  source.replace(/<script/gi, '&lt;script').replace(/<meta/gi, '&lt;meta');
+                    }
+                },
+                //Adds simple footnotes
+
+                {
+                    type: 'output',
+                    filter: text => text.replace(
+                        /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/mg,
+                        (str, name, rawContent, _, padding) => {
+                            const content = converter.makeHtml(rawContent.replace(new RegExp(`^${padding}`, 'gm'), ''))
+                            return `<div class="footnote" id="footnote-${name}"><a href="#footnote-${name}"><sup>[${name}]</sup></a>:${content}</div>`
+                        }
+                    )
+                },
+                {
+                    type: 'lang',
+                    filter: text => text.replace(
+                        /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/mg,
+                        (str, name, _, content) =>
+                            `<small class="footnote" id="footnote-${name}"><a href="#footnote-${name}"><sup>[${name}]</sup></a>: ${content}</small>`
+                    )
+                },
+                {
+                    type: 'lang',
+                    filter: text => text.replace(
+                        /\[\^([\d\w]+)\]/m,
+                        (str, name) => `<a href="#footnote-${name}"><sup>[${name}]</sup></a>`
+                    )
+                },
+
+                //replace \n
+                {
+                    type: 'lang',
+                    filter: text => text.replace(/\\n+/g, "\n")
+                },
+                /**
+                 * Showdown Icon Extension, Glyphicon and FontAwesome support for showdown
+                 * http://github.com/dbtek/showdown-icon
+                 * 2014, Ismail Demirbilek
+                 * License: MIT
+                 */
+                {
+                    type: "lang",
+                    regex: "\\B(\\\\)?@glyphicon-([\\S]+)\\b",
+                    replace: function(a, b, c) {
+                        return b === "\\" ? a : '<span class="glyphicon glyphicon-' + c + '">' + "</span>"
+                    }
+                },
+                {
+                    type: "lang",
+                    regex: "\\B(\\\\)?@fa-([\\S]+)\\b",
+                    replace: function(a, b, c) {
+                        return b === "\\" ? a : '<i class="fa fa-' + c + '">' + "</i>"
+                    }
+                }
+
+            ];
+        })
+    }));
     function mdConverter(rawData) {
-        let converter = new showdown.Converter(); //增加拓展table
+        let converter = new showdown.Converter({
+            extensions: ['myext']
+        });
         converter.setOption('tables',
             true); //启用表格选项。从showdown 1.2.0版开始，表支持已作为可选功能移入核心拓展，showdown.table.min.js扩展已被弃用
         converter.setOption('openLinksInNewWindow',true) //链接在新窗口打开
@@ -2098,7 +2174,7 @@
 
     }
 
-    //实时监控百度,360按钮消失
+    //实时监控
     setInterval(() => {
         //百度
         if (window.location.href.indexOf("baidu.com\/s") > -1 && !isMobile()) {
@@ -4161,8 +4237,8 @@
             tg_invite_Token = localStorage.getItem("formNatureQueueWaitToken");
             //token: "Bearer " + c("formNatureResearchToken"),
             tg_token = localStorage.getItem("formNatureResearchToken");
-            await GM_setValue("tg_invite_Token", tg_invite_Token)
-            await GM_setValue("tg_token", tg_token)
+            GM_setValue("tg_invite_Token", tg_invite_Token)
+            GM_setValue("tg_token", tg_token)
             if(tg_invite_Token){
                 document.querySelector('div[class="title"]').innerText = `invite_Token获取成功:${tg_invite_Token}`
             }else{
@@ -4170,8 +4246,8 @@
             }
             setTimeout(initTGtoken,2500)
         } else {
-            tg_invite_Token = await GM_getValue("tg_invite_Token")
-            tg_token = await GM_getValue("tg_token")
+            tg_invite_Token =  GM_getValue("tg_invite_Token")
+            tg_token =  GM_getValue("tg_token")
         }
     }
 
@@ -4204,7 +4280,7 @@
         return new Promise(async (resolve, reject) => {
             try {
                 tg_invite_Token = JSON.parse(r).resp_data.invite_token;
-                await GM_setValue("waitAccess tg_invite_Token", tg_invite_Token)
+                 GM_setValue("waitAccess tg_invite_Token", tg_invite_Token)
                 resolve("更新成功，请再次点击")
             } catch (e) {
                 resolve("waitAccess 异常 请到官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
@@ -4500,7 +4576,7 @@
     async function init_chatgml_token() {
         if (location.href.includes("chatglm.cn")) {
             chatgml_token = getCookieValue(document.cookie, "chatglm_token")
-            await GM_setValue("chatgml_token", chatgml_token)
+             GM_setValue("chatgml_token", chatgml_token)
             if (chatgml_token) {
                 console.log(`chatgml_token获取成功:${chatgml_token}`)
             } else {
@@ -4508,7 +4584,7 @@
             }
 
         } else if(getGPTMode() === 'ChatGLM') {
-            chatgml_token =  await GM_getValue("chatgml_token")
+            chatgml_token =  GM_getValue("chatgml_token")
             console.log("chatgml_token:", chatgml_token)
         }
     }
@@ -4923,7 +4999,7 @@
                     } catch (e) {
                         //TODO handle the exception
                         console.log(e)
-                        document.getElementById('gptAnswer').innerHTML = rest
+                        Toast.error(rest)
                     }
 
                 } else {
@@ -5040,8 +5116,7 @@
 
             responseType: "application/json;charset=UTF-8",
             onerror: function (err) {
-                document.getElementById('gptAnswer').innerHTML =
-                    `<div>some err happends,errinfo :<br>${err.messages}</div>`
+                Toast.error(`some err happends,errinfo :${err.messages}`)
             }
         });
 
