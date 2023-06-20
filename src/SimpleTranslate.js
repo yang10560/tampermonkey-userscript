@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.3
+// @version      1.0.4
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -178,6 +178,10 @@
      .translate-span.hide {
          display: none;
      }
+     
+     .translate-src.hide {
+         display: none;
+     }
         `)
 
     //add box
@@ -230,13 +234,25 @@
             if(yiwen === text) return
             /*node.innerText = text + "=>" + yiwen*/
             const outersp = document.createElement("span")
-            outersp.innerText = text + " "
+            outersp.innerText = text + " " //src text
             const sp = document.createElement("span")
             sp.setAttribute("class", "translate-span")
             sp.innerText = yiwen
-            outersp.append(sp)
-            //TODO 单显原文
-            node.replaceWith(isDoubleShow ? outersp : sp);
+
+            if(!isDoubleShow){
+                //单
+                const srcSpan = document.createElement("span")
+                srcSpan.setAttribute("class", "translate-src hide")
+                srcSpan.innerText = text //src text
+                outersp.innerText = '' // clear src text
+                outersp.append(srcSpan)
+                outersp.append(sp)
+            }else {
+                //双
+                outersp.append(sp)
+            }
+            node.replaceWith(outersp);
+
         } catch (ex) {
             console.error(" 未知错误!", ex, node)
         }
@@ -294,7 +310,7 @@
                     }
                     //排除长度大于1中只有一个英文
                     if(lang === 'zh-Hans' && srcText.length > 1){
-                        debugger
+                       // debugger
                         if(/^[a-zA-Z]$/.test(srcText.replace(/[^a-zA-Z]/g, '').trim())) {
                             return;
                         }
@@ -370,13 +386,23 @@
         event.stopPropagation()
         if (sourceText.querySelector("span").innerText === '原文') {
             document.querySelectorAll(".translate-span").forEach((node) => {
-                node.classList.add("hide")
+                node.classList.add("hide") //hide dest text
             });
+
+            document.querySelectorAll(".translate-src").forEach((node) => {
+                node.classList.remove("hide")//show src text
+            });
+
             sourceText.querySelector("span").innerText = '译文'
         } else {
             document.querySelectorAll(".translate-span").forEach((node) => {
-                node.classList.remove("hide")
+                node.classList.remove("hide") //show dest text
             });
+
+            document.querySelectorAll(".translate-src").forEach((node) => {
+                node.classList.add("hide") //hide src text
+            });
+
             sourceText.querySelector("span").innerText = '原文'
         }
 
