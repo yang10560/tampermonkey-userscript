@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.59
+// @version      4.60
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -64,6 +64,7 @@
 // @connect   yeyu1024.xyz
 // @connect   gptgo.ai
 // @connect   mixerbox.com
+// @connect   muspimerol.site
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -75,7 +76,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    let JSVer = "v4.59"
+    let JSVer = "v4.60"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1497,6 +1498,73 @@
 
         });
     }
+
+
+    let messageChain_anseapp = [];
+    async function ANSEAPP(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let baseURL = "https://forward.openai.muspimerol.site/";
+        addMessageChain(messageChain_anseapp, {role: "user", content: your_qus})//连续话
+        GM_fetch({
+            method: "POST",
+            url: baseURL + "v1/chat/completions",
+            headers: {
+                "Content-Type": "application/json",
+                "authorization": `Bearer undefined`,
+                "Referer": 'https://anse.app.bnu120.space/'
+            },
+            data: JSON.stringify({
+                "model": "gpt-3.5-turbo-16k",
+                "messages": messageChain_anseapp,
+                "temperature": 0.7,
+                "max_tokens": 4096,
+                "stream": true
+            }),
+            responseType: "stream"
+        }).then((stream) => {
+            let result = [];
+            let finalResult = [];
+            GM_simulateBotResponse("...")
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    finalResult = result.join("")
+                    addMessageChain(messageChain_anseapp,
+                        {role: "assistant", content: finalResult.replace(/muspimerol/gi, "")}
+                    )//连续话
+                    GM_fillBotResponseAndSave(your_qus,finalResult.replace(/muspimerol/gi, ""))
+                    return;
+                }
+
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.log("raw:", d)
+                    let dd = d.replace(/data: /g, "").split("\n\n")
+                    console.log("dd:", dd)
+                    dd.forEach(item => {
+                        try {
+                            let delta = JSON.parse(item).choices[0].delta.content
+                            result.push(delta)
+                            GM_fillBotResponse(result.join("").replace(/muspimerol/gi, ""))
+                        } catch (e) {
+
+                        }
+                    })
+                } catch (e) {
+                    console.log(e)
+                }
+
+
+                return reader.read().then(processText);
+            });
+        },function (err) {
+            console.error(err)
+            Toast.error("未知错误!" + err.message)
+        })
+
+    }
+
 
     let message_extkj = [{role: 'assistant', content: '你好！有什么我可以帮助你的吗？'}];
     let extkj_key = '';
@@ -2994,6 +3062,9 @@
                 case "BNU120":
                     BNU120(qus);
                     break;
+               case "ANSEAPP":
+                   ANSEAPP(qus);
+                    break;
                 case "EXTKJ":
                     EXTKJ(qus);
                     break;
@@ -3081,7 +3152,9 @@
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
- <option value="LEMURCHAT">狐猴内置</option>
+ <option value="LEMURCHAT">Lemur内置</option>
+ <option value="ANSEAPP">ANSEAPP</option>
+ <option value="BNU120">BNU120</option>
  <option value="HAOHUOLA">HAOHUOLA</option>
  <option value="ChatGO">ChatGO</option>
  <option value="MixerBox">MixerBox</option>
@@ -3091,7 +3164,7 @@
  <option value="WOBCW">WOBCW</option>
  <option value="T66">T66</option>
  <option value="ANZZ">ANZZ</option>
- <option value="BNU120">BNU120</option>
+
  <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
