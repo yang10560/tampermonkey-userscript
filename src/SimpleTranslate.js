@@ -9,6 +9,7 @@
 // @run-at       document-end
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=weibo.com
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
+// @require    https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
 // @grant        GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @connect      api-edge.cognitive.microsofttranslator.com
@@ -22,6 +23,47 @@
     'use strict';
 
     let authCode;
+
+    let isDoubleShow = true //是否双显
+
+    setInterval(() => {
+        if (!document.getElementById("toastr-css")) {
+            $("head").append($(
+                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
+            ));
+        }
+    }, 5000)
+
+    //toastr 封装  ----start----
+    const Toast = {
+
+        warn: function (msg, title, options) {
+            try {
+                toastr.warning(msg, title, options)
+            } catch (e) {
+            }
+        },
+        info: function (msg, title, options) {
+            try {
+                toastr.info(msg, title, options)
+            } catch (e) {
+            }
+        },
+        success: function (msg, title, options) {
+            try {
+                toastr.success(msg, title, options)
+            } catch (e) {
+            }
+        },
+        error: function (msg, title, options) {
+            try {
+                toastr.error(msg, title, options)
+            } catch (e) {
+            }
+        },
+    };
+
+    //toastr 封装  ----end----
 
     async function GM_fetch(details) {
         return new Promise((resolve, reject) => {
@@ -152,6 +194,11 @@
        </a>
       </li>
       <li>
+       <a id="doubleShow" href="javascript:void(0)">
+        <span>双显开关</span>
+       </a>
+      </li>
+      <li>
        <a id="sourceText" href="javascript:void(0)">
         <span>原文</span>
        </a>
@@ -166,7 +213,25 @@
     //add functions
 
 
-    function translatePlus(text, node) {
+    //渲染页面
+    function renderPage(res, text, node) {
+        try {
+            let yiwen = JSON.parse(res.responseText)[0].translations[0].text;
+            /*node.innerText = text + "=>" + yiwen*/
+            const outersp = document.createElement("span")
+            outersp.innerText = text + " "
+            const sp = document.createElement("span")
+            sp.setAttribute("class", "translate-span")
+            sp.innerText = yiwen
+            outersp.append(sp)
+            node.replaceWith(isDoubleShow ? outersp : sp);
+        } catch (ex) {
+            console.error(" 未知错误!", ex, node)
+        }
+    }
+
+    //微软翻译
+    function translateMicrosoft(text, node) {
         if (!authCode) {
             console.error("no authCode")
             return
@@ -182,32 +247,18 @@
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
-                try {
-                    console.log('成功....')
-                    console.log(res)
-                    let yiwen = JSON.parse(res.responseText)[0].translations[0].text;
-                    /*node.innerText = text + "=>" + yiwen*/
-                    const outersp = document.createElement("span")
-                    outersp.innerText = text + " "
-                    const sp = document.createElement("span")
-                    sp.setAttribute("class", "translate-span")
-                    sp.innerText = yiwen
-                    outersp.append(sp)
-                    node.replaceWith(outersp);
-                } catch (ex) {
-                    console.error(" 未知错误!", ex, node)
-                }
-
+                renderPage(res, text, node)
             } else {
                 console.error('访问失败了', res)
             }
         }, function (reason) {
-            console.error(`出错了:${reason.status},${reason.statusText}`)
+            console.error(`出错了`, reason)
         });
 
     }
 
 
+    //遍历
     function traversePlus(node) {
         if (!node) return;
         // 排除标签则跳过
@@ -221,9 +272,9 @@
 
         // 如果节点没有子节点，则打印节点内容
         if (node.childNodes.length === 0) {
-            if (node.textContent ) {
-                if(node.textContent.trim()){
-                    translatePlus(node.textContent.trim(), node)
+            if (node.textContent) {
+                if (node.textContent.trim()) {
+                    translateMicrosoft(node.textContent.trim(), node)
                 }
 
             }
@@ -236,6 +287,7 @@
     }
 
 
+    //鉴权
     async function auth() {
         let res = await GM_fetch({
             method: "GET",
@@ -252,11 +304,9 @@
 
     //add event
     console.log("中英互译");
-    let translatemainDom = document.querySelector(".translate-main")
-    let translatemainFold = document.querySelector(".translate-main-fold")
-    let translatearrow = document.querySelector(".translate-arrow")
+    const translatemainDom = document.querySelector(".translate-main")
+    const translatearrow = document.querySelector(".translate-arrow")
 
-    console.log(translatemainDom);
     //展开
     translatemainDom.addEventListener("click", () => {
         console.log("--1-")
@@ -278,6 +328,8 @@
         const root = document.body;
         traversePlus(root)
     })
+
+    //原文
     const sourceText = document.querySelector("#sourceText")
     sourceText.addEventListener("click", (event) => {
         event.stopPropagation()
@@ -295,6 +347,20 @@
 
     })
 
+
+    //双显
+    const doubleShow = document.querySelector("#doubleShow")
+    doubleShow.addEventListener("click", (event) => {
+        event.stopPropagation()
+        if (isDoubleShow) {
+            isDoubleShow = false;
+            Toast.error("双显已关")
+        } else {
+            isDoubleShow = true;
+            Toast.success("双显已开")
+        }
+
+    })
 
 })();
 
