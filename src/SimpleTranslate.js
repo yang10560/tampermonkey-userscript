@@ -1,17 +1,19 @@
 // ==UserScript==
-// @name         中英互译
+// @name         网页中英双显互译
+// @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
 // @version      1.0.0
-// @description  中英互译.ect
-// @description:en translate.ect
+// @description  中英互转。双语显示
+// @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
 // @match        *://*/*
+// @exclude      *://*.baidu.com/*
 // @run-at       document-end
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=weibo.com
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=translate.google.com
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
-// @require    https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
+// @require      https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
 // @grant        GM_addStyle
-// @grant       GM_xmlhttpRequest
+// @grant        GM_xmlhttpRequest
 // @connect      api-edge.cognitive.microsofttranslator.com
 // @connect      edge.microsoft.com
 // @license      MIT
@@ -108,7 +110,7 @@
             right: 0 !important;
             padding: 14px 7px !important;
             text-align: center !important;
-            background: #70ac5d !important;
+            background: #cddceb !important;
             border-top-left-radius: 4px !important;
             border-bottom-left-radius: 4px !important;
             font-size: 14px !important;
