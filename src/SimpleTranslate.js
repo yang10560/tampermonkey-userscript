@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.1
+// @version      1.0.2
 // @description  中英互转。双语显示
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -104,6 +104,7 @@
         right: 0 !important;
         height: 200px !important;
         margin-top: -100px !important;
+        z-index: 99999 !important;
     }
     .translate-main-fold{
             position: absolute !important;
@@ -279,6 +280,18 @@
                 //if(node.textContent.includes("checkCurrentAuth")) debugger
                 const srcText = node.textContent.trim();
                 if (srcText) {
+                    //排除纯数字
+                    if(/^\d+$/.test(srcText)){
+                        return;
+                    }
+                    //排除长度大于1中只有一个英文
+                    if(lang === 'zh-Hans' && srcText.length > 1){
+                        debugger
+                        if(/^[a-zA-Z]$/.test(srcText.replace(/[^a-zA-Z]/g, '').trim())) {
+                            return;
+                        }
+                    }
+
                     translateMicrosoft(node.textContent.trim(), node, lang)
                 }
 
