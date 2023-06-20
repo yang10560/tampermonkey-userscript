@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.0
+// @version      1.0.1
 // @description  中英互转。双语显示
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -265,7 +265,7 @@
     function traversePlus(node, lang) {
         if (!node) return;
         // 排除标签则跳过
-        if (/^(pre|script|code)$/i.test(node.nodeName)) {
+        if (/^(pre|script|code|#comment)$/i.test(node.nodeName)) {
             return;
         }
         //排除类名
@@ -276,7 +276,9 @@
         // 如果节点没有子节点，则打印节点内容
         if (node.childNodes.length === 0) {
             if (node.textContent) {
-                if (node.textContent.trim()) {
+                //if(node.textContent.includes("checkCurrentAuth")) debugger
+                const srcText = node.textContent.trim();
+                if (srcText) {
                     translateMicrosoft(node.textContent.trim(), node, lang)
                 }
 
