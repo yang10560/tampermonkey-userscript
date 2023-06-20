@@ -123,7 +123,6 @@
             /* height: 178px !important; */
             padding: 12px 10px !important;
             transition: .5s all !important;
-            border: 1px soli #62b651 !important;
             border-radius: 4px !important;
             background: #f4f7fa !important;
         }
@@ -217,6 +216,7 @@
     function renderPage(res, text, node) {
         try {
             let yiwen = JSON.parse(res.responseText)[0].translations[0].text;
+            if(yiwen === text) return
             /*node.innerText = text + "=>" + yiwen*/
             const outersp = document.createElement("span")
             outersp.innerText = text + " "
@@ -224,6 +224,7 @@
             sp.setAttribute("class", "translate-span")
             sp.innerText = yiwen
             outersp.append(sp)
+            //TODO 单显原文
             node.replaceWith(isDoubleShow ? outersp : sp);
         } catch (ex) {
             console.error(" 未知错误!", ex, node)
@@ -231,14 +232,14 @@
     }
 
     //微软翻译
-    function translateMicrosoft(text, node) {
+    function translateMicrosoft(text, node, lang) {
         if (!authCode) {
             console.error("no authCode")
             return
         }
         GM_fetch({
             method: "POST",
-            url: "https://api-edge.cognitive.microsofttranslator.com/translate?from=&to=zh-Hans&api-version=3.0&includeSentenceLength=true",
+            url: `https://api-edge.cognitive.microsofttranslator.com/translate?from=&to=${lang}&api-version=3.0&includeSentenceLength=true`,
             headers: {
                 "authorization": `Bearer ${authCode}`,
                 "Content-Type": "application/json",
@@ -259,14 +260,14 @@
 
 
     //遍历
-    function traversePlus(node) {
+    function traversePlus(node, lang) {
         if (!node) return;
         // 排除标签则跳过
         if (/^(pre|script|code)$/i.test(node.nodeName)) {
             return;
         }
         //排除类名
-        if (/translate-main/i.test(node.className)) {
+        if (/(translate-main|bbCodeCode|mathjax-tex)/i.test(node.className)) {
             return;
         }
 
@@ -274,14 +275,14 @@
         if (node.childNodes.length === 0) {
             if (node.textContent) {
                 if (node.textContent.trim()) {
-                    translateMicrosoft(node.textContent.trim(), node)
+                    translateMicrosoft(node.textContent.trim(), node, lang)
                 }
 
             }
         } else {
             // 如果有子节点，则递归遍历子节点
             for (let i = 0; i < node.childNodes.length; i++) {
-                traversePlus(node.childNodes[i]);
+                traversePlus(node.childNodes[i], lang);
             }
         }
     }
@@ -326,7 +327,16 @@
         await auth()
         console.log("translate....")
         const root = document.body;
-        traversePlus(root)
+        traversePlus(root,"zh-Hans")
+    })
+
+    //中转英
+    document.querySelector("#zh2en").addEventListener("click", async (event) => {
+        event.stopPropagation()
+        await auth()
+        console.log("translate....")
+        const root = document.body;
+        traversePlus(root,"en")
     })
 
     //原文
@@ -361,6 +371,9 @@
         }
 
     })
+
+    //attach
+    //translatemainDom.attachShadow({ mode: 'open' })
 
 })();
 
