@@ -165,44 +165,7 @@
 
     //add functions
 
-    //废弃
-    function translate(text, node) {
-        if (!authCode) {
-            console.error("no authCode")
-            return
-        }
-        GM_fetch({
-            method: "POST",
-            url: "https://api-edge.cognitive.microsofttranslator.com/translate?from=&to=zh-Hans&api-version=3.0&includeSentenceLength=true",
-            headers: {
-                "authorization": `Bearer ${authCode}`,
-                "Content-Type": "application/json",
-            },
-            data: JSON.stringify([{"Text": text}]),
-            responseType: "text",
-        }).then(function (res) {
-            if (res.status === 200) {
-                try {
-                    console.log('成功....')
-                    console.log(res)
-                    let yiwen = JSON.parse(res.responseText)[0].translations[0].text;
-                    /*node.innerText = text + "=>" + yiwen*/
-                    const sp = document.createElement("span")
-                    sp.setAttribute("class", "translate-span")
-                    sp.innerText = yiwen
-                    node.append(sp)
-                } catch (ex) {
-                    console.error("JSON 未知错误!", ex)
-                }
 
-            } else {
-                console.error('访问失败了', res)
-            }
-        }, function (reason) {
-            console.error(`出错了:${reason.status},${reason.statusText}`)
-        });
-
-    }
     function translatePlus(text, node) {
         if (!authCode) {
             console.error("no authCode")
@@ -244,31 +207,6 @@
 
     }
 
-    //废弃
-    function traverse(node) {
-        if (!node) return;
-        // 如果节点名称为pre，则跳过
-        if (/^(pre|script|code)$/i.test(node.nodeName)) {
-            return;
-        }
-
-        if (/translate-main/i.test(node.className)) {
-            return;
-        }
-
-        // 如果节点没有子节点，则打印节点内容
-        if (node.children.length === 0) {
-            if (node.innerText) {
-                translate(node.innerText, node)
-                console.log(node.innerText);
-            }
-        } else {
-            // 如果有子节点，则递归遍历子节点
-            for (let i = 0; i < node.children.length; i++) {
-                traverse(node.children[i]);
-            }
-        }
-    }
 
     function traversePlus(node) {
         if (!node) return;
