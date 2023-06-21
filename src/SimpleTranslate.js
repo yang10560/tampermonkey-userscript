@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.5
+// @version      1.0.6
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -161,6 +161,7 @@
         }
     .translate-main li{
             margin-top:6px !important;
+            white-space: normal !important;
         }
     .translate-main li a{
             display:block !important;
@@ -255,19 +256,33 @@
 
 
     //还原网页
-    function clearSpan(){
+    function clearSpan(lang){
         document.querySelectorAll(".translate-span").forEach(item=>{
-            item.remove()
+            if(!isDoubleShow){
+                if(!item.className.includes(`lang-${lang}`)){
+                    item.remove()
+                }
+            }else {
+                item.remove()
+            }
         })
 
         document.querySelectorAll(".translate-src").forEach(item=>{
-            const textNode = document.createTextNode(item.textContent);
-            item.replaceWith(textNode)
+            if(!isDoubleShow){
+                if(!item.className.includes(`lang-${lang}`)){
+                    const textNode = document.createTextNode(item.textContent);
+                    item.replaceWith(textNode)
+                }
+            }else {
+                const textNode = document.createTextNode(item.textContent);
+                item.replaceWith(textNode)
+            }
+
         })
     }
 
     //渲染页面
-    function renderPage(res, text, node) {
+    function renderPage(res, text, node, lang) {
         try {
             let yiwen = JSON.parse(res.responseText)[0].translations[0].text;
             if(yiwen === text) return
@@ -276,13 +291,13 @@
             outersp.innerText = text + " " //src text
             const sp = document.createElement("span")
             sp.setAttribute("class",
-                isDoubleShow && isHighlight ? "translate-span light-color" : 'translate-span')
+                isDoubleShow && isHighlight ? `translate-span light-color lang-${lang}` : `translate-span lang-${lang}`)
             sp.innerText = yiwen
 
             if(!isDoubleShow){
                 //单
                 const srcSpan = document.createElement("span")
-                srcSpan.setAttribute("class", "translate-src hide")
+                srcSpan.setAttribute("class", `translate-src hide lang-${lang}`)
                 srcSpan.innerText = text //src text
                 outersp.innerText = '' // clear src text
                 outersp.append(srcSpan)
@@ -315,7 +330,7 @@
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
-                renderPage(res, text, node)
+                renderPage(res, text, node, lang)
             } else {
                 console.error('访问失败了', res)
             }
@@ -334,7 +349,7 @@
             return;
         }
         //排除类名
-        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container|translate-span|highlight)/i.test(node.className)) {
+        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container|translate-span|highlight|translate-src)/i.test(node.className)) {
             return;
         }
 
@@ -418,7 +433,7 @@
     //英转中
     document.querySelector("#en2zh").addEventListener("click", async (event) => {
         event.stopPropagation()
-        clearSpan()
+        clearSpan("zh-Hans")
         await auth()
         console.log("translate....en2zh")
         const root = document.body;
@@ -428,7 +443,7 @@
     //中转英
     document.querySelector("#zh2en").addEventListener("click", async (event) => {
         event.stopPropagation()
-        clearSpan()
+        clearSpan("en")
         await auth()
         console.log("translate....zh2en")
         const root = document.body;
