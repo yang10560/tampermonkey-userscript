@@ -2,12 +2,14 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.9
+// @version      1.1.0
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
 // @match        *://*/*
 // @exclude      *://*.baidu.com/*
+// @exclude      *://localhost:*/*
+// @exclude      *://127.0.0.1:*/*
 // @run-at       document-end
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=translate.google.com
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
@@ -35,6 +37,8 @@
     let isHighlight = true //是否译文高亮 true/false
     let englishAutoTranslate = false //英文自动翻译 true/false
     let highlightColor = '#00FF00' //高亮颜色
+    let selectTolang = 'zh-Hans' // 选词翻译目标语言 zh-Hans / en
+    let selectMode = false //选词模式开关 默认关
     let excludeSites = ['www.qq.com', 'yeyu1024.xyz'] //排除不运行的网站 exclude web host
     let noTranslateWords = ['SpringBoot', 'ChatGPT', 'YouTube', 'Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
 
@@ -80,10 +84,48 @@
             console.log(excludeSites)
         }, "excludeWeb");
 
+        GM_registerMenuCommand("鼠标右击选词开关", function (event) {
+            if (selectMode) {
+                console.log('鼠标右击选词翻译已经关闭',selectMode)
+                selectMode = false;
+                //移除事件
+                document.removeEventListener('mousemove',handleMousemove);
+                document.removeEventListener('mouseout', handleMouseout);
+                document.removeEventListener('contextmenu', handleContextmenu);//右击事件
+
+                Toast.success('鼠标右击选词翻译已经关闭')
+
+            } else {
+                console.log('鼠标右击选词翻译已经开启',selectMode)
+                selectMode = true;
+                //增加事件
+                document.addEventListener('mousemove',handleMousemove);
+                document.addEventListener('mouseout', handleMouseout);
+                document.addEventListener('contextmenu', handleContextmenu);//右击事件
+                Toast.success('鼠标右击选词翻译已经开启')
+            }
+
+        }, "selectMode");
+
+        GM_registerMenuCommand("选词翻译目标语言", function (event) {
+            if (selectTolang === 'zh-Hans') {
+                selectTolang = 'en';
+                console.log('当前目标语言为英语')
+                Toast.success('当前目标语言为英语')
+
+            } else {
+                selectTolang = 'zh-Hans';
+                console.log('当前目标语言为中文')
+                Toast.success('当前目标语言为中文')
+            }
+        }, "selectTolang");
+
+
+
     })
 
     //载入配置
-    async function loadConfigasync() {
+    async function loadConfig() {
         isDoubleShow = await GM_getValue("isDoubleShow", true)
         isHighlight = await GM_getValue("isHighlight", true)
         englishAutoTranslate = await GM_getValue("englishAutoTranslate", false)
@@ -124,10 +166,40 @@
     }
 
     try {
-        await loadConfigasync()
+        await loadConfig()
     } catch (e) {
         console.error("load config error:", e)
     }
+
+    function handleMouseout(event) {
+        const target = event.target;
+        if (target.classList.contains('translate-main')) {
+           return
+        }
+        target.style.border = '';
+        //console.error('mouseout' + target);
+    }
+    function handleMousemove(event) {
+        const target = event.target;
+        if (target.classList.contains('translate-main')) {
+           return
+        }
+
+        target.style.border = '1px solid red';
+        //console.log('mousemove' + target);
+    }
+
+    function handleContextmenu(event) {
+        event.preventDefault(); // 阻止默认右键菜单的显示
+        const target = event.target;
+        console.warn('contextmenu' + target);
+        target.style.border = '';
+        //翻译
+        translateTo(selectTolang, target)
+
+    }
+
+
 
     //toastr 封装  ----start----
     const Toast = {
@@ -636,10 +708,13 @@
     setTimeout(async () => {
         if (englishAutoTranslate && !isChinesePage()) {
             console.log('自动翻译')
+            Toast.success('检测到英文, 正在自动翻译. 若你的网络过慢可能会出现未翻译完整，请手动翻译。关闭自动翻译请到菜单!', '', {timeOut: 10000})
             translateTo('zh-Hans')
-            Toast.success('检测到英文, 已自动翻译. 关闭请自动翻译请到菜单', '', {timeOut: 10000})
+
         }
-    })
+    },2000)
+
+
 
 })();
 
