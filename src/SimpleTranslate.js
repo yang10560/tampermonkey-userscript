@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.7
+// @version      1.0.8
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -16,6 +16,8 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
+// @grant        GM_openInTab
+// @grant        GM_registerMenuCommand
 // @connect      api-edge.cognitive.microsofttranslator.com
 // @connect      edge.microsoft.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
@@ -24,29 +26,103 @@
 // ==/UserScript==
 
 
-(function () {
+(async function () {
     'use strict';
 
     let authCode;
 
     let isDoubleShow = true //是否双显 true/false
     let isHighlight = true //是否译文高亮 true/false
+    let englishAutoTranslate = false //英文自动翻译 true/false
     let highlightColor = '#00FF00' //高亮颜色
-    let noTranslateWords = ['SpringBoot','ChatGPT','YouTube','Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
+    let excludeSites = ['www.qq.com', 'yeyu1024.xyz'] //排除不运行的网站 exclude web host
+    let noTranslateWords = ['SpringBoot', 'ChatGPT', 'YouTube', 'Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
 
-    setTimeout(async () => {
-        isDoubleShow = await GM_getValue("isDoubleShow", true)
-        isHighlight = await GM_getValue("isHighlight", true)
-        console.warn("isDoubleShow",isDoubleShow)
+
+
+    //注册菜单
+    setTimeout(() => {
+        GM_registerMenuCommand("更新脚本", function (event) {
+            GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
+        }, "updateTranslateJS");
+
+        GM_registerMenuCommand("英语自动翻译", function (event) {
+            if (englishAutoTranslate) {
+                englishAutoTranslate = false;
+                GM_setValue("englishAutoTranslate", false)
+                Toast.error('英语自动翻译已关闭! 请重新刷新页面.')
+            } else {
+                englishAutoTranslate = true;
+                GM_setValue("englishAutoTranslate", true)
+                Toast.success('英语自动翻译已打开! 请重新刷新页面.')
+            }
+        }, "englishAutoTranslate");
+
+        GM_registerMenuCommand("排除/放行该站", function (event) {
+            if (excludeSites.includes(location.host)) {
+                console.log('网站已经存在,现已经放行')
+                excludeSites = excludeSites.filter(function (element) {
+                    return element !== location.host; // 返回不等于要删除元素的元素
+                });
+                console.log(excludeSites);
+                Toast.success('网站已经存在,现已经放行')
+            } else {
+                console.log('网站不存在, 现已经排除')
+                excludeSites.push(location.host)
+                Toast.success('网站不存在, 现已经排除')
+            }
+            GM_setValue("excludeSites", JSON.stringify(excludeSites))
+            console.log(excludeSites)
+        }, "excludeWeb");
+
     })
 
-    setInterval(() => {
-        if (!document.getElementById("toastr-css")) {
-            $("head").append($(
-                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
-            ));
+    //载入配置
+    async function loadConfigasync() {
+        isDoubleShow = await GM_getValue("isDoubleShow", true)
+        isHighlight = await GM_getValue("isHighlight", true)
+        englishAutoTranslate = await GM_getValue("englishAutoTranslate", false)
+
+        console.warn("isDoubleShow", isDoubleShow)
+        console.warn("isHighlight", isHighlight)
+        console.warn("englishAutoTranslate", englishAutoTranslate)
+
+        const excludeSitesConfig = await GM_getValue("excludeSites")
+        if (excludeSitesConfig) {
+            try {
+                excludeSites = JSON.parse(excludeSitesConfig)
+            } catch (e) {
+                console.error('json出错:', e, excludeSitesConfig)
+            }
         }
-    }, 5000)
+        console.warn('excludeSites', excludeSites)
+
+
+        //toastr配置
+        toastr.options = {
+            // "closeButton": false,
+            // "debug": false,
+            // "newestOnTop": false,
+            // "progressBar": false,
+            "positionClass": "toast-top-right", // 提示框位置，这里填类名
+            // "preventDuplicates": false,
+            // "onclick": null,
+            "showDuration": "300",              // 提示框渐显所用时间
+            "hideDuration": "300",              // 提示框隐藏渐隐时间
+            "timeOut": "3000",                  // 提示框持续时间
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+    }
+
+    try {
+        await loadConfigasync()
+    } catch (e) {
+        console.error("load config error:", e)
+    }
 
     //toastr 封装  ----start----
     const Toast = {
@@ -78,6 +154,21 @@
     };
 
     //toastr 封装  ----end----
+
+    if (excludeSites.includes(location.host)) {
+        throw new Error('当前网站不允许运行,已经停止!')
+    }
+
+
+    setInterval(() => {
+        if (!document.getElementById("toastr-css")) {
+            $("head").append($(
+                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
+            ));
+        }
+    }, 5000)
+
+
 
     async function GM_fetch(details) {
         return new Promise((resolve, reject) => {
@@ -256,37 +347,37 @@
 
 
     function hasChinese(sentence) {
-        if(!sentence) return false;
+        if (!sentence) return false;
         const pattern = /[\u4E00-\u9FA5]/;
         return pattern.test(sentence);
     }
 
     function hasEnglish(sentence) {
-        if(!sentence) return false;
+        if (!sentence) return false;
         const pattern = /[a-zA-Z]/;
         return pattern.test(sentence);
     }
 
 
     //还原网页
-    function clearSpan(lang){
-        document.querySelectorAll(".translate-span").forEach(item=>{
-            if(!isDoubleShow){
-                if(!item.className.includes(`lang-${lang}`)){
+    function clearSpan(lang) {
+        document.querySelectorAll(".translate-span").forEach(item => {
+            if (!isDoubleShow) {
+                if (!item.className.includes(`lang-${lang}`)) {
                     item.remove()
                 }
-            }else {
+            } else {
                 item.remove()
             }
         })
 
-        document.querySelectorAll(".translate-src").forEach(item=>{
-            if(!isDoubleShow){
-                if(!item.className.includes(`lang-${lang}`)){
+        document.querySelectorAll(".translate-src").forEach(item => {
+            if (!isDoubleShow) {
+                if (!item.className.includes(`lang-${lang}`)) {
                     const textNode = document.createTextNode(item.textContent);
                     item.replaceWith(textNode)
                 }
-            }else {
+            } else {
                 const textNode = document.createTextNode(item.textContent);
                 item.replaceWith(textNode)
             }
@@ -298,7 +389,7 @@
     function renderPage(res, text, node, lang) {
         try {
             let yiwen = JSON.parse(res.responseText)[0].translations[0].text;
-            if(yiwen === text) return
+            if (yiwen === text) return
             /*node.innerText = text + "=>" + yiwen*/
             const outersp = document.createElement("span")
             outersp.innerText = text + " " //src text
@@ -307,7 +398,7 @@
                 isDoubleShow && isHighlight ? `translate-span light-color lang-${lang}` : `translate-span lang-${lang}`)
             sp.innerText = yiwen
 
-            if(!isDoubleShow){
+            if (!isDoubleShow) {
                 //单
                 const srcSpan = document.createElement("span")
                 srcSpan.setAttribute("class", `translate-src hide lang-${lang}`)
@@ -315,7 +406,7 @@
                 outersp.innerText = '' // clear src text
                 outersp.append(srcSpan)
                 outersp.append(sp)
-            }else {
+            } else {
                 //双
                 outersp.append(sp)
             }
@@ -329,10 +420,10 @@
     //微软翻译
     function translateMicrosoft(text, node, lang) {
         if (!authCode || !text) {
-            console.error("no authCode or text:", authCode , text)
+            console.error("no authCode or text:", authCode, text)
             return
         }
-        if(noTranslateWords.includes(text)){
+        if (noTranslateWords.includes(text)) {
             return;
         }
         GM_fetch({
@@ -369,14 +460,14 @@
             return;
         }
 
-       // console.error("nodeType:", node.nodeType)
+        // console.error("nodeType:", node.nodeType)
 
-        if(lang === 'en' && !hasChinese(node.textContent)){
+        if (lang === 'en' && !hasChinese(node.textContent)) {
             //不含中文
             return;
         }
 
-        if(lang === 'zh-Hans' && !hasEnglish(node.textContent)){
+        if (lang === 'zh-Hans' && !hasEnglish(node.textContent)) {
             //不含英文
             return;
         }
@@ -389,13 +480,13 @@
                 const srcText = node.textContent.trim();
                 if (srcText) {
                     //排除纯数字
-                    if(/^\d+$/.test(srcText)){
+                    if (/^\d+$/.test(srcText)) {
                         return;
                     }
                     //排除长度大于1中只有一个英文
-                    if(lang === 'zh-Hans' && srcText.length > 1){
-                       // debugger
-                        if(/^[a-zA-Z]$/.test(srcText.replace(/[^a-zA-Z]/g, '').trim())) {
+                    if (lang === 'zh-Hans' && srcText.length > 1) {
+                        // debugger
+                        if (/^[a-zA-Z]$/.test(srcText.replace(/[^a-zA-Z]/g, '').trim())) {
                             return;
                         }
                     }
@@ -427,9 +518,17 @@
         }
     }
 
+    //翻译
+    async function translateTo(lang, rootNode) {
+        clearSpan(lang)
+        await auth()
+        console.log(`translate to....${lang}`)
+        const root = document.body;
+        traversePlus(rootNode || root, lang)
+    }
 
     //add event
-    console.log("中英互译");
+    console.log("=========中英双显互译=======");
     const translatemainDom = document.querySelector(".translate-main")
     const translatearrow = document.querySelector(".translate-arrow")
 
@@ -449,21 +548,13 @@
     //英转中
     document.querySelector("#en2zh").addEventListener("click", async (event) => {
         event.stopPropagation()
-        clearSpan("zh-Hans")
-        await auth()
-        console.log("translate....en2zh")
-        const root = document.body;
-        traversePlus(root,"zh-Hans")
+        translateTo("zh-Hans")
     })
 
     //中转英
     document.querySelector("#zh2en").addEventListener("click", async (event) => {
         event.stopPropagation()
-        clearSpan("en")
-        await auth()
-        console.log("translate....zh2en")
-        const root = document.body;
-        traversePlus(root,"en")
+        translateTo("en")
     })
 
     //原文
@@ -525,8 +616,23 @@
 
     })
 
-    //attach
-    //translatemainDom.attachShadow({ mode: 'open' })
+
+    // 判断是不是中文网页
+    function isChinesePage() {
+        const lang = document.documentElement.lang
+        const mainLang = document.characterSet.toLowerCase()
+        const pageTitle = document.title
+        return lang.substring(0, 2) === 'zh' || mainLang.substring(0, 2) === 'gb' || /[\u4E00-\u9FFF]/.test(pageTitle);
+    }
+
+    //英语自动翻译
+    setTimeout(async () => {
+        if (englishAutoTranslate && !isChinesePage()) {
+            console.log('自动翻译')
+            translateTo('zh-Hans')
+            Toast.success('检测到英文, 已自动翻译. 关闭请自动翻译请到菜单', '', {timeOut: 10000})
+        }
+    })
 
 })();
 
