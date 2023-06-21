@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.6
+// @version      1.0.7
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -32,6 +32,7 @@
     let isDoubleShow = true //是否双显 true/false
     let isHighlight = true //是否译文高亮 true/false
     let highlightColor = '#00FF00' //高亮颜色
+    let noTranslateWords = ['SpringBoot','ChatGPT','YouTube','Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
 
     setTimeout(async () => {
         isDoubleShow = await GM_getValue("isDoubleShow", true)
@@ -123,14 +124,19 @@
             padding: 14px 7px !important;
             text-align: center !important;
             background: #cddceb !important;
-            border-top-left-radius: 4px !important;
-            border-bottom-left-radius: 4px !important;
+            border-radius: 50%;
+            border-top-right-radius: 4px !important;
+            border-bottom-right-radius: 4px !important;
             font-size: 14px !important;
             /*line-height: 24px !important;*/
             font-weight: 600 !important;
             cursor: pointer !important;
-            opacity: 0.7;
+            opacity: 0.35 !important;
+            transition: opacity 0.35s ease !important;
         }
+    .translate-main-fold:hover{
+        opacity: 1 !important;
+    }
     .translate-main-body{
             position: absolute !important;
             right: -200px !important;
@@ -159,9 +165,16 @@
             font-weight: 600 !important;
             cursor: pointer !important;
         }
+    .translate-main ul{
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
     .translate-main li{
             margin-top:6px !important;
             white-space: normal !important;
+            display: block;
         }
     .translate-main li a{
             display:block !important;
@@ -197,7 +210,7 @@
     //add box
     $("body").append($(`<div class="translate-main">
    <div class="translate-main-fold">
-      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="green" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
    </div>
    <div class="translate-main-body">
     <div class="translate-main-header">
@@ -315,9 +328,12 @@
 
     //微软翻译
     function translateMicrosoft(text, node, lang) {
-        if (!authCode) {
-            console.error("no authCode")
+        if (!authCode || !text) {
+            console.error("no authCode or text:", authCode , text)
             return
+        }
+        if(noTranslateWords.includes(text)){
+            return;
         }
         GM_fetch({
             method: "POST",
