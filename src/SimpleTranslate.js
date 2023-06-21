@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.0.4
+// @version      1.0.5
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -29,10 +29,13 @@
 
     let authCode;
 
-    let isDoubleShow = true //是否双显
+    let isDoubleShow = true //是否双显 true/false
+    let isHighlight = true //是否译文高亮 true/false
+    let highlightColor = '#00FF00' //高亮颜色
 
     setTimeout(async () => {
         isDoubleShow = await GM_getValue("isDoubleShow", true)
+        isHighlight = await GM_getValue("isHighlight", true)
         console.warn("isDoubleShow",isDoubleShow)
     })
 
@@ -126,6 +129,7 @@
             /*line-height: 24px !important;*/
             font-weight: 600 !important;
             cursor: pointer !important;
+            opacity: 0.7;
         }
     .translate-main-body{
             position: absolute !important;
@@ -176,12 +180,17 @@
      }
      
      .translate-span.hide {
-         display: none;
+         display: none !important;
      }
      
      .translate-src.hide {
-         display: none;
+         display: none !important;
      }
+     
+     .translate-span.light-color {
+         color: ${highlightColor} !important;
+     }
+     
         `)
 
     //add box
@@ -213,6 +222,11 @@
        </a>
       </li>
       <li>
+       <a id="highlightTranslateText" href="javascript:void(0)">
+        <span>高亮开关</span>
+       </a>
+      </li>
+      <li>
        <a id="sourceText" href="javascript:void(0)">
         <span>原文</span>
        </a>
@@ -227,6 +241,31 @@
     //add functions
 
 
+    function hasChinese(sentence) {
+        if(!sentence) return false;
+        const pattern = /[\u4E00-\u9FA5]/;
+        return pattern.test(sentence);
+    }
+
+    function hasEnglish(sentence) {
+        if(!sentence) return false;
+        const pattern = /[a-zA-Z]/;
+        return pattern.test(sentence);
+    }
+
+
+    //还原网页
+    function clearSpan(){
+        document.querySelectorAll(".translate-span").forEach(item=>{
+            item.remove()
+        })
+
+        document.querySelectorAll(".translate-src").forEach(item=>{
+            const textNode = document.createTextNode(item.textContent);
+            item.replaceWith(textNode)
+        })
+    }
+
     //渲染页面
     function renderPage(res, text, node) {
         try {
@@ -236,7 +275,8 @@
             const outersp = document.createElement("span")
             outersp.innerText = text + " " //src text
             const sp = document.createElement("span")
-            sp.setAttribute("class", "translate-span")
+            sp.setAttribute("class",
+                isDoubleShow && isHighlight ? "translate-span light-color" : 'translate-span')
             sp.innerText = yiwen
 
             if(!isDoubleShow){
@@ -290,13 +330,26 @@
     function traversePlus(node, lang) {
         if (!node) return;
         // 排除标签则跳过
-        if (/^(pre|script|code|#comment)$/i.test(node.nodeName)) {
+        if (/^(pre|script|code|#comment|iframe)$/i.test(node.nodeName)) {
             return;
         }
         //排除类名
-        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container)/i.test(node.className)) {
+        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container|translate-span|highlight)/i.test(node.className)) {
             return;
         }
+
+       // console.error("nodeType:", node.nodeType)
+
+        if(lang === 'en' && !hasChinese(node.textContent)){
+            //不含中文
+            return;
+        }
+
+        if(lang === 'zh-Hans' && !hasEnglish(node.textContent)){
+            //不含英文
+            return;
+        }
+
 
         // 如果节点没有子节点，则打印节点内容
         if (node.childNodes.length === 0) {
@@ -365,8 +418,9 @@
     //英转中
     document.querySelector("#en2zh").addEventListener("click", async (event) => {
         event.stopPropagation()
+        clearSpan()
         await auth()
-        console.log("translate....")
+        console.log("translate....en2zh")
         const root = document.body;
         traversePlus(root,"zh-Hans")
     })
@@ -374,8 +428,9 @@
     //中转英
     document.querySelector("#zh2en").addEventListener("click", async (event) => {
         event.stopPropagation()
+        clearSpan()
         await auth()
-        console.log("translate....")
+        console.log("translate....zh2en")
         const root = document.body;
         traversePlus(root,"en")
     })
@@ -421,6 +476,21 @@
             Toast.success("双显已开")
         }
         GM_setValue("isDoubleShow", isDoubleShow)
+
+    })
+
+    //高亮
+    const hlBtn = document.querySelector("#highlightTranslateText")
+    hlBtn.addEventListener("click", (event) => {
+        event.stopPropagation()
+        if (isHighlight) {
+            isHighlight = false;
+            Toast.error("高亮已关")
+        } else {
+            isHighlight = true;
+            Toast.success("高亮已开")
+        }
+        GM_setValue("isDoubleShow", isHighlight)
 
     })
 
