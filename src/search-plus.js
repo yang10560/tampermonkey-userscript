@@ -155,7 +155,7 @@
     'use strict';
 
 
-    let JSver = '2.9.3';
+    let JSver = '2.9.4';
 
 
     function getGPTMode() {
