@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.9.5
+// @version      2.9.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -155,7 +155,7 @@
     'use strict';
 
 
-    let JSver = '2.9.5';
+    let JSver = '2.9.6';
 
 
     function getGPTMode() {
@@ -2250,7 +2250,7 @@
             responseType: "stream"
         }).then((stream) => {
                 const reader = stream.response.getReader();
-                //     console.log(reader.read)
+                let result = []
                 reader.read().then(function processText({done, value}) {
                     if (done) {
 
@@ -2262,32 +2262,24 @@
                         let decoder = new TextDecoder('utf-8');
                         let d = decoder.decode(byteArray);
                         console.log(d)
-                        let dd = d.split("-^&^-");
-                        if(dd.length === 2){
-                            let nowResult = JSON.parse(dd[0])
+
+                        let jsonLines = d.split("\n");
+                        if(jsonLines[jsonLines.length - 1].startsWith("{")){
+                            let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
                             if (nowResult.text) {
-                                finalResult.push(dd[1])
-                                showAnserAndHighlightCodeStr(finalResult.join(""))
+                                console.log(nowResult)
+                                finalResult = nowResult.text
+                                showAnserAndHighlightCodeStr(finalResult)
                             }
                             if (nowResult.id) {
                                 parentID_68686 = nowResult.id;
                             }
                         }else{
-                            finalResult.push(d)
-                            showAnserAndHighlightCodeStr(finalResult.join(""))
-                        }
-
-                        /*let jsonLines = d.split("\n");
-                        let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
+                            result.push(jsonLines[jsonLines.length - 1])
+                            finalResult = result.join("")
                             showAnserAndHighlightCodeStr(finalResult)
                         }
-                        if (nowResult.id) {
-                            parentID_68686 = nowResult.id;
-                        }*/
 
 
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.60
+// @version      4.61
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -76,7 +76,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    let JSVer = "v4.60"
+    let JSVer = "v4.61"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1157,6 +1157,7 @@
             responseType: "stream"
         }).then((stream) => {
              GM_simulateBotResponse("请稍后...")
+             let result = []
              const reader = stream.response.getReader();
              reader.read().then(function processText({done, value}) {
                  if (done) {
@@ -1167,34 +1168,26 @@
 
                      let byteArray = new Uint8Array(value);
                      let decoder = new TextDecoder('utf-8');
-                     console.log(decoder.decode(byteArray))
                      let d = decoder.decode(byteArray);
-                     /*let dd = d.split("-^&^-");
-                     if(dd.length === 2){
-                         let nowResult = JSON.parse(dd[0])
+                     console.log(d)
+
+                     let jsonLines = d.split("\n");
+                     if(jsonLines[jsonLines.length - 1].startsWith("{")){
+                         let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
+
                          if (nowResult.text) {
-                             finalResult.push(dd[1])
-                             GM_fillBotResponse(finalResult.join(""))
+                             console.log(nowResult)
+                             finalResult = nowResult.text
+                             GM_fillBotResponse(finalResult)
                          }
                          if (nowResult.id) {
                              parentID_68686 = nowResult.id;
                          }
                      }else{
-                         finalResult.push(d)
-                         GM_fillBotResponse(finalResult.join(""))
-                     }*/
-                     let jsonLines = d.split("\n");
-                     let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-
-                     if (nowResult.text) {
-                         console.log(nowResult)
-                         finalResult = nowResult.text
+                         result.push(jsonLines[jsonLines.length - 1])
+                         finalResult = result.join("")
                          GM_fillBotResponse(finalResult)
                      }
-                     if (nowResult.id) {
-                         parentID_68686 = nowResult.id;
-                     }
-
 
 
                  } catch (ex) {
