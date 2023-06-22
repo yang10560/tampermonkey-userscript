@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.1.6
+// @version      1.1.7
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -25,6 +25,7 @@
 // @connect      api-edge.cognitive.microsofttranslator.com
 // @connect      edge.microsoft.com
 // @connect      fanyi-api.baidu.com
+// @connect      translate.googleapis.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -38,6 +39,7 @@
     const APIConst = {
         Baidu: 'baidu',
         Microsoft: 'microsoft',
+        Google: 'google',
         BaiduAPI: {
             name : "baidu",
             ChineseLang: 'zh',
@@ -50,9 +52,16 @@
             name : "microsoft",
             ChineseLang: 'zh-Hans',
             EnglishLang: 'en'
+        },
+        //google需要科学上网
+        GoogleAPI:{
+            name : "google",
+            ChineseLang: 'zh-CN',
+            EnglishLang: 'en'
         }
+
     }
-    let currentAPI = APIConst.MicrosoftAPI
+    let currentAPI = APIConst.MicrosoftAPI //默认微软
     let isDoubleShow = true //是否双显 true/false
     let isHighlight = true //是否译文高亮 true/false
     let englishAutoTranslate = false //英文自动翻译 true/false
@@ -63,11 +72,15 @@
     let excludeSites = ['www.qq.com', 'yeyu1024.xyz'] //排除不运行的网站 exclude web host
     let noTranslateWords = ['SpringBoot', 'ChatGPT', 'YouTube', 'Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
 
-    try {
-        $("head").append($(
-            '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
-        ));
-    }catch (e) {
+    let switchIndex = 0;
+
+    function addHeaderCss(){
+        try {
+            $("head").append($(
+                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
+            ));
+        }catch (e) {
+        }
     }
 
     //注册菜单
@@ -137,7 +150,6 @@
                 selectTolang = currentAPI.EnglishLang;
                 console.log('当前目标语言为英语')
                 Toast.success('当前目标语言为英语')
-
             } else {
                 selectTolang =  currentAPI.ChineseLang;
                 console.log('当前目标语言为中文')
@@ -154,6 +166,15 @@
         isDoubleShow = await GM_getValue("isDoubleShow", true)
         isHighlight = await GM_getValue("isHighlight", true)
         englishAutoTranslate = await GM_getValue("englishAutoTranslate", false)
+
+        try {
+            switchIndex = await GM_getValue("switchIndex",0) - 1
+            console.warn("switchIndex",switchIndex)
+            switchAPI()
+        }catch (ex) {
+            switchIndex = 0;
+            console.error("switchIndex ex:",switchIndex, ex)
+        }
 
         console.warn("isDoubleShow", isDoubleShow)
         console.warn("isHighlight", isHighlight)
@@ -294,15 +315,28 @@
         }
     }
 
-    function switchAPI(){
 
-        if (currentAPI.name === APIConst.Baidu) {
-            currentAPI = APIConst.MicrosoftAPI
-            Toast.success('已经切换微软翻译')
-        } else {
-            currentAPI = APIConst.BaiduAPI
-            Toast.success('已经切换百度翻译')
-        }
+    function switchAPI(){
+        switchIndex++;
+        try {
+            switch (switchIndex){
+                case 1:
+                    currentAPI = APIConst.BaiduAPI
+                    Toast.success('已经切换百度翻译')
+                    break
+                case 2:
+                    currentAPI = APIConst.GoogleAPI
+                    Toast.success('已经切换谷歌翻译')
+                    break
+                default:
+                    currentAPI = APIConst.MicrosoftAPI
+                    Toast.success('已经切换微软翻译')
+                    switchIndex = 0
+            }
+        }catch (e) {}
+        selectTolang = currentAPI.ChineseLang //重置
+        //持久化
+        GM_setValue("switchIndex",switchIndex)
     }
 
 
@@ -347,9 +381,7 @@
 
     setInterval(() => {
         if (!document.getElementById("toastr-css")) {
-            $("head").append($(
-                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
-            ));
+            addHeaderCss()
         }
     }, 5000)
 
@@ -622,6 +654,8 @@
                 yiwen =  JSON.parse(res.responseText).trans_result[0].dst;
             }else if(currentAPI.name === APIConst.Microsoft){
                 yiwen =  JSON.parse(res.responseText)[0].translations[0].text;
+            }else if(currentAPI.name === APIConst.Google){
+                yiwen = JSON.parse(res.responseText)[0][0][0];
             }else {
                 //default
                 yiwen =  JSON.parse(res.responseText)[0].translations[0].text;
@@ -687,7 +721,7 @@
     //百度api翻译
     function translateBaiduApi(text, node, lang) {
         if (!text) {
-            console.error("no authCode or text:", authCode, text)
+            console.error("no text:", text)
             return
         }
         if (noTranslateWords.includes(text)) {
@@ -716,6 +750,41 @@
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             data: encodedData,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
+    //Google翻译
+    function translateGoogle(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+        let from;
+        if(lang === currentAPI.ChineseLang){
+            from = currentAPI.EnglishLang;
+        }else {
+            from = currentAPI.ChineseLang;
+        }
+
+        GM_fetch({
+            method: "GET",
+            url: `https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=${from}&tl=${lang}&q=${encodeURIComponent(text)}`,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
@@ -777,11 +846,13 @@
 
 
 
-                    //分流
+                    //API分流
                     if(currentAPI.name === APIConst.Baidu){
                         translateBaiduApi(node.textContent.trim(), node, lang)
                     }else if(currentAPI.name === APIConst.Microsoft){
                         translateMicrosoft(node.textContent.trim(), node, lang)
+                    }else if(currentAPI.name === APIConst.Google){
+                        translateGoogle(node.textContent.trim(), node, lang)
                     }else {
                         //default microsoft
                         translateMicrosoft(node.textContent.trim(), node, lang)
