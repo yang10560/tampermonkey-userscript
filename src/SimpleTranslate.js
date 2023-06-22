@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.1.1
+// @version      1.1.2
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -204,7 +204,7 @@
 
     }
 
-    async function handleMouseUp(event) {
+    async function handleMouseUpOrTouchend(event) {
         const selectText = window.getSelection().toString()
         console.error(event.target)
         if (/(qs_searchBoxOuter|qs_searchBox|qs_selectedText)/.test(event.target.id)) {
@@ -218,8 +218,12 @@
         if (!selectText) return;
 
         console.warn(selectText)
-        const mouseX = event.pageX;
-        const mouseY = event.pageY;
+        let mouseX = event.pageX;
+        let mouseY = event.pageY;
+        if(event.touches && event.touches.length > 0){
+            mouseX = event.touches[0].pageX
+            mouseY = event.touches[0].pageY
+        }
 
         console.log('鼠标位置：', mouseX, mouseY);
 
@@ -243,16 +247,16 @@
         if (leftSelectMode) {
             console.log('鼠标选词翻译已经关闭',leftSelectMode)
             leftSelectMode = false;
-            document.removeEventListener('mouseup', handleMouseUp);
-
-            Toast.success('鼠标选词翻译已经关闭')
+            document.removeEventListener('mouseup', handleMouseUpOrTouchend);
+            document.removeEventListener('touchend', handleMouseUpOrTouchend);
+            Toast.success('选词翻译已经关闭')
 
         } else {
             console.log('鼠标选词翻译已经开启',leftSelectMode)
             leftSelectMode = true;
-            document.addEventListener('mouseup', handleMouseUp);
-
-            Toast.success('鼠标选词翻译已经开启')
+            document.addEventListener('mouseup', handleMouseUpOrTouchend);
+            document.addEventListener('touchend', handleMouseUpOrTouchend);
+            Toast.success('选词翻译已经开启')
         }
     }
 
