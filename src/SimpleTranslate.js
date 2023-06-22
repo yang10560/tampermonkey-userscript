@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.1.0
+// @version      1.1.1
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -38,7 +38,8 @@
     let englishAutoTranslate = false //英文自动翻译 true/false
     let highlightColor = '#00FF00' //高亮颜色
     let selectTolang = 'zh-Hans' // 选词翻译目标语言 zh-Hans / en
-    let selectMode = false //选词模式开关 默认关
+    let selectMode = false //右键选词模式开关 默认关
+    let leftSelectMode = false //左键选词模式开关 默认关
     let excludeSites = ['www.qq.com', 'yeyu1024.xyz'] //排除不运行的网站 exclude web host
     let noTranslateWords = ['SpringBoot', 'ChatGPT', 'YouTube', 'Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
 
@@ -106,6 +107,10 @@
             }
 
         }, "selectMode");
+
+        GM_registerMenuCommand("鼠标选词开关", function (event) {
+            leftSelect()
+        }, "leftSelectMode");
 
         GM_registerMenuCommand("选词翻译目标语言", function (event) {
             if (selectTolang === 'zh-Hans') {
@@ -197,6 +202,58 @@
         //翻译
         translateTo(selectTolang, target)
 
+    }
+
+    async function handleMouseUp(event) {
+        const selectText = window.getSelection().toString()
+        console.error(event.target)
+        if (/(qs_searchBoxOuter|qs_searchBox|qs_selectedText)/.test(event.target.id)) {
+            return;
+        } else {
+            document.querySelectorAll('#qs_searchBoxOuter').forEach(item => {
+                item.remove();
+            })
+        }
+
+        if (!selectText) return;
+
+        console.warn(selectText)
+        const mouseX = event.pageX;
+        const mouseY = event.pageY;
+
+        console.log('鼠标位置：', mouseX, mouseY);
+
+        $("body").append($(`
+            <div id="qs_searchBoxOuter">
+                <a id="qs_searchBox" style="display: block; left:${mouseX - 10}px; top: ${mouseY}px;">
+                    <div id="qs_selectedText">${selectText}</div>
+                </a>
+            </div>`))
+        const old_isDoubleShow = isDoubleShow;
+        isDoubleShow = false;
+        translateTo(selectTolang, document.getElementById("qs_searchBoxOuter"))
+        setTimeout(()=>{
+            isDoubleShow = old_isDoubleShow;
+        },2000)
+        console.log('鼠标松开了');
+    }
+
+
+    function leftSelect(){
+        if (leftSelectMode) {
+            console.log('鼠标选词翻译已经关闭',leftSelectMode)
+            leftSelectMode = false;
+            document.removeEventListener('mouseup', handleMouseUp);
+
+            Toast.success('鼠标选词翻译已经关闭')
+
+        } else {
+            console.log('鼠标选词翻译已经开启',leftSelectMode)
+            leftSelectMode = true;
+            document.addEventListener('mouseup', handleMouseUp);
+
+            Toast.success('鼠标选词翻译已经开启')
+        }
     }
 
 
@@ -375,6 +432,39 @@
          color: ${highlightColor} !important;
      }
      
+     /*选词css*/
+     #qs_searchBox {
+                background-color: #fff;
+                color: #444;
+                text-align: center;
+                padding: 12px 12px 0 12px;
+                max-width: 300px;
+                position: absolute;
+               /* height: 28px;*/
+                border-radius: 6px;
+                border: none;
+                outline: 0;
+                text-decoration: none;
+                box-shadow: 0 0 0 1px rgba(0,0,0,.05),0 2px 3px 0 rgba(0,0,0,.1);
+                margin-top: 8px;
+                display: none;
+                cursor: pointer;
+                font-weight: 600;
+                z-index: 30009
+            }
+
+            #qs_searchBox:hover {
+                box-shadow: 0 0 0 1px rgba(0,0,0,.05),0 2px 4px 1px rgba(0,0,0,.14)
+            }
+
+            #qs_selectedText {
+                /* padding-right:12px; */
+                /*overflow: hidden;*/
+                text-overflow: ellipsis;
+                white-space: normal;
+                max-width: 258px;
+            }
+     
         `)
 
     //add box
@@ -400,14 +490,17 @@
         <span>中转英</span>
        </a>
       </li>
-      <li>
+      <li style="display: flex; justify-content: center ">
        <a id="doubleShow" href="javascript:void(0)">
-        <span>双显开关</span>
+        <span>双显</span>
+       </a>
+       <a id="highlightTranslateText" href="javascript:void(0)">
+        <span>高亮</span>
        </a>
       </li>
       <li>
-       <a id="highlightTranslateText" href="javascript:void(0)">
-        <span>高亮开关</span>
+       <a id="leftSelectMode" href="javascript:void(0)">
+        <span>选词翻译</span>
        </a>
       </li>
       <li>
@@ -694,6 +787,14 @@
         GM_setValue("isDoubleShow", isHighlight)
 
     })
+
+    //选词
+    const leftSelectModeBtn = document.querySelector("#leftSelectMode")
+    leftSelectModeBtn.addEventListener("click", (event) => {
+        event.stopPropagation()
+        leftSelect()
+    })
+
 
 
     // 判断是不是中文网页
