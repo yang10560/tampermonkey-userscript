@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.1.5
+// @version      1.1.6
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -14,6 +14,7 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=translate.google.com
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
 // @require      https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,6 +24,7 @@
 // @grant        GM_registerMenuCommand
 // @connect      api-edge.cognitive.microsofttranslator.com
 // @connect      edge.microsoft.com
+// @connect      fanyi-api.baidu.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -33,12 +35,29 @@
     'use strict';
 
     let authCode;
-
+    const APIConst = {
+        Baidu: 'baidu',
+        Microsoft: 'microsoft',
+        BaiduAPI: {
+            name : "baidu",
+            ChineseLang: 'zh',
+            EnglishLang: 'en',
+            //appid 百度API有月额度(100w字符/月)限制，建议申请自己的秘钥，详见：https://fanyi-api.baidu.com/
+            appid:'20230622001720783',  //appid 申请可见
+            secret:'dQVha4zSH26nMDLpfoVC'// secret 申请可见
+        },
+        MicrosoftAPI:{
+            name : "microsoft",
+            ChineseLang: 'zh-Hans',
+            EnglishLang: 'en'
+        }
+    }
+    let currentAPI = APIConst.MicrosoftAPI
     let isDoubleShow = true //是否双显 true/false
     let isHighlight = true //是否译文高亮 true/false
     let englishAutoTranslate = false //英文自动翻译 true/false
     let highlightColor = '#00FF00' //高亮颜色
-    let selectTolang = 'zh-Hans' // 选词翻译目标语言 zh-Hans / en
+    let selectTolang = currentAPI.ChineseLang // 选词翻译目标语言
     let selectMode = false //右键选词模式开关 默认关
     let leftSelectMode = false //左键选词模式开关 默认关
     let excludeSites = ['www.qq.com', 'yeyu1024.xyz'] //排除不运行的网站 exclude web host
@@ -114,13 +133,13 @@
         }, "leftSelectMode");
 
         GM_registerMenuCommand("选词翻译目标语言", function (event) {
-            if (selectTolang === 'zh-Hans') {
-                selectTolang = 'en';
+            if (selectTolang === currentAPI.ChineseLang) {
+                selectTolang = currentAPI.EnglishLang;
                 console.log('当前目标语言为英语')
                 Toast.success('当前目标语言为英语')
 
             } else {
-                selectTolang = 'zh-Hans';
+                selectTolang =  currentAPI.ChineseLang;
                 console.log('当前目标语言为中文')
                 Toast.success('当前目标语言为中文')
             }
@@ -272,6 +291,17 @@
             document.addEventListener('mouseup', handleMouseUpOrTouchend);
             document.addEventListener('touchcancel', handleMouseUpOrTouchend);
             Toast.success('选词翻译已经开启')
+        }
+    }
+
+    function switchAPI(){
+
+        if (currentAPI.name === APIConst.Baidu) {
+            currentAPI = APIConst.MicrosoftAPI
+            Toast.success('已经切换微软翻译')
+        } else {
+            currentAPI = APIConst.BaiduAPI
+            Toast.success('已经切换百度翻译')
         }
     }
 
@@ -522,9 +552,12 @@
         <span>高亮</span>
        </a>
       </li>
-      <li>
+      <li style="display: flex; justify-content: center ">
        <a id="leftSelectMode" href="javascript:void(0)">
-        <span>选词翻译</span>
+        <span>选词</span>
+       </a>
+       <a id="switchAPI" href="javascript:void(0)">
+        <span>切换</span>
        </a>
       </li>
       <li>
@@ -584,7 +617,15 @@
     //渲染页面
     function renderPage(res, text, node, lang) {
         try {
-            let yiwen = JSON.parse(res.responseText)[0].translations[0].text;
+            let yiwen;
+            if(currentAPI.name === APIConst.Baidu){
+                yiwen =  JSON.parse(res.responseText).trans_result[0].dst;
+            }else if(currentAPI.name === APIConst.Microsoft){
+                yiwen =  JSON.parse(res.responseText)[0].translations[0].text;
+            }else {
+                //default
+                yiwen =  JSON.parse(res.responseText)[0].translations[0].text;
+            }
             if (yiwen === text) return
             /*node.innerText = text + "=>" + yiwen*/
             const outersp = document.createElement("span")
@@ -643,6 +684,53 @@
 
     }
 
+    //百度api翻译
+    function translateBaiduApi(text, node, lang) {
+        if (!text) {
+            console.error("no authCode or text:", authCode, text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+        const salt = `${Date.now()}`;
+        const sign = CryptoJS.MD5(`${APIConst.BaiduAPI.appid}${text}${salt}${APIConst.BaiduAPI.secret}`).toString();
+        const params = new URLSearchParams();
+        let sendData = {
+            q: text,
+            from:"auto",
+            to:lang,
+            appid:`${APIConst.BaiduAPI.appid}`,
+            salt:`${salt}`,
+            sign:sign
+        }
+        for (const key in sendData) {
+            params.append(key, sendData[key]);
+        }
+        const encodedData = params.toString();
+
+        GM_fetch({
+            method: "POST",
+            url: `https://fanyi-api.baidu.com/api/trans/vip/translate`,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: encodedData,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
+
+
 
     //遍历
     function traversePlus(node, lang) {
@@ -658,12 +746,12 @@
 
         // console.error("nodeType:", node.nodeType)
 
-        if (lang === 'en' && !hasChinese(node.textContent)) {
+        if (lang === currentAPI.EnglishLang && !hasChinese(node.textContent)) {
             //不含中文
             return;
         }
 
-        if (lang === 'zh-Hans' && !hasEnglish(node.textContent)) {
+        if (lang === currentAPI.ChineseLang && !hasEnglish(node.textContent)) {
             //不含英文
             return;
         }
@@ -680,14 +768,26 @@
                         return;
                     }
                     //排除长度大于1中只有一个英文
-                    if (lang === 'zh-Hans' && srcText.length > 1) {
+                    if (lang === currentAPI.ChineseLang && srcText.length > 1) {
                         // debugger
                         if (/^[a-zA-Z]$/.test(srcText.replace(/[^a-zA-Z]/g, '').trim())) {
                             return;
                         }
                     }
 
-                    translateMicrosoft(node.textContent.trim(), node, lang)
+
+
+                    //分流
+                    if(currentAPI.name === APIConst.Baidu){
+                        translateBaiduApi(node.textContent.trim(), node, lang)
+                    }else if(currentAPI.name === APIConst.Microsoft){
+                        translateMicrosoft(node.textContent.trim(), node, lang)
+                    }else {
+                        //default microsoft
+                        translateMicrosoft(node.textContent.trim(), node, lang)
+                    }
+
+
                 }
 
             }
@@ -719,8 +819,11 @@
         if(!noclear){
             clearSpan(lang)
         }
-        await auth()
-        console.log(`translate to....${lang}`)
+        //微软鉴权
+        if(currentAPI.name === APIConst.Microsoft){
+            await auth()
+        }
+        console.log(`translate to....${lang} : ${currentAPI.name}`)
         const root = document.body;
         traversePlus(rootNode || root, lang)
     }
@@ -746,13 +849,13 @@
     //英转中
     document.querySelector("#en2zh").addEventListener("click", async (event) => {
         event.stopPropagation()
-        translateTo("zh-Hans")
+        translateTo(currentAPI.ChineseLang)
     })
 
     //中转英
     document.querySelector("#zh2en").addEventListener("click", async (event) => {
         event.stopPropagation()
-        translateTo("en")
+        translateTo(currentAPI.EnglishLang)
     })
 
     //原文
@@ -821,6 +924,13 @@
         leftSelect()
     })
 
+    //切换api
+    const switchAPIBtn = document.querySelector("#switchAPI")
+    switchAPIBtn.addEventListener("click", (event) => {
+        event.stopPropagation()
+        switchAPI()
+    })
+
 
 
     // 判断是不是中文网页
@@ -836,7 +946,7 @@
         if (englishAutoTranslate && !isChinesePage()) {
             console.log('自动翻译')
             Toast.success('检测到英文, 正在自动翻译. 若你的网络过慢可能会出现未翻译完整，请手动翻译。关闭自动翻译请到菜单!', '', {timeOut: 10000})
-            translateTo('zh-Hans')
+            translateTo( currentAPI.ChineseLang)
 
         }
     },2000)
