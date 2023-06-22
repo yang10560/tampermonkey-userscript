@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.1.3
+// @version      1.1.4
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -19,6 +19,7 @@
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
+// @grant        GM_setClipboard
 // @grant        GM_registerMenuCommand
 // @connect      api-edge.cognitive.microsofttranslator.com
 // @connect      edge.microsoft.com
@@ -206,6 +207,15 @@
 
     async function handleMouseUpOrTouchend(event) {
         event.stopPropagation()
+
+        //copyTranslatedText
+        if(/copyTranslatedText/.test(event.target.id)){
+            GM_setClipboard(document.querySelector('#qs_selectedText').innerText, "text");
+            console.log('复制成功')
+            Toast.success("复制成功!")
+            return
+        }
+
         const selectText = window.getSelection().toString()
         console.error(event.target)
         if (/(qs_searchBoxOuter|qs_searchBox|qs_selectedText)/.test(event.target.id)) {
@@ -229,11 +239,15 @@
         console.log('鼠标位置：', mouseX, mouseY);
 
         $("body").append($(`
-            <div id="qs_searchBoxOuter">
-                <a id="qs_searchBox" style="display: block; left:${mouseX - 10}px; top: ${mouseY}px;">
-                    <div id="qs_selectedText">${selectText}</div>
-                </a>
-            </div>`))
+                <div id="qs_searchBoxOuter">
+                    <a id="qs_searchBox" style="display: block; left:${mouseX - 10}px; top: ${mouseY}px;">
+                        <div id="qs_selectedText">${selectText}</div>
+                        <hr>
+                        <div id="qs_searchIconOuter"><span id="qs_searchIconInner"><svg id="copyTranslatedText" width="24" height="24" data-v-13fede38="" t="1679666016648" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6241" class="icon"><path data-v-13fede38="" d="M661.333333 234.666667A64 64 0 0 1 725.333333 298.666667v597.333333a64 64 0 0 1-64 64h-469.333333A64 64 0 0 1 128 896V298.666667a64 64 0 0 1 64-64z m-21.333333 85.333333H213.333333v554.666667h426.666667v-554.666667z m191.829333-256a64 64 0 0 1 63.744 57.856l0.256 6.144v575.701333a42.666667 42.666667 0 0 1-85.034666 4.992l-0.298667-4.992V149.333333H384a42.666667 42.666667 0 0 1-42.368-37.674666L341.333333 106.666667a42.666667 42.666667 0 0 1 37.674667-42.368L384 64h447.829333z" fill="#909399" p-id="6242"></path></svg></span></div>
+                    </a>
+                </div>
+                
+        `))
         const old_isDoubleShow = isDoubleShow;
         isDoubleShow = false;
         translateTo(selectTolang, document.getElementById("qs_searchBoxOuter"))
@@ -468,6 +482,11 @@
                 text-overflow: ellipsis;
                 white-space: normal;
                 max-width: 258px;
+            }
+            
+
+            #qs_searchIconInner {
+                display: inline-flex;
             }
      
         `)
