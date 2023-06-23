@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.9.6
+// @version      2.9.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -49,6 +49,8 @@
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.6/katex.min.js
 // @require    https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
+// @resource toastCss  https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css
+// @resource katexCss  https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.6/katex.css
 // @connect    api.forchange.cn
 // @connect    gpt008.com
 // @connect    chatforai.cc
@@ -155,7 +157,7 @@
     'use strict';
 
 
-    let JSver = '2.9.6';
+    let JSver = '2.9.7';
 
 
     function getGPTMode() {
@@ -164,6 +166,19 @@
 
     let darkTheme = localStorage.getItem("darkTheme")
     console.log(darkTheme)
+
+    //katex Css
+    try {
+        GM_addStyle(GM_getResourceText("katexCss"))
+    }catch (e) {}
+
+    //toastr css
+    try {
+        GM_addStyle(GM_getResourceText("toastCss"))
+    }catch (e) {}
+
+
+
     //(prefers-color-scheme: light)
     function addHeadCss() {
         if(!document.getElementById("github-markdown-link")){
@@ -192,23 +207,11 @@
             }
 
         }
-        if(!document.getElementById("katex-link")){
-            $("head").append($(
-                '<link id="katex-link" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.6/katex.css" rel="stylesheet">'
-            ));
-        }
 
         //spark-js
         if(!document.getElementById("spark-js")){
             $("head").append($(
                 '<script id="spark-js" src="https://static.geetest.com/g5/gd.js"></script>'
-            ));
-        }
-
-        //toastr-css
-        if(!document.getElementById("toastr-css")){
-            $("head").append($(
-                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
             ));
         }
 
