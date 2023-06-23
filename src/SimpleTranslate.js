@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.1.9
+// @version      1.2.0
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -15,6 +15,7 @@
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
 // @require      https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
+// @resource toastCss  https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -22,6 +23,7 @@
 // @grant        GM_openInTab
 // @grant        GM_setClipboard
 // @grant        GM_registerMenuCommand
+// @grant        GM_getResourceText
 // @connect      api-edge.cognitive.microsofttranslator.com
 // @connect      edge.microsoft.com
 // @connect      fanyi-api.baidu.com
@@ -74,14 +76,14 @@
 
     let switchIndex = 0;
 
-    function addHeaderCss(){
+    function addToastCss(){
         try {
-            $("head").append($(
-                '<link id="toastr-css" href="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">'
-            ));
+            GM_addStyle(GM_getResourceText("toastCss"))
         }catch (e) {
+
         }
     }
+    addToastCss()
 
     //注册菜单
     setTimeout(() => {
@@ -375,16 +377,6 @@
     if (excludeSites.includes(location.host)) {
         throw new Error('当前网站不允许运行,已经停止!')
     }
-
-
-
-
-    setInterval(() => {
-        if (!document.getElementById("toastr-css")) {
-            addHeaderCss()
-        }
-    }, 5000)
-
 
 
     async function GM_fetch(details) {
