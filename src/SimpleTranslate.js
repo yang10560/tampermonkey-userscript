@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.2.1
+// @version      1.2.2
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -77,7 +77,7 @@
     let switchIndex = 0;
 
     let enableCache = true; //是否启用缓存 true/false 默认启用
-    let maxCacheCount = 2000; //最大缓存数量
+    let maxCacheCount = 1500; //最大缓存数量
 
     function isEqual(obj1, obj2) {
         if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
@@ -147,12 +147,20 @@
         }
     }
 
+    let cacheChanged = true;
+    let tempCache;
     function readCache(key) {
-        const value = localStorage.getItem(key);
-        return value !== null ? jsonToObject(value) : [];
+        if(cacheChanged){
+            const value = localStorage.getItem(key);
+            const ret = (value !== null ? jsonToObject(value) : [])
+            tempCache = ret;
+            return ret;
+        }else {
+            return tempCache || [];
+        }
     }
-
     function storeCache(key, store_arr) {
+        cacheChanged = true;
         const old_cache = readCache(key)
         const new_cache = combineArray(old_cache, store_arr)
         localStorage.setItem(key, objectToJson(new_cache))
@@ -160,42 +168,76 @@
 
 
     function translateFromCache(text, node, lang, key) {
-        if (!text) {
-            console.error("no text:", text)
-            return true;
-        }
-        if (noTranslateWords.includes(text)) {
-            return true;
-        }
+        //异步
+        return new Promise((resolve, reject) =>{
+            if (!text) {
+                //console.error("no text:", text)
+                // return true;
+                resolve("no text:")
+                return
+            }
+            if (noTranslateWords.includes(text)) {
+                // return true;
+                resolve("do not TranslateWords")
+                return
+            }
 
-        try {
-            const cache = readCache(key) //[{},{}...]
-            if (cache) {
-                for (let i = 0; i < cache.length; i++) {
-                    if (lang === currentAPI.ChineseLang) {
-                        //en to zh
-                        if (cache[i].english === text) {
-                            renderPage({cacheResult: cache[i].chinese}, text, node, lang)
-                            console.warn("en to zh cache: ", text)
-                            return true;
+            let shouldBreak = false;
+            let rj = false;//reject
+            try {
+                const cache = readCache(key) //[{},{}...]
+                if (cache) {
+                    for (let i = 0; i < cache.length; i++) {
+                        if (lang === currentAPI.ChineseLang) {
+                            //en to zh
+                            if (cache[i].english === text) {
+                                setTimeout(()=>{
+                                    renderPage({cacheResult: cache[i].chinese}, text, node, lang)
+                                })
+                                console.warn("en to zh cache: ", text)
+                                shouldBreak = true;
+                                break;
+                                //return true;
+                            }
+                        } else if (lang === currentAPI.EnglishLang) {
+                            //zh to en
+                            if (cache[i].chinese === text) {
+                                console.warn("zh to en cache: ", text)
+                                setTimeout(()=>{
+                                    renderPage({cacheResult: cache[i].english}, text, node, lang)
+                                })
+                                shouldBreak = true;
+                                break;
+                                //return true;
+                            }
+                        } else {
+                            //return false;
+                            shouldBreak = true;
+                            rj = true;
+                            break;
                         }
-                    } else if (lang === currentAPI.EnglishLang) {
-                        //zh to en
-                        if (cache[i].chinese === text) {
-                            console.warn("zh to en cache: ", text)
-                            renderPage({cacheResult: cache[i].english}, text, node, lang)
-                            return true;
-                        }
-                    } else {
-                        return false;
                     }
                 }
+            } catch (e) {
+                console.error("translateFromCache ex", e)
+                //return false;
+                reject("translateFromCache ex")
+                return;
             }
-        } catch (e) {
-            console.error("translateFromCache ex", e)
-            return false;
-        }
-        return false;
+            if(shouldBreak){
+                if(rj){
+                    //中断被拒绝
+                    reject('语言异常')
+                }else {
+                    //中断未被拒绝
+                    resolve('成功缓存')
+                }
+            }else {
+                //不中断
+                reject('无缓存')
+            }
+            // return false;
+        })
     }
 
     function addToastCss() {
@@ -804,7 +846,7 @@
             node.replaceWith(outersp);
 
             if (enableCache && res && !res.cacheResult) {
-                //TODO 缓存数据
+                //缓存数据
                 if (lang === currentAPI.ChineseLang) {
                     //en to zh
                     const arr = [{english: text, chinese: yiwen}]
@@ -982,26 +1024,34 @@
                     }
 
 
-                    //TODO 取缓存  renderPage(res, text, node, lang)
+                    //取缓存  renderPage(res, text, node, lang)
 
 
                     const txt = node.textContent.trim();
 
-                    if (enableCache && translateFromCache(txt, node, lang, `${currentAPI.name}wordCache`)) {
-                        return;
+                    if (enableCache) {
+                        translateFromCache(txt, node, lang, `${currentAPI.name}wordCache`)
+                            .then(function (success) {
+                                //缓存成功
+                            },function (reason){
+                               //缓存失败
+
+                                //API分流
+                                if (currentAPI.name === APIConst.Baidu) {
+                                    translateBaiduApi(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.Microsoft) {
+                                    translateMicrosoft(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.Google) {
+                                    translateGoogle(txt, node, lang)
+                                } else {
+                                    //default microsoft
+                                    translateMicrosoft(txt, node, lang)
+                                }
+                            });
+                        //return;
                     }
 
-                    //API分流
-                    if (currentAPI.name === APIConst.Baidu) {
-                        translateBaiduApi(txt, node, lang)
-                    } else if (currentAPI.name === APIConst.Microsoft) {
-                        translateMicrosoft(txt, node, lang)
-                    } else if (currentAPI.name === APIConst.Google) {
-                        translateGoogle(txt, node, lang)
-                    } else {
-                        //default microsoft
-                        translateMicrosoft(txt, node, lang)
-                    }
+
 
                 }
 
