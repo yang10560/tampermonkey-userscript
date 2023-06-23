@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.2.0
+// @version      1.2.1
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -43,21 +43,21 @@
         Microsoft: 'microsoft',
         Google: 'google',
         BaiduAPI: {
-            name : "baidu",
+            name: "baidu",
             ChineseLang: 'zh',
             EnglishLang: 'en',
             //appid 百度API有月额度(100w字符/月)限制，建议申请自己的秘钥，详见：https://fanyi-api.baidu.com/
-            appid:'20230622001720783',  //appid 申请可见
-            secret:'dQVha4zSH26nMDLpfoVC'// secret 申请可见
+            appid: '20230622001720783',  //appid 申请可见
+            secret: 'dQVha4zSH26nMDLpfoVC'// secret 申请可见
         },
-        MicrosoftAPI:{
-            name : "microsoft",
+        MicrosoftAPI: {
+            name: "microsoft",
             ChineseLang: 'zh-Hans',
             EnglishLang: 'en'
         },
         //google需要科学上网
-        GoogleAPI:{
-            name : "google",
+        GoogleAPI: {
+            name: "google",
             ChineseLang: 'zh-CN',
             EnglishLang: 'en'
         }
@@ -69,20 +69,143 @@
     let englishAutoTranslate = false //英文自动翻译 true/false
     let highlightColor = '#00FF00' //高亮颜色
     let selectTolang = currentAPI.ChineseLang // 选词翻译目标语言
-    let selectMode = false //右键选词模式开关 默认关
-    let leftSelectMode = false //左键选词模式开关 默认关
+    let selectMode = false //右键选词模式开关 true/false 默认关
+    let leftSelectMode = false //左键选词模式开关 true/false 默认关
     let excludeSites = ['www.qq.com', 'yeyu1024.xyz'] //排除不运行的网站 exclude web host
     let noTranslateWords = ['SpringBoot', 'ChatGPT', 'YouTube', 'Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
 
     let switchIndex = 0;
 
-    function addToastCss(){
+    let enableCache = true; //是否启用缓存 true/false 默认启用
+    let maxCacheCount = 2000; //最大缓存数量
+
+    function isEqual(obj1, obj2) {
+        if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+            return obj1 === obj2;
+        }
+
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+
+        if (keys1.length !== keys2.length) {
+            return false;
+        }
+
+        for (let key of keys1) {
+            if (!isEqual(obj1[key], obj2[key])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function addToArray(arr, obj, maxLength) {
+        maxLength = maxLength || maxCacheCount;
+        if (arr.length >= maxLength) {
+            arr.shift();
+        }
+
+        let flag = true;
+        for (let i = 0; i < arr.length; i++) {
+            if (isEqual(arr[i], obj)) {
+                flag = false;
+                break;
+            }
+        }
+
+        if (flag) {
+            arr.push(obj);
+        }
+        return arr;
+    }
+
+    function combineArray(arr1, arr2) {
+        for (let i = 0; i < arr2.length; i++) {
+            addToArray(arr1, arr2[i])
+        }
+        return arr1;
+    }
+
+    function jsonToObject(jsonStr) {
+        try {
+            const obj = JSON.parse(jsonStr);
+            return obj;
+        } catch (error) {
+            console.error('Invalid JSON string:', error);
+            return [];
+        }
+    }
+
+    function objectToJson(obj) {
+        try {
+            const jsonStr = JSON.stringify(obj);
+            return jsonStr;
+        } catch (error) {
+            console.error('Error converting object to JSON:', error);
+            return [];
+        }
+    }
+
+    function readCache(key) {
+        const value = localStorage.getItem(key);
+        return value !== null ? jsonToObject(value) : [];
+    }
+
+    function storeCache(key, store_arr) {
+        const old_cache = readCache(key)
+        const new_cache = combineArray(old_cache, store_arr)
+        localStorage.setItem(key, objectToJson(new_cache))
+    }
+
+
+    function translateFromCache(text, node, lang, key) {
+        if (!text) {
+            console.error("no text:", text)
+            return true;
+        }
+        if (noTranslateWords.includes(text)) {
+            return true;
+        }
+
+        try {
+            const cache = readCache(key) //[{},{}...]
+            if (cache) {
+                for (let i = 0; i < cache.length; i++) {
+                    if (lang === currentAPI.ChineseLang) {
+                        //en to zh
+                        if (cache[i].english === text) {
+                            renderPage({cacheResult: cache[i].chinese}, text, node, lang)
+                            console.warn("en to zh cache: ", text)
+                            return true;
+                        }
+                    } else if (lang === currentAPI.EnglishLang) {
+                        //zh to en
+                        if (cache[i].chinese === text) {
+                            console.warn("zh to en cache: ", text)
+                            renderPage({cacheResult: cache[i].english}, text, node, lang)
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("translateFromCache ex", e)
+            return false;
+        }
+        return false;
+    }
+
+    function addToastCss() {
         try {
             GM_addStyle(GM_getResourceText("toastCss"))
-        }catch (e) {
+        } catch (e) {
 
         }
     }
+
     addToastCss()
 
     //注册菜单
@@ -122,20 +245,20 @@
 
         GM_registerMenuCommand("鼠标右击选词开关", function (event) {
             if (selectMode) {
-                console.log('鼠标右击选词翻译已经关闭',selectMode)
+                console.log('鼠标右击选词翻译已经关闭', selectMode)
                 selectMode = false;
                 //移除事件
-                document.removeEventListener('mousemove',handleMousemove);
+                document.removeEventListener('mousemove', handleMousemove);
                 document.removeEventListener('mouseout', handleMouseout);
                 document.removeEventListener('contextmenu', handleContextmenu);//右击事件
 
                 Toast.success('鼠标右击选词翻译已经关闭')
 
             } else {
-                console.log('鼠标右击选词翻译已经开启',selectMode)
+                console.log('鼠标右击选词翻译已经开启', selectMode)
                 selectMode = true;
                 //增加事件
-                document.addEventListener('mousemove',handleMousemove);
+                document.addEventListener('mousemove', handleMousemove);
                 document.addEventListener('mouseout', handleMouseout);
                 document.addEventListener('contextmenu', handleContextmenu);//右击事件
                 Toast.success('鼠标右击选词翻译已经开启')
@@ -153,12 +276,11 @@
                 console.log('当前目标语言为英语')
                 Toast.success('当前目标语言为英语')
             } else {
-                selectTolang =  currentAPI.ChineseLang;
+                selectTolang = currentAPI.ChineseLang;
                 console.log('当前目标语言为中文')
                 Toast.success('当前目标语言为中文')
             }
         }, "selectTolang");
-
 
 
     })
@@ -170,12 +292,12 @@
         englishAutoTranslate = await GM_getValue("englishAutoTranslate", false)
 
         try {
-            switchIndex = await GM_getValue("switchIndex",0) - 1
-            console.warn("switchIndex",switchIndex)
+            switchIndex = await GM_getValue("switchIndex", 0) - 1
+            console.warn("switchIndex", switchIndex)
             switchAPI()
-        }catch (ex) {
+        } catch (ex) {
             switchIndex = 0;
-            console.error("switchIndex ex:",switchIndex, ex)
+            console.error("switchIndex ex:", switchIndex, ex)
         }
 
         console.warn("isDoubleShow", isDoubleShow)
@@ -222,15 +344,16 @@
     function handleMouseout(event) {
         const target = event.target;
         if (target.classList.contains('translate-main')) {
-           return
+            return
         }
         target.style.border = '';
         //console.error('mouseout' + target);
     }
+
     function handleMousemove(event) {
         const target = event.target;
         if (target.classList.contains('translate-main')) {
-           return
+            return
         }
 
         target.style.border = '1px solid red';
@@ -251,7 +374,7 @@
         event.stopPropagation()
 
         //copyTranslatedText
-        if(/copyTranslatedText/.test(event.target.id)){
+        if (/copyTranslatedText/.test(event.target.id)) {
             GM_setClipboard(document.querySelector('#qs_selectedText').innerText, "text");
             console.log('复制成功')
             Toast.success("复制成功!")
@@ -259,7 +382,7 @@
         }
 
         const selectText = window.getSelection().toString()
-        console.error(event.target)
+        //console.error(event.target)
         if (/(qs_searchBoxOuter|qs_searchBox|qs_selectedText)/.test(event.target.id)) {
             return;
         } else {
@@ -273,7 +396,7 @@
         console.warn(selectText)
         let mouseX = event.pageX;
         let mouseY = event.pageY;
-        if(event.changedTouches && event.changedTouches.length > 0){
+        if (event.changedTouches && event.changedTouches.length > 0) {
             mouseX = event.changedTouches[0].pageX
             mouseY = event.changedTouches[0].pageY
         }
@@ -292,24 +415,24 @@
         `))
         const old_isDoubleShow = isDoubleShow;
         isDoubleShow = false;
-        translateTo(selectTolang, document.getElementById("qs_searchBoxOuter"),true)
-        setTimeout(()=>{
+        translateTo(selectTolang, document.getElementById("qs_searchBoxOuter"), true)
+        setTimeout(() => {
             isDoubleShow = old_isDoubleShow;
-        },2000)
+        }, 2000)
         console.log('鼠标松开了');
     }
 
 
-    function leftSelect(){
+    function leftSelect() {
         if (leftSelectMode) {
-            console.log('鼠标选词翻译已经关闭',leftSelectMode)
+            console.log('鼠标选词翻译已经关闭', leftSelectMode)
             leftSelectMode = false;
             document.removeEventListener('mouseup', handleMouseUpOrTouchend);
             document.removeEventListener('touchcancel', handleMouseUpOrTouchend);
             Toast.success('选词翻译已经关闭')
 
         } else {
-            console.log('鼠标选词翻译已经开启',leftSelectMode)
+            console.log('鼠标选词翻译已经开启', leftSelectMode)
             leftSelectMode = true;
             document.addEventListener('mouseup', handleMouseUpOrTouchend);
             document.addEventListener('touchcancel', handleMouseUpOrTouchend);
@@ -318,10 +441,10 @@
     }
 
 
-    function switchAPI(){
+    function switchAPI() {
         switchIndex++;
         try {
-            switch (switchIndex){
+            switch (switchIndex) {
                 case 1:
                     currentAPI = APIConst.BaiduAPI
                     Toast.success('已经切换百度翻译')
@@ -335,12 +458,12 @@
                     Toast.success('已经切换微软翻译')
                     switchIndex = 0
             }
-        }catch (e) {}
+        } catch (e) {
+        }
         selectTolang = currentAPI.ChineseLang //重置
         //持久化
-        GM_setValue("switchIndex",switchIndex)
+        GM_setValue("switchIndex", switchIndex)
     }
-
 
 
     //toastr 封装  ----start----
@@ -640,18 +763,23 @@
 
     //渲染页面
     function renderPage(res, text, node, lang) {
+        if (!res) return;
         try {
             let yiwen;
-            if(currentAPI.name === APIConst.Baidu){
-                yiwen =  JSON.parse(res.responseText).trans_result[0].dst;
-            }else if(currentAPI.name === APIConst.Microsoft){
-                yiwen =  JSON.parse(res.responseText)[0].translations[0].text;
-            }else if(currentAPI.name === APIConst.Google){
+            if (res && res.cacheResult) {
+                //缓存
+                yiwen = res.cacheResult
+            } else if (currentAPI.name === APIConst.Baidu) {
+                yiwen = JSON.parse(res.responseText).trans_result[0].dst;
+            } else if (currentAPI.name === APIConst.Microsoft) {
+                yiwen = JSON.parse(res.responseText)[0].translations[0].text;
+            } else if (currentAPI.name === APIConst.Google) {
                 yiwen = JSON.parse(res.responseText)[0][0][0];
-            }else {
+            } else {
                 //default
-                yiwen =  JSON.parse(res.responseText)[0].translations[0].text;
+                yiwen = JSON.parse(res.responseText)[0].translations[0].text;
             }
+
             if (yiwen === text) return
             /*node.innerText = text + "=>" + yiwen*/
             const outersp = document.createElement("span")
@@ -674,6 +802,19 @@
                 outersp.append(sp)
             }
             node.replaceWith(outersp);
+
+            if (enableCache && res && !res.cacheResult) {
+                //TODO 缓存数据
+                if (lang === currentAPI.ChineseLang) {
+                    //en to zh
+                    const arr = [{english: text, chinese: yiwen}]
+                    storeCache(`${currentAPI.name}wordCache`, arr)
+                } else if (lang === currentAPI.EnglishLang) {
+                    //zh to en
+                    const arr = [{english: yiwen, chinese: text}]
+                    storeCache(`${currentAPI.name}wordCache`, arr)
+                }
+            }
 
         } catch (ex) {
             console.error(" 未知错误!", ex, node)
@@ -724,11 +865,11 @@
         const params = new URLSearchParams();
         let sendData = {
             q: text,
-            from:"auto",
-            to:lang,
-            appid:`${APIConst.BaiduAPI.appid}`,
-            salt:`${salt}`,
-            sign:sign
+            from: "auto",
+            to: lang,
+            appid: `${APIConst.BaiduAPI.appid}`,
+            salt: `${salt}`,
+            sign: sign
         }
         for (const key in sendData) {
             params.append(key, sendData[key]);
@@ -765,9 +906,9 @@
             return;
         }
         let from;
-        if(lang === currentAPI.ChineseLang){
+        if (lang === currentAPI.ChineseLang) {
             from = currentAPI.EnglishLang;
-        }else {
+        } else {
             from = currentAPI.ChineseLang;
         }
 
@@ -791,8 +932,6 @@
     }
 
 
-
-
     //遍历
     function traversePlus(node, lang) {
         if (!node) return;
@@ -806,8 +945,8 @@
         }
 
         //shadowRoot
-        if(node.shadowRoot){
-            traversePlus(node.shadowRoot,lang)
+        if (node.shadowRoot) {
+            traversePlus(node.shadowRoot, lang)
         }
 
 
@@ -822,7 +961,6 @@
             //不含英文
             return;
         }
-
 
 
         // 如果节点没有子节点，则打印节点内容
@@ -844,19 +982,26 @@
                     }
 
 
+                    //TODO 取缓存  renderPage(res, text, node, lang)
 
-                    //API分流
-                    if(currentAPI.name === APIConst.Baidu){
-                        translateBaiduApi(node.textContent.trim(), node, lang)
-                    }else if(currentAPI.name === APIConst.Microsoft){
-                        translateMicrosoft(node.textContent.trim(), node, lang)
-                    }else if(currentAPI.name === APIConst.Google){
-                        translateGoogle(node.textContent.trim(), node, lang)
-                    }else {
-                        //default microsoft
-                        translateMicrosoft(node.textContent.trim(), node, lang)
+
+                    const txt = node.textContent.trim();
+
+                    if (enableCache && translateFromCache(txt, node, lang, `${currentAPI.name}wordCache`)) {
+                        return;
                     }
 
+                    //API分流
+                    if (currentAPI.name === APIConst.Baidu) {
+                        translateBaiduApi(txt, node, lang)
+                    } else if (currentAPI.name === APIConst.Microsoft) {
+                        translateMicrosoft(txt, node, lang)
+                    } else if (currentAPI.name === APIConst.Google) {
+                        translateGoogle(txt, node, lang)
+                    } else {
+                        //default microsoft
+                        translateMicrosoft(txt, node, lang)
+                    }
 
                 }
 
@@ -886,11 +1031,11 @@
 
     //翻译
     async function translateTo(lang, rootNode, noclear) {
-        if(!noclear){
+        if (!noclear) {
             clearSpan(lang)
         }
         //微软鉴权
-        if(currentAPI.name === APIConst.Microsoft){
+        if (currentAPI.name === APIConst.Microsoft) {
             await auth()
         }
         console.log(`translate to....${lang} : ${currentAPI.name}`)
@@ -921,7 +1066,8 @@
         event.stopPropagation()
         try {
             Toast.info(`正在翻译。。。。当前API:${currentAPI.name}`)
-        }catch (e) { }
+        } catch (e) {
+        }
         translateTo(currentAPI.ChineseLang)
     })
 
@@ -930,7 +1076,8 @@
         event.stopPropagation()
         try {
             Toast.info(`正在翻译。。。。当前API:${currentAPI.name}`)
-        }catch (e) { }
+        } catch (e) {
+        }
         translateTo(currentAPI.EnglishLang)
     })
 
@@ -1008,7 +1155,6 @@
     })
 
 
-
     // 判断是不是中文网页
     function isChinesePage() {
         const lang = document.documentElement.lang
@@ -1022,11 +1168,10 @@
         if (englishAutoTranslate && !isChinesePage()) {
             console.log('自动翻译')
             Toast.success('检测到英文, 正在自动翻译. 若你的网络过慢可能会出现未翻译完整，请手动翻译。关闭自动翻译请到菜单!', '', {timeOut: 10000})
-            translateTo( currentAPI.ChineseLang)
+            translateTo(currentAPI.ChineseLang)
 
         }
-    },2000)
-
+    }, 2000)
 
 
 })();
