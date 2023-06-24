@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         酷狗音乐mp3解析
 // @namespace    yeyu
-// @version      1.0
+// @version      1.1
 // @description  解析酷狗、酷狗音乐，获得播放mp3下载链接
 // @author       夜雨
 // @match        *://www.kugou.com/*/*
@@ -45,9 +45,10 @@
                     //适配移动端
                     //phpParam.song_info.data.url
                     try{
-                        var ma = document.createElement("a")
+                        const ma = document.createElement("a");
                         ma.href = phpParam.song_info.data.url;
                         ma.innerText = "已解析完成，点击下载"
+                        ma.setAttribute("target","_blank")
                         ma.setAttribute("class","cmhead1_a1")
                         document.querySelector("#mod_down_2").after(ma)
                         return
@@ -61,6 +62,7 @@
                     console.log(ret.data.play_url)
                     let aa = document.createElement("a")
                     aa.href = ret.data.play_url;
+                    aa.setAttribute("target","_blank")
                     aa.innerText = "[1]已解析完成，点击下载[   1     ]"
                     aa.setAttribute("class","cmhead1_a1")
                     if(ret.data.play_url){
@@ -68,8 +70,9 @@
                         if ($("#openKugou")) $("#openKugou").after(aa)
                     }
                     //解析方式2
-                    var a2 = document.createElement("a")
+                    const a2 = document.createElement("a");
                     a2.href = document.querySelector("#myAudio").getAttribute("src")
+                    a2.setAttribute("target","_blank")
                     a2.innerText = "[2]已解析完成，点击下载[   2     ]"
                     a2.setAttribute("class","cmhead1_a1")
                     if(document.querySelector("#myAudio").getAttribute("src")){
@@ -174,13 +177,18 @@
             onload: function(res) {
                 if (res.status === 200) {
                     console.log('成功')
-                    var ret = JSON.parse(res.response)
+                    const ret = JSON.parse(res.response);
                     console.log(ret.data.url)
-                    var aa = document.createElement("a")
+                    const aa = document.createElement("a");
                     aa.href = ret.data.url;
+                    aa.setAttribute("target","_blank")
                     aa.innerText = "已解析完成，点击下载"
+                    let btn = document.createElement("button");
+                    btn.append(aa)
+                    btn.setAttribute("data-v-4a5adf14","")
+
                     if(document.querySelector(".btns")){
-                        document.querySelector(".btns").after(aa)
+                        document.querySelector(".btns").append(btn)
                     }
                     if(document.querySelector(".downloadMusic")){
                         document.querySelector(".downloadMusic").after(aa)
