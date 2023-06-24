@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.2.2
+// @version      1.2.3
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -107,12 +107,27 @@
         }
 
         let flag = true;
-        for (let i = 0; i < arr.length; i++) {
+
+        let start = 0;
+        let end = arr.length - 1;
+        if(start > end) flag = false;
+        //O(length/2)
+        while (start <= end) {
+            if(isEqual(arr[start], obj) || isEqual(arr[end], obj)){
+                flag = true;
+                break;
+            }
+            start++;
+            end--;
+        }
+
+        //O(length)
+        /*for (let i = 0; i < arr.length; i++) {
             if (isEqual(arr[i], obj)) {
                 flag = false;
                 break;
             }
-        }
+        }*/
 
         if (flag) {
             arr.push(obj);
@@ -121,9 +136,26 @@
     }
 
     function combineArray(arr1, arr2) {
-        for (let i = 0; i < arr2.length; i++) {
+
+        /*for (let i = 0; i < arr2.length; i++) {
             addToArray(arr1, arr2[i])
+        }*/
+
+        let start = 0;
+        let end = arr2.length - 1;
+        if(start > end) return arr1;
+
+        while (start <= end) {
+            if(start === end){
+                addToArray(arr1, arr2[start])
+            }else {
+                addToArray(arr1, arr2[start])
+                addToArray(arr1, arr2[end])
+            }
+            start++;
+            end--;
         }
+
         return arr1;
     }
 
@@ -149,16 +181,18 @@
 
     let cacheChanged = true;
     let tempCache;
+
     function readCache(key) {
-        if(cacheChanged){
+        if (cacheChanged) {
             const value = localStorage.getItem(key);
             const ret = (value !== null ? jsonToObject(value) : [])
             tempCache = ret;
             return ret;
-        }else {
+        } else {
             return tempCache || [];
         }
     }
+
     function storeCache(key, store_arr) {
         cacheChanged = true;
         const old_cache = readCache(key)
@@ -169,7 +203,7 @@
 
     function translateFromCache(text, node, lang, key) {
         //异步
-        return new Promise((resolve, reject) =>{
+        return new Promise((resolve, reject) => {
             if (!text) {
                 //console.error("no text:", text)
                 // return true;
@@ -187,12 +221,17 @@
             try {
                 const cache = readCache(key) //[{},{}...]
                 if (cache) {
-                    for (let i = 0; i < cache.length; i++) {
+                    //双指针找 >>>
+                    let start = 0;
+                    let end = cache.length - 1;
+
+                    while (start <= end) {
                         if (lang === currentAPI.ChineseLang) {
                             //en to zh
-                            if (cache[i].english === text) {
-                                setTimeout(()=>{
-                                    renderPage({cacheResult: cache[i].chinese}, text, node, lang)
+                            if (cache[start].english === text || cache[end].english === text) {
+                                setTimeout(() => {
+                                    renderPage({cacheResult: cache[start].english === text ? cache[start].chinese : cache[end].chinese},
+                                        text, node, lang)
                                 })
                                 console.warn("en to zh cache: ", text)
                                 shouldBreak = true;
@@ -201,10 +240,11 @@
                             }
                         } else if (lang === currentAPI.EnglishLang) {
                             //zh to en
-                            if (cache[i].chinese === text) {
+                            if (cache[start].chinese === text || cache[end].chinese === text) {
                                 console.warn("zh to en cache: ", text)
-                                setTimeout(()=>{
-                                    renderPage({cacheResult: cache[i].english}, text, node, lang)
+                                setTimeout(() => {
+                                    renderPage({cacheResult: cache[start].chinese === text ? cache[start].english : cache[end].english},
+                                        text, node, lang)
                                 })
                                 shouldBreak = true;
                                 break;
@@ -216,7 +256,10 @@
                             rj = true;
                             break;
                         }
+                        start++;
+                        end--;
                     }
+                    //双指针 <<<<
                 }
             } catch (e) {
                 console.error("translateFromCache ex", e)
@@ -224,15 +267,15 @@
                 reject("translateFromCache ex")
                 return;
             }
-            if(shouldBreak){
-                if(rj){
+            if (shouldBreak) {
+                if (rj) {
                     //中断被拒绝
                     reject('语言异常')
-                }else {
+                } else {
                     //中断未被拒绝
                     resolve('成功缓存')
                 }
-            }else {
+            } else {
                 //不中断
                 reject('无缓存')
             }
@@ -1033,8 +1076,8 @@
                         translateFromCache(txt, node, lang, `${currentAPI.name}wordCache`)
                             .then(function (success) {
                                 //缓存成功
-                            },function (reason){
-                               //缓存失败
+                            }, function (reason) {
+                                //缓存失败
 
                                 //API分流
                                 if (currentAPI.name === APIConst.Baidu) {
@@ -1050,7 +1093,6 @@
                             });
                         //return;
                     }
-
 
 
                 }
