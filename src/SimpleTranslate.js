@@ -1081,9 +1081,9 @@
             "Referer": "https://fanyi.sogou.com",
         }
 
-        if(isMobile()){
-            Reflect.set(header,"User-Agent" ,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-        }
+        // if(isMobile()){
+        //     Reflect.set(header,"User-Agent" ,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+        // }
 
         let sign = CryptoJS.MD5("".concat(from).concat(lang).concat(text).concat(secretCode)).toString();
 
@@ -1095,8 +1095,8 @@
                 "from": from,
                 "to": lang,
                 "text": text,
-                "client": isMobile() ? "android": "pc",
-                "fr": "browser_pc",
+                "client": isMobile() ? "wap": "pc",
+                "fr": isMobile() ? "browser_wap" :"browser_pc",
                 "needQc": 1,
                 "s": sign,
                 "uuid": uuidv4(),
