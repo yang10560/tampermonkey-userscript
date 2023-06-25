@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         手机浏览器console控制台加载
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  能让手机浏览器的像电脑脑F12一样调试代码，查看console控制台信息，查看网页源码，js调试等。
 // @author       夜雨
 // @match        http://*/*
@@ -34,7 +34,7 @@
 
     try {
         GM_registerMenuCommand("打开/关闭", function (event) {
-            if(show){
+            if(!show){
                 loadScript('https://cdn.staticfile.org/eruda/3.0.0/eruda.min.js', () =>{
                     eruda.init({
                         useShadowDom:true,
@@ -46,7 +46,7 @@
                     });
                 });
             }else {
-                eruda.destroy();
+                eruda && eruda.destroy();
             }
             show = !show;
         }, "openEruda");
