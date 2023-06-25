@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.2.5
+// @version      1.2.6
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -1031,7 +1031,21 @@
     }
 
 
-    //搜狗web TODO
+    //搜狗web
+
+    function isMobile() {
+        let userAgentInfo = navigator.userAgent.toLowerCase();
+        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod","Mobile"];
+        let mobile_flag = false;
+        //根据userAgent判断是否是手机
+        for (let v = 0; v < mobileAgents.length; v++) {
+            if (userAgentInfo.indexOf(mobileAgents[v].toLowerCase()) > -1) {
+                mobile_flag = true;
+                break;
+            }
+        }
+        return mobile_flag;
+    }
 
     function uuidv4() {
         let t, n, r = "";
@@ -1061,17 +1075,22 @@
             from = currentAPI.ChineseLang;
         }
 
+        let header = {
+            "Content-Type": "application/json;charset=UTF-8",
+            "Origin": "https://fanyi.sogou.com",
+            "Referer": "https://fanyi.sogou.com",
+        }
+
+        if(isMobile()){
+            Reflect.set(header,"User-Agent" ,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+        }
+
         let sign = CryptoJS.MD5("".concat(from).concat(lang).concat(text).concat(secretCode)).toString();
 
         GM_fetch({
             method: "POST",
             url: `https://fanyi.sogou.com/api/transpc/text/result`,
-            headers: {
-                "Content-Type": "application/json;charset=UTF-8",
-                "Origin": "https://fanyi.sogou.com",
-                "Referer": "https://fanyi.sogou.com",
-
-            },
+            headers: header,
             data: JSON.stringify({
                 "from": from,
                 "to": lang,
