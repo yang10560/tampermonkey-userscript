@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.2.4
+// @version      1.2.5
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -28,6 +28,7 @@
 // @connect      edge.microsoft.com
 // @connect      fanyi-api.baidu.com
 // @connect      translate.googleapis.com
+// @connect      fanyi.sogou.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -37,11 +38,13 @@
 (async function () {
     'use strict';
 
-    let authCode;
+    let authCode;//微软
+    let secretCode;//搜狗
     const APIConst = {
         Baidu: 'baidu',
         Microsoft: 'microsoft',
         Google: 'google',
+        SogouWeb: 'sogouWeb',
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -59,6 +62,11 @@
         GoogleAPI: {
             name: "google",
             ChineseLang: 'zh-CN',
+            EnglishLang: 'en'
+        },
+        SogouWebAPI: {
+            name: "sogouWeb",
+            ChineseLang: 'zh-CHS',
             EnglishLang: 'en'
         }
 
@@ -110,10 +118,10 @@
 
         let start = 0;
         let end = arr.length - 1;
-        if(start > end) flag = true;//fix 空直接添加
+        if (start > end) flag = true;//fix 空直接添加
         //O(length/2)
         while (start <= end) {
-            if(isEqual(arr[start], obj) || isEqual(arr[end], obj)){
+            if (isEqual(arr[start], obj) || isEqual(arr[end], obj)) {
                 flag = true;
                 break;
             }
@@ -143,12 +151,12 @@
 
         let start = 0;
         let end = arr2.length - 1;
-        if(start > end) return arr1;
+        if (start > end) return arr1;
 
         while (start <= end) {
-            if(start === end){
+            if (start === end) {
                 addToArray(arr1, arr2[start])
-            }else {
+            } else {
                 addToArray(arr1, arr2[start])
                 addToArray(arr1, arr2[end])
             }
@@ -538,6 +546,10 @@
                     currentAPI = APIConst.GoogleAPI
                     Toast.success('已经切换谷歌翻译')
                     break
+                case 3:
+                    currentAPI = APIConst.SogouWebAPI
+                    Toast.success('已经切换搜狗翻译')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -860,6 +872,8 @@
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
             } else if (currentAPI.name === APIConst.Google) {
                 yiwen = JSON.parse(res.responseText)[0][0][0];
+            } else if (currentAPI.name === APIConst.SogouWeb) {
+                yiwen = JSON.parse(res.responseText).data.translate.dit
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1017,6 +1031,72 @@
     }
 
 
+    //搜狗web TODO
+
+    function uuidv4() {
+        let t, n, r = "";
+        for (t = 0; t < 32; t++) {
+            n = 16 * Math.random() | 0,
+            8 !== t && 12 !== t && 16 !== t && 20 !== t || (r += "-");
+            const e = 3 & n
+                , o = 16 === t ? 8 | e : n;
+            r += (12 === t ? 4 : o).toString(16)
+        }
+        return r
+    }
+
+
+    function translateSogouWeb(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        let sign = CryptoJS.MD5("".concat(from).concat(lang).concat(text).concat(secretCode)).toString();
+
+        GM_fetch({
+            method: "POST",
+            url: `https://fanyi.sogou.com/api/transpc/text/result`,
+            headers: {
+                "Content-Type": "application/json;charset=UTF-8",
+                "Origin": "https://fanyi.sogou.com",
+                "Referer": "https://fanyi.sogou.com",
+
+            },
+            data: JSON.stringify({
+                "from": from,
+                "to": lang,
+                "text": text,
+                "client": "pc",
+                "fr": "browser_pc",
+                "needQc": 1,
+                "s": sign,
+                "uuid": uuidv4(),
+                "exchange": false
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
+
     //遍历
     function traversePlus(node, lang) {
         if (!node) return;
@@ -1086,6 +1166,8 @@
                                     translateMicrosoft(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.Google) {
                                     translateGoogle(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.SogouWeb) {
+                                    translateSogouWeb(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
@@ -1121,6 +1203,20 @@
         }
     }
 
+    async function authSogou() {
+        let res = await GM_fetch({
+            method: "GET",
+            url: "https://fanyi.sogou.com",
+            responseType: "text",
+        })
+        if (res.status === 200) {
+            secretCode = /secretCode\":(\d+)/i.exec(res.responseText)[1]
+            console.warn("secretCode", secretCode)
+        } else {
+            console.error('访问失败了', res)
+        }
+    }
+
     //翻译
     async function translateTo(lang, rootNode, noclear) {
         if (!noclear) {
@@ -1130,6 +1226,13 @@
         if (currentAPI.name === APIConst.Microsoft) {
             await auth()
         }
+
+        //搜狗鉴权
+        if (currentAPI.name === APIConst.SogouWeb && !secretCode) {
+            await authSogou()
+        }
+
+
         console.log(`translate to....${lang} : ${currentAPI.name}`)
         const root = document.body;
         traversePlus(rootNode || root, lang)
