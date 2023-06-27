@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.2.9
+// @version      1.3.0
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -40,6 +40,7 @@
 
     let authCode;//微软
     let secretCode;//搜狗
+    let sogou_uuid;//搜狗uuid
     const APIConst = {
         Baidu: 'baidu',
         Microsoft: 'microsoft',
@@ -1078,12 +1079,12 @@
         let header = {
             "Content-Type": "application/json;charset=UTF-8",
             "Origin": "https://fanyi.sogou.com",
-            "Referer": "https://fanyi.sogou.com",
+            "Referer": `https://fanyi.sogou.com/text?keyword=${encodeURIComponent(text)}&transfrom=en&transto=zh-CHS&model=general`,
+            "Accept": "application/json, text/plain, */*",
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache",
         }
 
-        // if(isMobile()){
-        //     Reflect.set(header,"User-Agent" ,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-        // }
 
         let sign = CryptoJS.MD5("".concat(from).concat(lang).concat(text).concat(secretCode)).toString();
 
@@ -1099,7 +1100,7 @@
                 "fr": isMobile() ? "browser_wap" :"browser_pc",
                 "needQc": 1,
                 "s": sign,
-                "uuid": uuidv4(),
+                "uuid": sogou_uuid || uuidv4(),
                 "exchange": false
             }),
             responseType: "text",
@@ -1117,7 +1118,7 @@
 
 
     //遍历
-    function traversePlus(node, lang) {
+    async function traversePlus(node, lang) {
         if (!node) return;
         // 排除标签则跳过
         if (/^(pre|script|code|#comment|iframe)$/i.test(node.nodeName)) {
@@ -1229,8 +1230,10 @@
             responseType: "text",
         })
         if (res.status === 200) {
-            secretCode = /secretCode\":(\d+)/i.exec(res.responseText)[1]
+            secretCode = secretCode ||  /secretCode\":(\d+)/i.exec(res.responseText)[1]
+            sogou_uuid = /uuid\":\"(.*?)\"/i.exec(res.responseText)[1]
             console.warn("secretCode", secretCode)
+            console.warn("sogou_uuid", sogou_uuid)
         } else {
             console.error('访问失败了', res)
         }
