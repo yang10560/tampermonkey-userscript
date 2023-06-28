@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.9.7
+// @version      2.9.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -139,6 +139,7 @@
 // @connect   neice.tiangong.cn
 // @connect   yeyu1024.xyz
 // @connect   chatglm.cn
+// @connect   open.bigmodel.cn
 // @connect   gptgo.ai
 // @connect   chat.360.cn
 // @connect   mixerbox.com
@@ -157,7 +158,7 @@
     'use strict';
 
 
-    let JSver = '2.9.7';
+    let JSver = '2.9.8';
 
 
     function getGPTMode() {
@@ -419,6 +420,13 @@
                     Toast.error(`错误了。请重试`)
                 }
             });
+        }else if(GPTMODE === "ZhipuAI"){
+            localStorage.removeItem("ZhipuapiKey")
+            let manualInput = confirm("请输入你自己的apiKey");
+            if (manualInput) {
+                let ZhipuapiKey = prompt("请输入您的智谱apikey", "");
+                if (ZhipuapiKey) localStorage.setItem("ZhipuapiKey", ZhipuapiKey)
+            }
         }else {
             Toast.error("该线路不适用")
         }
@@ -1227,6 +1235,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "ZhipuAI") {
+            console.log("ZhipuAI")
+            ZhipuAI()
+
+            return;
+            //end if
         }else if (GPTMODE && GPTMODE === "ChatGO") {
             console.log("ChatGO")
             ChatGO()
@@ -1345,6 +1359,7 @@
       <option value="SPARK">讯飞星火</option>
       <option value="TIANGONG">天工AI</option>
       <option value="ChatGLM">ChatGLM</option>
+      <option value="ZhipuAI">智谱AI</option>
       <option value="Zhinao360">360智脑</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="ChatGO">ChatGO</option>
@@ -1388,7 +1403,7 @@
       <option value="HZIT">HZIT[兼容]</option>
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
-	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、自定义、BNU120线路</p>
+	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、自定义、BNU120、智谱</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
 	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑/白天</p>
 	<p class="chatHide" id="autoTipsP" style="margin: 10px"><a id="autoTips"  href="javascript:void(0)"><svg withd="15" height="15" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -4702,6 +4717,107 @@
 
 
     //ChatGLM相关 ----start-----
+
+
+    //智谱AI
+    let zhipuToken = '4056fc44f1474c1e85e976577f930e40.O6WKndzKWBjQJWcA';
+    let zhipuPrompt = []
+    let zhipu_apiKey = localStorage.getItem("ZhipuapiKey")
+
+    function base64UrlEncode(str) {
+        let encodedSource = CryptoJS.enc.Base64.stringify(str);
+        const reg = new RegExp('/', 'g');
+        encodedSource = encodedSource.replace(/=+$/,'').replace(/\+/g,'-').replace(reg,'_');
+        return encodedSource;
+    }
+    function generate_token(apikey, exp_seconds) {
+
+        const [id, secretKey] = apikey.split(".");
+        const payload = {
+            "api_key": id,
+            "exp": Date.now() + exp_seconds * 1000,
+            "timestamp": Date.now(),
+            // "exp": 1687878553567,
+            // "timestamp": 1687877553567
+        };
+
+        const encodedHeader = base64UrlEncode(CryptoJS.enc.Utf8.parse(JSON.stringify({ alg: 'HS256', sign_type: 'SIGN', typ: "JWT"})));
+        const encodedPayload = base64UrlEncode(CryptoJS.enc.Utf8.parse(JSON.stringify(payload)));
+
+        const signature = CryptoJS.HmacSHA256(encodedHeader + '.' + encodedPayload,  secretKey);
+
+        console.log(signature)
+        //const encodedSignature = window.btoa(signature);
+
+        const jwt = encodedHeader + '.' + encodedPayload + '.' + base64UrlEncode(signature);
+
+        console.log(jwt);
+        return jwt;
+    }
+    function ZhipuAI(){
+        showAnserAndHighlightCodeStr("请稍后。未申请key的，请前往[智谱AI](https://open.bigmodel.cn/usercenter/apikeys)申请，然后点击设置里的更新key")
+        if(!localStorage.getItem("ZhipuapiKey")){
+            showAnserAndHighlightCodeStr("apikey不存在。请前往[智谱AI](https://open.bigmodel.cn/usercenter/apikeys)申请，然后点击设置里的更新key")
+            return
+        }
+        zhipu_apiKey = zhipu_apiKey || localStorage.getItem("ZhipuapiKey");
+        addMessageChain(zhipuPrompt, {"role": "user", "content": your_qus} , 10)
+        GM_fetch({
+            method: "POST",
+            url: `https://open.bigmodel.cn/api/paas/v3/model-api/chatglm_130b/sse-invoke`,
+            headers: {
+                "accept": "text/event-stream",
+                "Content-Type":"application/json",
+               "Authorization": generate_token(zhipu_apiKey, 1000)
+                // "Authorization": 'eyJhbGciOiJIUzI1NiIsInNpZ25fdHlwZSI6IlNJR04iLCJ0eXAiOiJKV1QifQ.eyJhcGlfa2V5IjoiZjM3ZDVlMjFhZDk1NGJhOTM0NmYyOTgwMTgzNDJiMjciLCJleHAiOjE2ODc4Nzg1NTM1NjcsInRpbWVzdGFtcCI6MTY4Nzg3NzU1MzU2N30.e8SMjA0vBaUxXB-WrViFa0-C0qVLechNV5L5s2WoF8c'
+            },
+            data:JSON.stringify({
+                model:"chatglm_130b",
+                prompt : zhipuPrompt,
+                temperature: 0.95,
+                top_p: 0.7,
+                incremental: true
+            }),
+            responseType:"stream"
+        }).then((stream)=> {
+            let reader = stream.response.getReader()
+            let ans = [];
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    if(ans.length > 0){
+                        addMessageChain(zhipuPrompt, {"role": "assistant", "content": ans.join("")} , 10)
+                    }
+                    return
+                }
+                let responseItem = new TextDecoder("utf-8").decode(value)
+                 console.error(responseItem)
+                responseItem = responseItem.split("\n");
+                console.warn(responseItem)
+                responseItem.forEach(item=>{
+                    try {
+                        if(item && item.startsWith("data:")){
+                            let ii = item.replace(/data:/gi,"")
+                            if(ii){
+                                ans.push(ii)
+                                showAnserAndHighlightCodeStr(ans.join(""))
+                            }
+                        }
+                    }catch (ex){
+                        console.error(item)
+                    }
+                })
+                return reader.read().then(processText)
+            },function (reason) {
+                Toast.error("未知错误!")
+                console.log(reason)
+            }).catch((ex)=>{
+                Toast.error("未知错误!")
+                console.log(ex)
+            })
+        })
+    }
+
+
 
 
     //360智脑 -------start------
