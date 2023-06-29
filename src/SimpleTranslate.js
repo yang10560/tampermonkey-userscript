@@ -1159,7 +1159,7 @@
             method: "POST",
             url: `https://ifanyi.iciba.com/index.php?c=trans&m=fy&client=6&auth_user=key_web_fanyi&sign=${sign}`,
             headers: header,
-            data: `from=en&to=zh&q=${encodeURIComponent(text)}`,
+            data: `from=${from}&to=${lang}&q=${encodeURIComponent(text)}`,
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
