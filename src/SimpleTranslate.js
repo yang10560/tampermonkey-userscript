@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.0
+// @version      1.3.1
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -29,6 +29,7 @@
 // @connect      fanyi-api.baidu.com
 // @connect      translate.googleapis.com
 // @connect      fanyi.sogou.com
+// @connect      ifanyi.iciba.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -46,13 +47,14 @@
         Microsoft: 'microsoft',
         Google: 'google',
         SogouWeb: 'sogouWeb',
+        ICIBAWeb: 'icibaWeb',//金山词霸
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
             EnglishLang: 'en',
             //appid 百度API有月额度(100w字符/月)限制，建议申请自己的秘钥，详见：https://fanyi-api.baidu.com/
-            appid: '20230622001720783',  //appid 申请可见
-            secret: 'dQVha4zSH26nMDLpfoVC'// secret 申请可见
+            appid: '20230622001720783',  //appid 申请可见 这里需要修改成自己的appid
+            secret: 'dQVha4zSH26nMDLpfoVC'// secret 申请可见 这里需要修改成自己的secret
         },
         MicrosoftAPI: {
             name: "microsoft",
@@ -68,6 +70,11 @@
         SogouWebAPI: {
             name: "sogouWeb",
             ChineseLang: 'zh-CHS',
+            EnglishLang: 'en'
+        },
+        ICIBAWebAPI: {
+            name: "icibaWeb",
+            ChineseLang: 'zh',
             EnglishLang: 'en'
         }
 
@@ -541,7 +548,7 @@
             switch (switchIndex) {
                 case 1:
                     currentAPI = APIConst.BaiduAPI
-                    Toast.success('已经切换百度翻译')
+                    Toast.success('已经切换百度翻译,未配置api需源码中修改秘钥')
                     break
                 case 2:
                     currentAPI = APIConst.GoogleAPI
@@ -550,6 +557,10 @@
                 case 3:
                     currentAPI = APIConst.SogouWebAPI
                     Toast.success('已经切换搜狗翻译')
+                    break
+                case 4:
+                    currentAPI = APIConst.ICIBAWebAPI
+                    Toast.success('已经切换词霸翻译')
                     break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
@@ -875,6 +886,8 @@
                 yiwen = JSON.parse(res.responseText)[0][0][0];
             } else if (currentAPI.name === APIConst.SogouWeb) {
                 yiwen = JSON.parse(res.responseText).data.translate.dit
+            }else if (currentAPI.name === APIConst.ICIBAWeb) {
+                yiwen = JSON.parse(res.responseText).content.out
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1117,6 +1130,50 @@
     }
 
 
+    function translateICIBAWeb(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        let header = {
+            "content-type": "application/x-www-form-urlencoded",
+            "Referer": `https://www.iciba.com/translate`,
+            "origin": "https://ifanyi.iciba.com"
+        }
+
+        const v = "6key_web_fanyi".concat("ifanyiweb8hc9s98e").concat(text.replace(/(^\s*)|(\s*$)/g, ""))
+
+        let sign = CryptoJS.MD5(v).toString().substring(0, 16);
+
+        GM_fetch({
+            method: "POST",
+            url: `https://ifanyi.iciba.com/index.php?c=trans&m=fy&client=6&auth_user=key_web_fanyi&sign=${sign}`,
+            headers: header,
+            data: `from=en&to=zh&q=${encodeURIComponent(text)}`,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
+
     //遍历
     async function traversePlus(node, lang) {
         if (!node) return;
@@ -1188,6 +1245,8 @@
                                     translateGoogle(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.SogouWeb) {
                                     translateSogouWeb(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.ICIBAWeb) {
+                                    translateICIBAWeb(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
