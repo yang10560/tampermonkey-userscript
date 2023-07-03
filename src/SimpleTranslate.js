@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.1
+// @version      1.3.2
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -30,6 +30,7 @@
 // @connect      translate.googleapis.com
 // @connect      fanyi.sogou.com
 // @connect      ifanyi.iciba.com
+// @connect      dict.hjenglish.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -48,6 +49,7 @@
         Google: 'google',
         SogouWeb: 'sogouWeb',
         ICIBAWeb: 'icibaWeb',//金山词霸
+        HujiangWeb: 'hujiangWeb',//沪江小D
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -75,6 +77,11 @@
         ICIBAWebAPI: {
             name: "icibaWeb",
             ChineseLang: 'zh',
+            EnglishLang: 'en'
+        },
+        HujiangWebAPI: {
+            name: 'hujiangWeb',
+            ChineseLang: 'cn',
             EnglishLang: 'en'
         }
 
@@ -562,6 +569,10 @@
                     currentAPI = APIConst.ICIBAWebAPI
                     Toast.success('已经切换词霸翻译')
                     break
+                case 5:
+                    currentAPI = APIConst.HujiangWebAPI
+                    Toast.success('已经切换沪江翻译')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -888,6 +899,8 @@
                 yiwen = JSON.parse(res.responseText).data.translate.dit
             }else if (currentAPI.name === APIConst.ICIBAWeb) {
                 yiwen = JSON.parse(res.responseText).content.out
+            }else if (currentAPI.name === APIConst.HujiangWeb) {
+                yiwen = JSON.parse(res.responseText).data.content;
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -916,7 +929,7 @@
             }
             node.replaceWith(outersp);
 
-            if (enableCache && res && !res.cacheResult) {
+            if (enableCache && res && !res.cacheResult && yiwen && text) {
                 //缓存数据
                 if (lang === currentAPI.ChineseLang) {
                     //en to zh
@@ -1173,6 +1186,57 @@
 
     }
 
+    const generateRandomIP = () => {
+        const ip = [];
+        for (let i = 0; i < 4; i++) {
+            ip.push(Math.floor(Math.random() * 256));
+        }
+        console.log(ip.join('.'))
+        return ip.join('.');
+    }
+
+    function translatHujiangWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        let header = {
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "x-requested-with": "XMLHttpRequest",
+            "accept": "*/*",
+           // "X-Forwarded-For": generateRandomIP(),
+            "Referer": `https://dict.hjenglish.com/app/trans`,
+            "origin": "https://dict.hjenglish.com"
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://dict.hjenglish.com/v10/dict/translation/${from}/${lang}`,
+            headers: header,
+            data: `content=${encodeURIComponent(text)}`,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
 
     //遍历
     async function traversePlus(node, lang) {
@@ -1247,6 +1311,8 @@
                                     translateSogouWeb(txt, node, lang)
                                 }else if (currentAPI.name === APIConst.ICIBAWeb) {
                                     translateICIBAWeb(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.HujiangWeb) {
+                                    translatHujiangWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
@@ -1298,6 +1364,14 @@
         }
     }
 
+    async function authHujiang() {
+        let res = await GM_fetch({
+            method: "GET",
+            url: "https://dict.hjenglish.com/app/trans",
+            responseType: "text",
+        })
+    }
+
     //翻译
     async function translateTo(lang, rootNode, noclear) {
         if (!noclear) {
@@ -1311,6 +1385,11 @@
         //搜狗鉴权
         if (currentAPI.name === APIConst.SogouWeb && !secretCode) {
             await authSogou()
+        }
+
+        //沪江鉴权
+        if (currentAPI.name === APIConst.HujiangWeb) {
+            await authHujiang()
         }
 
 
