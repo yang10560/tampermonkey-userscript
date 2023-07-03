@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.61
+// @version      4.62
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -76,7 +76,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    let JSVer = "v4.61"
+    const JSVer = "v4.62"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -421,11 +421,12 @@
             url: "https://www.pizzagpt.it/api/chat-completion",
             headers: {
                 "Content-Type": "text/plain;charset=UTF-8",
-                "Referer": `https://www.pizzagpt.it/`
+                "Referer": `https://www.pizzagpt.it/`,
+                "origin": `https://www.pizzagpt.it`,
+                "x-secret": pizzaSecret
             },
             data: JSON.stringify({
-                question: your_qus,
-                secret: pizzaSecret
+                question: your_qus
             }),
             onload: function (res) {
                 if (res.status === 200) {
