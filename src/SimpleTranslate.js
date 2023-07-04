@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.2
+// @version      1.3.3
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -31,6 +31,7 @@
 // @connect      fanyi.sogou.com
 // @connect      ifanyi.iciba.com
 // @connect      dict.hjenglish.com
+// @connect      openapi.youdao.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -50,6 +51,7 @@
         SogouWeb: 'sogouWeb',
         ICIBAWeb: 'icibaWeb',//金山词霸
         HujiangWeb: 'hujiangWeb',//沪江小D
+        Youdao: 'youdao',//有道api
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -83,6 +85,14 @@
             name: 'hujiangWeb',
             ChineseLang: 'cn',
             EnglishLang: 'en'
+        },
+        YoudaoAPI: {
+            name: 'youdao',
+            ChineseLang: 'zh-CHS',
+            EnglishLang: 'en',
+            //有道翻译key配置，建议申请自己的秘钥 进行修改，详见：https://ai.youdao.com/console/#/service-singleton/text-translation
+            appId: '0625d97d20b47865',  //填写自己的应用id
+            appKey: 'xxxxxxxxxxxxxxxxxxxx',  //填写自己的应用秘钥
         }
 
     }
@@ -573,6 +583,10 @@
                     currentAPI = APIConst.HujiangWebAPI
                     Toast.success('已经切换沪江翻译')
                     break
+                case 6:
+                    currentAPI = APIConst.YoudaoAPI
+                    Toast.success('已经切换有道翻译，未配置api key 需要到源码中修改秘钥')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -901,6 +915,8 @@
                 yiwen = JSON.parse(res.responseText).content.out
             }else if (currentAPI.name === APIConst.HujiangWeb) {
                 yiwen = JSON.parse(res.responseText).data.content;
+            }else if (currentAPI.name === APIConst.Youdao) {
+                yiwen = JSON.parse(res.responseText).translation[0]
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1007,6 +1023,74 @@
             url: `https://fanyi-api.baidu.com/api/trans/vip/translate`,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: encodedData,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
+
+    //有道api翻译
+    function truncate(q){
+        const len = q.length;
+        if(len<=20) return q;
+        return q.substring(0, 10) + len + q.substring(len-10, len);
+    }
+    function translatYoudaoAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        const appId = APIConst.YoudaoAPI.appId;
+        const appkey = APIConst.YoudaoAPI.appKey;;
+        const salt = (new Date).getTime();
+        const curtime = Math.round(new Date().getTime() / 1000);
+        const query = text;
+        const sign = CryptoJS.SHA256(appId + truncate(query) + salt + curtime + appkey).toString(CryptoJS.enc.Hex);
+
+        const params = new URLSearchParams();
+        let sendData = {
+            q: query,
+            appKey: appId,
+            salt: salt,
+            from: from,
+            to: lang,
+            sign: sign,
+            signType: "v3",
+            curtime: curtime,
+        }
+
+        for (const key in sendData) {
+            params.append(key, sendData[key]);
+        }
+        const encodedData = params.toString();
+        console.log(encodedData)
+        GM_fetch({
+            method: "POST",
+            url: `https://openapi.youdao.com/api`,
+            headers: {
+                "accept":"application/json, text/javascript, */*;",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             },
             data: encodedData,
             responseType: "text",
@@ -1313,6 +1397,8 @@
                                     translateICIBAWeb(txt, node, lang)
                                 }else if (currentAPI.name === APIConst.HujiangWeb) {
                                     translatHujiangWebAPI(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.Youdao) {
+                                    translatYoudaoAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
