@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.3
+// @version      1.3.4
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -32,6 +32,8 @@
 // @connect      ifanyi.iciba.com
 // @connect      dict.hjenglish.com
 // @connect      openapi.youdao.com
+// @connect      caiyunai.com
+// @connect      caiyunapp.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -52,6 +54,7 @@
         ICIBAWeb: 'icibaWeb',//金山词霸
         HujiangWeb: 'hujiangWeb',//沪江小D
         Youdao: 'youdao',//有道api
+        CaiyunWeb: 'caiyunWeb',//彩云小译
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -93,6 +96,11 @@
             //有道翻译key配置，建议申请自己的秘钥 进行修改，详见：https://ai.youdao.com/console/#/service-singleton/text-translation
             appId: '0625d97d20b47865',  //填写自己的应用id
             appKey: 'xxxxxxxxxxxxxxxxxxxx',  //填写自己的应用秘钥
+        },
+        CaiyunWebAPI: {
+            name: 'caiyunWeb',
+            ChineseLang: 'zh',
+            EnglishLang: 'en'
         }
 
     }
@@ -587,6 +595,10 @@
                     currentAPI = APIConst.YoudaoAPI
                     Toast.success('已经切换有道翻译，未配置api key 需要到源码中修改秘钥')
                     break
+                case 7:
+                    currentAPI = APIConst.CaiyunWebAPI
+                    Toast.success('已经切换彩云翻译')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -917,6 +929,8 @@
                 yiwen = JSON.parse(res.responseText).data.content;
             }else if (currentAPI.name === APIConst.Youdao) {
                 yiwen = JSON.parse(res.responseText).translation[0]
+            }else if (currentAPI.name === APIConst.CaiyunWeb) {
+                yiwen = decodeCaiyun(JSON.parse(res.responseText).target)
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1270,6 +1284,85 @@
 
     }
 
+    //彩云翻译
+    function toBase64(e) {
+        const t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+            , i = "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm"
+            , a = n=>t.indexOf(n)
+            , o = n=>a(n) > -1 ? i[a(n)] : n;
+        return e.split("").map(o).join("")
+    }
+
+    function decodeCaiyun(target) {
+        if(!target) return
+        const t = toBase64(target);
+        // 将 base64 编码的字符串转换为字节数组
+        const bytes = CryptoJS.enc.Base64.parse(t);
+        // 将字节数组转换为 UTF-8 字符串
+        return bytes.toString(CryptoJS.enc.Utf8);
+    }
+    function translatCaiyunWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+        if(!caiyun_JWT || !caiyun_Token){
+            console.error("no caiyun_JWT or caiyun_Token:", caiyun_JWT, caiyun_Token)
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        let header = {
+            "Referer": `https://fanyi.caiyunapp.com/`,
+            "origin": "https://fanyi.caiyunapp.com",
+            "accept": "application/json, text/plain, */*",
+            "app-name": "xy",
+            "content-type": "application/json;charset=UTF-8",
+            "device-id": caiyun_deviceID,
+            "os-type": "web",
+            "os-version": "",
+            "t-authorization": caiyun_JWT,
+            "x-authorization": caiyun_Token
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://api.interpreter.caiyunai.com/v1/translator`,
+            headers: header,
+            data: JSON.stringify({
+                "source": text,
+                "trans_type": `${from}2${lang}`,
+                "request_id": "web_fanyi",
+                "media": "text",
+                "os_type": "web",
+                "dict": true,
+                "cached": true,
+                "replaced": true,
+                "style": "formal",
+                "browser_id": caiyun_deviceID
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
     const generateRandomIP = () => {
         const ip = [];
         for (let i = 0; i < 4; i++) {
@@ -1399,6 +1492,8 @@
                                     translatHujiangWebAPI(txt, node, lang)
                                 }else if (currentAPI.name === APIConst.Youdao) {
                                     translatYoudaoAPI(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.CaiyunWeb) {
+                                    translatCaiyunWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
@@ -1458,6 +1553,87 @@
         })
     }
 
+    function generateRandomString(length) {
+        let result = '';
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
+    //彩云鉴权
+    let caiyun_Token;
+    let caiyun_JWT;
+    let caiyun_deviceID = generateRandomString(32);
+    let caiyun_browser_id = caiyun_deviceID;
+    async function authCaiyun() {
+
+        if(caiyun_JWT && caiyun_Token) return;
+
+        let res = await GM_fetch({
+            method: "GET",
+            url: "https://fanyi.caiyunapp.com/",
+            responseType: "text",
+        })
+        if (res.status === 200) {
+            const tkjs = /\/assets\/index.(.*?).js/i.exec(res.responseText)[0];
+            //debugger
+            let res1 = await GM_fetch({
+                method: "GET",
+                url: `https://fanyi.caiyunapp.com/${tkjs}`,
+                responseType: "text",
+            })
+            if (res1.status === 200) {
+                caiyun_Token = /token:.{20}/i.exec(res1.responseText)[0] || caiyun_Token;
+                console.warn("caiyun_Token",caiyun_Token)
+                if(caiyun_Token) await generateCaiyunJWT()
+            } else {
+                console.error('caiyun_Token 失败了', res1)
+                return
+            }
+        } else {
+            console.error('访问失败了', res)
+            return
+        }
+    }
+
+    async function generateCaiyunJWT() {
+        let header = {
+            "Referer": `https://fanyi.caiyunapp.com/`,
+            "origin": "https://fanyi.caiyunapp.com",
+            "accept": "application/json, text/plain, */*",
+            "app-name": "xy",
+            "content-type": "application/json;charset=UTF-8",
+            "device-id": caiyun_deviceID,
+            "os-type": "web",
+            "os-version": "",
+            "x-authorization": caiyun_Token
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://api.interpreter.caiyunai.com/v1/user/jwt/generate`,
+            headers: header,
+            data: JSON.stringify({
+                "browser_id": caiyun_browser_id
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+               caiyun_JWT =  JSON.parse(res.responseText).jwt || caiyun_JWT;
+                console.warn("caiyun_JWT",caiyun_JWT)
+            } else {
+                console.error('caiyun_JWT 失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+    }
+
+
+
     //翻译
     async function translateTo(lang, rootNode, noclear) {
         if (!noclear) {
@@ -1476,6 +1652,12 @@
         //沪江鉴权
         if (currentAPI.name === APIConst.HujiangWeb) {
             await authHujiang()
+        }
+
+        //彩云鉴权
+        if (currentAPI.name === APIConst.CaiyunWeb) {
+            await authCaiyun()
+            if(!caiyun_JWT) return;
         }
 
 
