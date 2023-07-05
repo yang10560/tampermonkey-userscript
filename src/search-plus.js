@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      2.9.9
+// @version      3.0.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -158,7 +158,7 @@
     'use strict';
 
 
-    const JSver = '2.9.9';
+    const JSver = '3.0.0';
 
 
     function getGPTMode() {
@@ -3330,8 +3330,37 @@
         }
 
     })
+
+    function isTokenExpired(token) {
+        if(!token) return true
+        try {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            if (!tokenData.exp) {
+                return false;
+            }
+
+            const expirationTime = tokenData.exp * 1000; // Convert expiration time to milliseconds
+            const currentTime = new Date().getTime();
+
+            if (currentTime > expirationTime) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (e) {
+            return false
+        }
+
+        return true;
+    }
     // 2023年5月13日
     function HAOHUOLA() {
+        if(isTokenExpired(tk_haohuola)){
+            Toast.error("token过期，请重新刷新页面")
+            return
+        }
+
         let ops = {
             prompt: your_qus
         };
@@ -4823,16 +4852,18 @@
     //360智脑 -------start------
 
 
-    let conversation_id = `con-${uuidv4()}`
+    let conversation_id;
     async function Zhinao360(){
         showAnserAndHighlightCodeStr("请稍后...该线路为官网线路，使用该线路，请确保已经登录[360智脑](https://chat.360.cn/)")
         const sendData = JSON.stringify({
             "prompt": your_qus,
-            "conversation_id": conversation_id,
+            "conversation_id": conversation_id || "",
             "source_type": "prophet_web",
-            "message_id": `msg-${uuidv4()}`,
+            "role": "00000001",
+            "is_regenerate": false,
             "is_so": false
         });
+        console.log(conversation_id)
 
         GM_fetch({
             method: "POST",
@@ -4856,11 +4887,16 @@
                 // console.error(responseItem)
                 console.warn(responseItem)
                 if(responseItem){
-                    responseItem.split("\r\n").forEach(item=>{
+                    responseItem.split("\n").forEach(item=>{
                         try{
-                            if(item.startsWith("data")){
+                            if(item.startsWith("data: CONVERSATIONID####")){
+                                conversation_id =  item.replace(/data: CONVERSATIONID####/gi,"")
+
+                            }else if(item.startsWith("data: MESSAGEID####")){
+
+                            }else if(item.startsWith("data")){
                                 let i =  item.replace(/data: /gi,"")
-                                if(i.trim()){
+                                if(i){
                                     result.push(i)
                                 }else{
                                     result.push("\n")
