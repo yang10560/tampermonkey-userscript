@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.4
+// @version      1.3.5
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -34,6 +34,7 @@
 // @connect      openapi.youdao.com
 // @connect      caiyunai.com
 // @connect      caiyunapp.com
+// @connect      transmart.qq.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -55,6 +56,7 @@
         HujiangWeb: 'hujiangWeb',//沪江小D
         Youdao: 'youdao',//有道api
         CaiyunWeb: 'caiyunWeb',//彩云小译
+        TransmartWeb: 'transmartWeb',//腾讯交互式翻译 https://transmart.qq.com/zh-CN/index
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -99,6 +101,11 @@
         },
         CaiyunWebAPI: {
             name: 'caiyunWeb',
+            ChineseLang: 'zh',
+            EnglishLang: 'en'
+        },
+        TransmartWebAPI: {
+            name: 'transmartWeb',
             ChineseLang: 'zh',
             EnglishLang: 'en'
         }
@@ -599,6 +606,10 @@
                     currentAPI = APIConst.CaiyunWebAPI
                     Toast.success('已经切换彩云翻译')
                     break
+                case 8:
+                    currentAPI = APIConst.TransmartWebAPI
+                    Toast.success('已经切换腾讯交互式翻译')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -931,6 +942,8 @@
                 yiwen = JSON.parse(res.responseText).translation[0]
             }else if (currentAPI.name === APIConst.CaiyunWeb) {
                 yiwen = decodeCaiyun(JSON.parse(res.responseText).target)
+            }else if (currentAPI.name === APIConst.TransmartWeb) {
+                yiwen = JSON.parse(res.responseText).auto_translation[0]
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1363,6 +1376,56 @@
 
     }
 
+
+    //腾讯交互翻译
+    function translatTransmartWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let header = {
+            'Content-Type': 'application/json',
+            'Host': 'transmart.qq.com',
+            'Origin': 'https://transmart.qq.com',
+            'Referer': 'https://transmart.qq.com/'
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://transmart.qq.com/api/imt`,
+            headers: header,
+            data: JSON.stringify({
+                "header": {
+                    "fn": "auto_translation"
+                },
+                "type": "plain",
+                "model_category": "normal",
+                "text_domain": "general",
+                "source": {
+                    "lang": "auto",
+                    "text_list": [text]
+                },
+                "target": {
+                    "lang": lang
+                }
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
     const generateRandomIP = () => {
         const ip = [];
         for (let i = 0; i < 4; i++) {
@@ -1494,6 +1557,8 @@
                                     translatYoudaoAPI(txt, node, lang)
                                 }else if (currentAPI.name === APIConst.CaiyunWeb) {
                                     translatCaiyunWebAPI(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.TransmartWeb) {
+                                    translatTransmartWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
