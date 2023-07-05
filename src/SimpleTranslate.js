@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.6
+// @version      1.3.7
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -36,6 +36,7 @@
 // @connect      caiyunapp.com
 // @connect      transmart.qq.com
 // @connect      translate.alibaba.com
+// @connect      papago.naver.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -59,6 +60,7 @@
         CaiyunWeb: 'caiyunWeb',//彩云小译
         TransmartWeb: 'transmartWeb',//腾讯交互式翻译 https://transmart.qq.com/zh-CN/index
         AlibabaWeb: 'alibabaWeb',//阿里翻译
+        PapagoWeb: 'papagoWeb',//Papago
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -114,6 +116,11 @@
         AlibabaWebAPI: {
             name: 'alibabaWeb',
             ChineseLang: 'zh',
+            EnglishLang: 'en'
+        },
+        PapagoWebAPI: {
+            name: 'papagoWeb',
+            ChineseLang: 'zh-CN',
             EnglishLang: 'en'
         }
 
@@ -621,6 +628,10 @@
                     currentAPI = APIConst.AlibabaWebAPI
                     Toast.success('已经切换阿里翻译')
                     break
+                case 10:
+                    currentAPI = APIConst.PapagoWebAPI
+                    Toast.success('已经切换Papago翻译')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -945,18 +956,20 @@
                 yiwen = JSON.parse(res.responseText)[0][0][0];
             } else if (currentAPI.name === APIConst.SogouWeb) {
                 yiwen = JSON.parse(res.responseText).data.translate.dit
-            }else if (currentAPI.name === APIConst.ICIBAWeb) {
+            } else if (currentAPI.name === APIConst.ICIBAWeb) {
                 yiwen = JSON.parse(res.responseText).content.out
-            }else if (currentAPI.name === APIConst.HujiangWeb) {
+            } else if (currentAPI.name === APIConst.HujiangWeb) {
                 yiwen = JSON.parse(res.responseText).data.content;
-            }else if (currentAPI.name === APIConst.Youdao) {
+            } else if (currentAPI.name === APIConst.Youdao) {
                 yiwen = JSON.parse(res.responseText).translation[0]
-            }else if (currentAPI.name === APIConst.CaiyunWeb) {
+            } else if (currentAPI.name === APIConst.CaiyunWeb) {
                 yiwen = decodeCaiyun(JSON.parse(res.responseText).target)
-            }else if (currentAPI.name === APIConst.TransmartWeb) {
+            } else if (currentAPI.name === APIConst.TransmartWeb) {
                 yiwen = JSON.parse(res.responseText).auto_translation[0]
-            }else if (currentAPI.name === APIConst.AlibabaWeb) {
+            } else if (currentAPI.name === APIConst.AlibabaWeb) {
                 yiwen = JSON.parse(res.responseText).data.translateText
+            } else if (currentAPI.name === APIConst.PapagoWeb) {
+                yiwen = JSON.parse(res.responseText).translatedText
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1080,11 +1093,12 @@
 
 
     //有道api翻译
-    function truncate(q){
+    function truncate(q) {
         const len = q.length;
-        if(len<=20) return q;
-        return q.substring(0, 10) + len + q.substring(len-10, len);
+        if (len <= 20) return q;
+        return q.substring(0, 10) + len + q.substring(len - 10, len);
     }
+
     function translatYoudaoAPI(text, node, lang) {
         if (!text) {
             console.error("no text:", text)
@@ -1102,7 +1116,8 @@
         }
 
         const appId = APIConst.YoudaoAPI.appId;
-        const appkey = APIConst.YoudaoAPI.appKey;;
+        const appkey = APIConst.YoudaoAPI.appKey;
+        ;
         const salt = (new Date).getTime();
         const curtime = Math.round(new Date().getTime() / 1000);
         const query = text;
@@ -1129,7 +1144,7 @@
             method: "POST",
             url: `https://openapi.youdao.com/api`,
             headers: {
-                "accept":"application/json, text/javascript, */*;",
+                "accept": "application/json, text/javascript, */*;",
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             },
             data: encodedData,
@@ -1186,7 +1201,7 @@
 
     function isMobile() {
         let userAgentInfo = navigator.userAgent.toLowerCase();
-        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod","Mobile"];
+        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod", "Mobile"];
         let mobile_flag = false;
         //根据userAgent判断是否是手机
         for (let v = 0; v < mobileAgents.length; v++) {
@@ -1240,14 +1255,14 @@
 
         GM_fetch({
             method: "POST",
-            url: `https://fanyi.sogou.com/api/trans${isMobile() ? "wap": "pc"}/text/result`,
+            url: `https://fanyi.sogou.com/api/trans${isMobile() ? "wap" : "pc"}/text/result`,
             headers: header,
             data: JSON.stringify({
                 "from": from,
                 "to": lang,
                 "text": text,
-                "client": isMobile() ? "wap": "pc",
-                "fr": isMobile() ? "browser_wap" :"browser_pc",
+                "client": isMobile() ? "wap" : "pc",
+                "fr": isMobile() ? "browser_wap" : "browser_pc",
                 "needQc": 1,
                 "s": sign,
                 "uuid": sogou_uuid || uuidv4(),
@@ -1314,19 +1329,20 @@
     function toBase64(e) {
         const t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
             , i = "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm"
-            , a = n=>t.indexOf(n)
-            , o = n=>a(n) > -1 ? i[a(n)] : n;
+            , a = n => t.indexOf(n)
+            , o = n => a(n) > -1 ? i[a(n)] : n;
         return e.split("").map(o).join("")
     }
 
     function decodeCaiyun(target) {
-        if(!target) return
+        if (!target) return
         const t = toBase64(target);
         // 将 base64 编码的字符串转换为字节数组
         const bytes = CryptoJS.enc.Base64.parse(t);
         // 将字节数组转换为 UTF-8 字符串
         return bytes.toString(CryptoJS.enc.Utf8);
     }
+
     function translatCaiyunWebAPI(text, node, lang) {
         if (!text) {
             console.error("no text:", text)
@@ -1335,7 +1351,7 @@
         if (noTranslateWords.includes(text)) {
             return;
         }
-        if(!caiyun_JWT || !caiyun_Token){
+        if (!caiyun_JWT || !caiyun_Token) {
             console.error("no caiyun_JWT or caiyun_Token:", caiyun_JWT, caiyun_Token)
             return;
         }
@@ -1440,10 +1456,72 @@
     }
 
 
+    function uuid_papago() {
+        let a = (new Date).getTime();
+        const id = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (e) {
+            const t = (a + 16 * Math.random()) % 16 | 0;
+            return a = Math.floor(a / 16),
+                ("x" === e ? t : 3 & t | 8).toString(16)
+        })
+        return id;
+    }
+
+    //PapaGO
+    let papaId;
+    function translatPapagoWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        papaId = papaId || uuid_papago();
+        const time = (new Date).getTime() - 1073;
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        let header = {
+            'Origin': 'https://papago.naver.com',
+            'Referer': 'https://papago.naver.com/',
+            "accept": "application/json",
+            "Authorization": 'PPG ' + papaId + ':' + CryptoJS.HmacMD5(papaId + '\nhttps://papago.naver.com/apis/n2mt/translate\n' + time, "v1.7.5_9b3c4db4fc").toString(CryptoJS.enc.Base64),
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Device-Type": "pc",
+            "Sec-Fetch-Site":"same-origin",
+            "Timestamp": `${time}`,
+            "X-Apigw-Partnerid": "papago"
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://papago.naver.com/apis/n2mt/translate`,
+            headers: header,
+            data: `deviceId=${papaId}&locale=zh-CN&dict=true&dictDisplay=30&honorific=false&instant=false&paging=false&source=${from}&target=${lang}&text=${encodeURIComponent(text)}`,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
 
     //阿里翻译
     let ali_uuid;
     let webFormBoundary = generateRandomString(16)
+
     function translatAlibabaWebAPI(text, node, lang) {
         if (!text) {
             console.error("no text:", text)
@@ -1529,7 +1607,7 @@ ${ali_uuid}\r
             "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
             "x-requested-with": "XMLHttpRequest",
             "accept": "*/*",
-           // "X-Forwarded-For": generateRandomIP(),
+            // "X-Forwarded-For": generateRandomIP(),
             "Referer": `https://dict.hjenglish.com/app/trans`,
             "origin": "https://dict.hjenglish.com"
         }
@@ -1624,18 +1702,20 @@ ${ali_uuid}\r
                                     translateGoogle(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.SogouWeb) {
                                     translateSogouWeb(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.ICIBAWeb) {
+                                } else if (currentAPI.name === APIConst.ICIBAWeb) {
                                     translateICIBAWeb(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.HujiangWeb) {
+                                } else if (currentAPI.name === APIConst.HujiangWeb) {
                                     translatHujiangWebAPI(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.Youdao) {
+                                } else if (currentAPI.name === APIConst.Youdao) {
                                     translatYoudaoAPI(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.CaiyunWeb) {
+                                } else if (currentAPI.name === APIConst.CaiyunWeb) {
                                     translatCaiyunWebAPI(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.TransmartWeb) {
+                                } else if (currentAPI.name === APIConst.TransmartWeb) {
                                     translatTransmartWebAPI(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.AlibabaWeb) {
+                                } else if (currentAPI.name === APIConst.AlibabaWeb) {
                                     translatAlibabaWebAPI(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.PapagoWeb) {
+                                    translatPapagoWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
@@ -1678,7 +1758,7 @@ ${ali_uuid}\r
             responseType: "text",
         })
         if (res.status === 200) {
-            secretCode = secretCode ||  /secretCode\":(\d+)/i.exec(res.responseText)[1]
+            secretCode = secretCode || /secretCode\":(\d+)/i.exec(res.responseText)[1]
             sogou_uuid = /uuid\":\"(.*?)\"/i.exec(res.responseText)[1]
             console.warn("secretCode", secretCode)
             console.warn("sogou_uuid", sogou_uuid)
@@ -1694,7 +1774,7 @@ ${ali_uuid}\r
             responseType: "text",
         })
         if (res.status === 200) {
-            ali_uuid =  JSON.parse(res.responseText).token
+            ali_uuid = JSON.parse(res.responseText).token
             console.warn("ali_uuid", ali_uuid)
         } else {
             console.error('访问失败了', res)
@@ -1724,9 +1804,10 @@ ${ali_uuid}\r
     let caiyun_JWT;
     let caiyun_deviceID = generateRandomString(32);
     let caiyun_browser_id = caiyun_deviceID;
+
     async function authCaiyun() {
 
-        if(caiyun_JWT && caiyun_Token) return;
+        if (caiyun_JWT && caiyun_Token) return;
 
         let res = await GM_fetch({
             method: "GET",
@@ -1743,8 +1824,8 @@ ${ali_uuid}\r
             })
             if (res1.status === 200) {
                 caiyun_Token = /token:.{20}/i.exec(res1.responseText)[0] || caiyun_Token;
-                console.warn("caiyun_Token",caiyun_Token)
-                if(caiyun_Token) await generateCaiyunJWT()
+                console.warn("caiyun_Token", caiyun_Token)
+                if (caiyun_Token) await generateCaiyunJWT()
             } else {
                 console.error('caiyun_Token 失败了', res1)
                 return
@@ -1778,8 +1859,8 @@ ${ali_uuid}\r
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
-               caiyun_JWT =  JSON.parse(res.responseText).jwt || caiyun_JWT;
-                console.warn("caiyun_JWT",caiyun_JWT)
+                caiyun_JWT = JSON.parse(res.responseText).jwt || caiyun_JWT;
+                console.warn("caiyun_JWT", caiyun_JWT)
             } else {
                 console.error('caiyun_JWT 失败了', res)
             }
@@ -1787,7 +1868,6 @@ ${ali_uuid}\r
             console.error(`出错了`, reason)
         });
     }
-
 
 
     //翻译
@@ -1813,13 +1893,13 @@ ${ali_uuid}\r
         //彩云鉴权
         if (currentAPI.name === APIConst.CaiyunWeb) {
             await authCaiyun()
-            if(!caiyun_JWT) return;
+            if (!caiyun_JWT) return;
         }
 
         //阿里鉴权
         if (currentAPI.name === APIConst.AlibabaWeb && !ali_uuid) {
             await authAliBaba()
-            if(!ali_uuid) return;
+            if (!ali_uuid) return;
         }
 
 
