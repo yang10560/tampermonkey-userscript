@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.1
+// @version      1.4.2
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -1534,6 +1534,7 @@
         let n = 1;
         n += ((text || "").match(/[i]/g) || []).length
 
+        let deepl_id = 1e4 * Math.round(1e4 * Math.random())
         GM_fetch({
             method: "POST",
             url: `https://www2.deepl.com/jsonrpc?method=LMT_handle_jobs`,
@@ -1605,8 +1606,8 @@
                     },
                     "timestamp": r + (n - r % n)
                 },
-                "id": 1e4 * Math.round(1e4 * Math.random())
-            }).replace('"method":"', '"method": "'),
+                "id": deepl_id
+            }).replace('hod":"', (deepl_id + 3) % 13 == 0 || (deepl_id + 5) % 29 == 0 ? 'hod" : "' : 'hod": "'),
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
