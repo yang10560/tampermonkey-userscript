@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.8
+// @version      1.3.9
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -38,6 +38,7 @@
 // @connect      translate.alibaba.com
 // @connect      papago.naver.com
 // @connect      m.youdao.com
+// @connect      worldlingo.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -63,6 +64,7 @@
         AlibabaWeb: 'alibabaWeb',//阿里翻译
         PapagoWeb: 'papagoWeb',//Papago
         YoudaoMobileWeb: 'youdaoMobileWeb',//有道手机版
+        Worldlingo: 'worldlingo',//worldlingo   https://fy.httpcn.com/fanyi/
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -129,6 +131,11 @@
             name: 'youdaoMobileWeb',
             ChineseLang: 'ZH_CN',
             EnglishLang: 'EN'
+        },
+        WorldlingoAPI: {
+            name: 'worldlingo',
+            ChineseLang: 'zh_cn',
+            EnglishLang: 'en'
         }
 
     }
@@ -643,6 +650,10 @@
                     currentAPI = APIConst.YoudaoMobileWebAPI
                     Toast.success('已经切换有道手机翻译')
                     break
+                case 12:
+                    currentAPI = APIConst.WorldlingoAPI
+                    Toast.success('已经切换WorldlinGo翻译')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -986,6 +997,8 @@
                 doc.body.innerHTML = res.responseText;
                 yiwen =  doc.querySelector("#translateResult li").innerText.trim();
                 //debugger
+            }else if (currentAPI.name === APIConst.Worldlingo) {
+                yiwen = res.responseText;
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1574,6 +1587,39 @@
 
     }
 
+    //Worldlingo
+    function translatWorldlingoAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        GM_fetch({
+            method: "GET",
+            url: `https://www.worldlingo.com/Sg0NoecXVVBsQeWBZ7hb_1rhKD4jEN2ElsZbrxpDzkcM-/texttranslate?wl_srcenc=utf-8&wl_tp=&wl_srclang=${from}&wl_trglang=${lang}&wl_text=${encodeURIComponent(text)}`,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
 
     //阿里翻译
     let ali_uuid;
@@ -1775,6 +1821,8 @@ ${ali_uuid}\r
                                     translatPapagoWebAPI(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.YoudaoMobileWeb) {
                                     translatYoudaoMobileWebAPI(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.Worldlingo) {
+                                    translatWorldlingoAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)

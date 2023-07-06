@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.62
+// @version      4.63
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -76,7 +76,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.62"
+    const JSVer = "v4.63"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2927,8 +2927,37 @@
 
     })
 
+    function isTokenExpired(token) {
+        if(!token) return true
+        try {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            if (!tokenData.exp) {
+                return false;
+            }
+
+            const expirationTime = tokenData.exp * 1000; // Convert expiration time to milliseconds
+            const currentTime = new Date().getTime();
+
+            if (currentTime > expirationTime) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (e) {
+            return false
+        }
+
+        return true;
+    }
     // 2023年5月13日
     function HAOHUOLA(question) {
+
+        if(isTokenExpired(tk_haohuola)){
+            Toast.error("token过期，请重新刷新页面")
+            return
+        }
+
         let your_qus = question;
         GM_handleUserInput(null)
         let ops = {
