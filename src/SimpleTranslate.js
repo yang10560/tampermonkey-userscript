@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.0
+// @version      1.4.1
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -39,6 +39,7 @@
 // @connect      papago.naver.com
 // @connect      m.youdao.com
 // @connect      worldlingo.com
+// @connect      deepl.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -65,6 +66,7 @@
         PapagoWeb: 'papagoWeb',//Papago
         YoudaoMobileWeb: 'youdaoMobileWeb',//有道手机版
         Worldlingo: 'worldlingo',//worldlingo   https://fy.httpcn.com/fanyi/
+        DeepLWeb: 'deepLWeb',//DeepL
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -136,6 +138,11 @@
             name: 'worldlingo',
             ChineseLang: 'zh_cn',
             EnglishLang: 'en'
+        },
+        DeepLWebAPI: {
+            name: 'deepLWeb',
+            ChineseLang: 'ZH',
+            EnglishLang: 'EN'
         }
 
     }
@@ -653,6 +660,10 @@
                     currentAPI = APIConst.WorldlingoAPI
                     Toast.success('已经切换WorldlinGo翻译')
                     break
+                case 13:
+                    currentAPI = APIConst.DeepLWebAPI
+                    Toast.success('已经切换DeepL Web翻译(有ip次数限制)')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -1008,6 +1019,8 @@
                 //debugger
             }else if (currentAPI.name === APIConst.Worldlingo) {
                 yiwen = res.responseText;
+            }else if (currentAPI.name === APIConst.DeepLWeb) {
+                yiwen = JSON.parse(res.responseText).result.translations[0].beams[0].sentences[0].text
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1493,6 +1506,120 @@
 
     }
 
+    //deepL web
+    //let deepl_id = 1e4 * Math.round(1e4 * Math.random())
+    function translatDeepLWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        let header = {
+            'Content-Type': 'application/json',
+            'Origin': 'https://www.deepl.com',
+            'Referer': 'https://www.deepl.com/'
+        }
+
+        let r = Date.now();
+        let n = 1;
+        n += ((text || "").match(/[i]/g) || []).length
+
+        GM_fetch({
+            method: "POST",
+            url: `https://www2.deepl.com/jsonrpc?method=LMT_handle_jobs`,
+            headers: header,
+            anonymous:true,
+            nocache:true,
+            data: JSON.stringify({
+                "jsonrpc": "2.0",
+                "method": "LMT_handle_jobs",
+                "params": {
+                    "jobs": [
+                        {
+                            "kind": "default",
+                            "sentences": [
+                                {
+                                    "text": text,
+                                    "id": 0,
+                                    "prefix": ""
+                                }
+                            ],
+                            "raw_en_context_before": [],
+                            "raw_en_context_after": [],
+                            "preferred_num_beams": 4,
+                            "quality": "fast"
+                        }
+                    ],
+                    "lang": {
+                        "preference": {
+                            "weight": {
+                                "DE": 0.18427,
+                                "EN": from === currentAPI.EnglishLang ? 9.93878 : 5.90582,
+                                "ES": 0.13236,
+                                "FR": 0.16311,
+                                "IT": 0.11621,
+                                "JA": 0.17963,
+                                "NL": 0.1865,
+                                "PL": 0.11549,
+                                "PT": 0.10159,
+                                "RU": 0.10577,
+                                "ZH": from === currentAPI.ChineseLang ? 9.93878 : 5.90582,
+                                "BG": 0.07468,
+                                "CS": 0.09005,
+                                "DA": 0.08567,
+                                "EL": 0.07069,
+                                "ET": 0.0836,
+                                "FI": 0.09628,
+                                "HU": 0.08731,
+                                "LT": 0.07119,
+                                "LV": 0.06866,
+                                "RO": 0.07842,
+                                "SK": 0.07497,
+                                "SL": 0.08492,
+                                "SV": 0.10275,
+                                "TR": 0.07728,
+                                "ID": 0.09161,
+                                "UK": 0.08573,
+                                "KO": 0.04671,
+                                "NB": 0.05511
+                            },
+                            "default": "default"
+                        },
+                        "source_lang_user_selected": from,
+                        "target_lang": lang
+                    },
+                    "priority": -1,
+                    "commonJobParams": {
+                        "mode": "translate",
+                        "browserType": 1
+                    },
+                    "timestamp": r + (n - r % n)
+                },
+                "id": 1e4 * Math.round(1e4 * Math.random())
+            }).replace('"method":"', '"method": "'),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
 
     function uuid_papago() {
         let a = (new Date).getTime();
@@ -1832,6 +1959,8 @@ ${ali_uuid}\r
                                     translatYoudaoMobileWebAPI(txt, node, lang)
                                 }else if (currentAPI.name === APIConst.Worldlingo) {
                                     translatWorldlingoAPI(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.DeepLWeb) {
+                                    translatDeepLWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
