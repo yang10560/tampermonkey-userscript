@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.3.9
+// @version      1.4.0
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -369,23 +369,37 @@
 
     addToastCss()
 
+
+    function changeSelectLang() {
+        if (selectTolang === currentAPI.ChineseLang) {
+            selectTolang = currentAPI.EnglishLang;
+            console.log('当前目标语言为英语')
+            Toast.success('当前目标语言为英语')
+        } else {
+            selectTolang = currentAPI.ChineseLang;
+            console.log('当前目标语言为中文')
+            Toast.success('当前目标语言为中文')
+        }
+    }
+
+    function autoTranslateSwitch() {
+        if (englishAutoTranslate) {
+            englishAutoTranslate = false;
+            GM_setValue("englishAutoTranslate", false)
+            Toast.error('英语自动翻译已关闭! 请重新刷新页面.')
+        } else {
+            englishAutoTranslate = true;
+            GM_setValue("englishAutoTranslate", true)
+            Toast.success('英语自动翻译已打开! 请重新刷新页面.')
+        }
+    }
+
     //注册菜单
     setTimeout(() => {
         GM_registerMenuCommand("更新脚本", function (event) {
             GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
         }, "updateTranslateJS");
 
-        GM_registerMenuCommand("英语自动翻译", function (event) {
-            if (englishAutoTranslate) {
-                englishAutoTranslate = false;
-                GM_setValue("englishAutoTranslate", false)
-                Toast.error('英语自动翻译已关闭! 请重新刷新页面.')
-            } else {
-                englishAutoTranslate = true;
-                GM_setValue("englishAutoTranslate", true)
-                Toast.success('英语自动翻译已打开! 请重新刷新页面.')
-            }
-        }, "englishAutoTranslate");
 
         GM_registerMenuCommand("排除/放行该站", function (event) {
             if (excludeSites.includes(location.host)) {
@@ -427,21 +441,6 @@
 
         }, "selectMode");
 
-        GM_registerMenuCommand("鼠标选词开关", function (event) {
-            leftSelect()
-        }, "leftSelectMode");
-
-        GM_registerMenuCommand("选词翻译目标语言", function (event) {
-            if (selectTolang === currentAPI.ChineseLang) {
-                selectTolang = currentAPI.EnglishLang;
-                console.log('当前目标语言为英语')
-                Toast.success('当前目标语言为英语')
-            } else {
-                selectTolang = currentAPI.ChineseLang;
-                console.log('当前目标语言为中文')
-                Toast.success('当前目标语言为中文')
-            }
-        }, "selectTolang");
 
 
     })
@@ -900,6 +899,16 @@
         <span>高亮</span>
        </a>
       </li>
+      
+      <li style="display: flex; justify-content: center ">
+       <a id="autoTranslateSwitch" href="javascript:void(0)">
+        <span>自动</span>
+       </a>
+       <a id="changeSelectLang" href="javascript:void(0)">
+        <span>语言</span>
+       </a>
+      </li>
+      
       <li style="display: flex; justify-content: center ">
        <a id="leftSelectMode" href="javascript:void(0)">
         <span>选词</span>
@@ -2124,6 +2133,20 @@ ${ali_uuid}\r
     switchAPIBtn.addEventListener("click", (event) => {
         event.stopPropagation()
         switchAPI()
+    })
+
+    //自动翻译
+    const autoTranslateSwitchBtn = document.querySelector("#autoTranslateSwitch")
+    autoTranslateSwitchBtn.addEventListener("click", (event) => {
+        event.stopPropagation()
+        autoTranslateSwitch()
+    })
+
+    //切换选词语言
+    const changeSelectLangBtn = document.querySelector("#changeSelectLang")
+    changeSelectLangBtn.addEventListener("click", (event) => {
+        event.stopPropagation()
+        changeSelectLang()
     })
 
 
