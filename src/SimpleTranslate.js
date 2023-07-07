@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.5
+// @version      1.4.6
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -44,6 +44,7 @@
 // @connect      flitto.com.cn
 // @connect      translate.yandex.com
 // @connect      yandex.net
+// @connect      fanyi.pdf365.cn
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -74,6 +75,7 @@
         DeepLWeb: 'deepLWeb',//DeepL
         FlittoWeb: 'flittoWeb',//易翻通
         YandexWeb: 'yandexWeb',//Yandex
+        FuxiWeb: 'fuxiWeb',//福昕翻译    https://fanyi.pdf365.cn/
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -164,6 +166,11 @@
         YandexWebAPI: {
             name: 'yandexWeb',
             ChineseLang: "zh",
+            EnglishLang: "en"
+        },
+        FuxiWebAPI: {
+            name: 'fuxiWeb',
+            ChineseLang: "zh-CN",
             EnglishLang: "en"
         }
 
@@ -722,6 +729,10 @@
                     currentAPI = APIConst.YandexWebAPI
                     Toast.success('已经切换Yandex web')
                     break
+                case 17:
+                    currentAPI = APIConst.FuxiWebAPI
+                    Toast.success('已经切换福昕翻译 web')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -1085,6 +1096,8 @@
                 yiwen = JSON.parse(res.responseText)[0].tr_content
             } else if (currentAPI.name === APIConst.YandexWeb) {
                 yiwen = JSON.parse(res.responseText).text[0]
+            }else if (currentAPI.name === APIConst.FuxiWeb) {
+                yiwen = JSON.parse(res.responseText).result
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -2044,6 +2057,54 @@
 
     }
 
+
+    //福昕翻译
+    async function translatFuxiWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+
+        let header = {
+            "accept": "*/*",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "origin": "https://fanyi.pdf365.cn",
+            "Referer": "https://fanyi.pdf365.cn/free",
+            "x-requested-with": "XMLHttpRequest"
+        }
+
+        let time = Date.parse(new Date);
+
+        GM_fetch({
+            method: "POST",
+            anonymous: true,
+            url: `https://fanyi.pdf365.cn/api/wordTranslateResult`,
+            headers: header,
+            data: `plateform=web&orginL=${from}&targetL=${lang}&text=${encodeURIComponent(text)}&timestamp=${time}&sign=${CryptoJS.MD5(time + "FOXIT_YEE_TRANSLATE").toString()}&userId=`,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
     //Worldlingo
     function translatWorldlingoAPI(text, node, lang) {
         if (!text) {
@@ -2288,6 +2349,8 @@ ${ali_uuid}\r
                                     translatFlittoWebAPI(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.YandexWeb) {
                                     translatYandexWebAPI(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.FuxiWeb) {
+                                    translatFuxiWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
