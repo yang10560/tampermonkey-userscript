@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.3
+// @version      1.4.4
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -41,6 +41,7 @@
 // @connect      worldlingo.com
 // @connect      deepl.com
 // @connect      fanyi.baidu.com
+// @connect      flitto.com.cn
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -69,6 +70,7 @@
         YoudaoMobileWeb: 'youdaoMobileWeb',//有道手机版
         Worldlingo: 'worldlingo',//worldlingo   https://fy.httpcn.com/fanyi/
         DeepLWeb: 'deepLWeb',//DeepL
+        FlittoWeb: 'flittoWeb',//易翻通
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -150,6 +152,11 @@
             name: 'deepLWeb',
             ChineseLang: 'ZH',
             EnglishLang: 'EN'
+        },
+        FlittoWebAPI: {
+            name: 'flittoWeb',
+            ChineseLang: 11,
+            EnglishLang: 17
         }
 
     }
@@ -674,6 +681,10 @@
                     currentAPI = APIConst.BaiduMobileWebAPI
                     Toast.success('已经切换百度翻译手机版 web')
                     break
+                case 15:
+                    currentAPI = APIConst.FlittoWebAPI
+                    Toast.success('已经切换易翻通 web')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -1033,6 +1044,8 @@
                 yiwen = JSON.parse(res.responseText).result.translations[0].beams[0].sentences[0].text
             } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
                 yiwen = JSON.parse(res.responseText).trans[0].dst
+            }else if (currentAPI.name === APIConst.FlittoWeb) {
+                yiwen = JSON.parse(res.responseText)[0].tr_content
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1840,6 +1853,100 @@
 
     }
 
+
+    //易翻通
+    function Qe() {
+        return window.crypto || window.msCrypto
+    }
+
+    var Xe = function() {
+        function e() {
+            this.buffer = new Uint8Array(8),
+                Qe().getRandomValues(this.buffer),
+                this.buffer[0] = 127 & this.buffer[0]
+        }
+        return e.prototype.toString = function(e) {
+            var t = this.readInt32(0)
+                , n = this.readInt32(4)
+                , r = "";
+            do {
+                var a = t % e * 4294967296 + n;
+                t = Math.floor(t / e),
+                    n = Math.floor(a / e),
+                    r = (a % e).toString(e) + r
+            } while (t || n);
+            return r
+        }
+            ,
+            e.prototype.toDecimalString = function() {
+                return this.toString(10)
+            }
+            ,
+            e.prototype.toPaddedHexadecimalString = function() {
+                var e = this.toString(16);
+                return Array(17 - e.length).join("0") + e
+            }
+            ,
+            e.prototype.readInt32 = function(e) {
+                return 16777216 * this.buffer[e] + (this.buffer[e + 1] << 16) + (this.buffer[e + 2] << 8) + this.buffer[e + 3]
+            }
+            ,
+            e
+    }();
+
+    function translatFlittoWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+        let  traceId = new Xe
+        let spanId = new Xe
+
+        const traceparent =  "00-0000000000000000".concat(traceId.toPaddedHexadecimalString(), "-")
+            .concat(spanId.toPaddedHexadecimalString(), "-0").concat(true ? "1" : "0")
+
+        let header = {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "zh-CN,zh;q=0.9",
+            "content-type": "application/json",
+            "traceparent": traceparent,
+            "origin": "https://www.flitto.com.cn",
+            "Referer": "https://www.flitto.com.cn/language/translation/text"
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://www.flitto.com.cn/api/1.2/tr/recommends/text`,
+            headers: header,
+            data: JSON.stringify({
+                "src_lang_id": from,
+                "dst_lang_id": lang,
+                "content": text,
+                "size": text.length
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
     //Worldlingo
     function translatWorldlingoAPI(text, node, lang) {
         if (!text) {
@@ -2080,6 +2187,8 @@ ${ali_uuid}\r
                                     translatDeepLWebAPI(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
                                     translatBaiduMobileWebAPI(txt, node, lang)
+                                }else if (currentAPI.name === APIConst.FlittoWeb) {
+                                    translatFlittoWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
