@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.4
+// @version      1.4.5
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -42,6 +42,8 @@
 // @connect      deepl.com
 // @connect      fanyi.baidu.com
 // @connect      flitto.com.cn
+// @connect      translate.yandex.com
+// @connect      yandex.net
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -71,6 +73,7 @@
         Worldlingo: 'worldlingo',//worldlingo   https://fy.httpcn.com/fanyi/
         DeepLWeb: 'deepLWeb',//DeepL
         FlittoWeb: 'flittoWeb',//易翻通
+        YandexWeb: 'yandexWeb',//Yandex
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -157,6 +160,11 @@
             name: 'flittoWeb',
             ChineseLang: 11,
             EnglishLang: 17
+        },
+        YandexWebAPI: {
+            name: 'yandexWeb',
+            ChineseLang: "zh",
+            EnglishLang: "en"
         }
 
     }
@@ -175,6 +183,31 @@
 
     let enableCache = true; //是否启用缓存 true/false 默认启用
     let maxCacheCount = 1500; //最大缓存数量
+
+
+    function getCookieValue(cookies, cookieName) {
+        let name = cookieName + "=";
+        let cookieArray = cookies.split(';');
+        for (let i = 0; i < cookieArray.length; i++) {
+            let cookie = cookieArray[i];
+            while (cookie.charAt(0) === ' ') {
+                cookie = cookie.substring(1);
+            }
+            if (cookie.indexOf(name) === 0) {
+                return cookie.substring(name.length, cookie.length);
+            }
+        }
+        return "";
+    }
+
+    setTimeout(() => {
+        if (location.href.includes('translate.yandex.com')) {
+            GM_setValue("yandexuid", getCookieValue(document.cookie, "yandexuid"))
+            GM_setValue("yandexspravka", getCookieValue(document.cookie, "spravka"))
+            Toast.success("yandexuid 获取成功：" + getCookieValue(document.cookie, "yandexuid"))
+            Toast.success("spravka 获取成功：" + getCookieValue(document.cookie, "spravka"))
+        }
+    })
 
     function isEqual(obj1, obj2) {
         if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
@@ -685,6 +718,10 @@
                     currentAPI = APIConst.FlittoWebAPI
                     Toast.success('已经切换易翻通 web')
                     break
+                case 16:
+                    currentAPI = APIConst.YandexWebAPI
+                    Toast.success('已经切换Yandex web')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -1044,8 +1081,10 @@
                 yiwen = JSON.parse(res.responseText).result.translations[0].beams[0].sentences[0].text
             } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
                 yiwen = JSON.parse(res.responseText).trans[0].dst
-            }else if (currentAPI.name === APIConst.FlittoWeb) {
+            } else if (currentAPI.name === APIConst.FlittoWeb) {
                 yiwen = JSON.parse(res.responseText)[0].tr_content
+            } else if (currentAPI.name === APIConst.YandexWeb) {
+                yiwen = JSON.parse(res.responseText).text[0]
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1753,8 +1792,8 @@
 
     //百度手机版 web
 
-    let baidu_gtk ; //windows.gtk
-    let baidu_token ; // token
+    let baidu_gtk; //windows.gtk
+    let baidu_token; // token
     function getBaiduSign(t, r) {
         var o, i = t.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g);
         if (null === i) {
@@ -1859,13 +1898,14 @@
         return window.crypto || window.msCrypto
     }
 
-    var Xe = function() {
+    var Xe = function () {
         function e() {
             this.buffer = new Uint8Array(8),
                 Qe().getRandomValues(this.buffer),
                 this.buffer[0] = 127 & this.buffer[0]
         }
-        return e.prototype.toString = function(e) {
+
+        return e.prototype.toString = function (e) {
             var t = this.readInt32(0)
                 , n = this.readInt32(4)
                 , r = "";
@@ -1878,16 +1918,16 @@
             return r
         }
             ,
-            e.prototype.toDecimalString = function() {
+            e.prototype.toDecimalString = function () {
                 return this.toString(10)
             }
             ,
-            e.prototype.toPaddedHexadecimalString = function() {
+            e.prototype.toPaddedHexadecimalString = function () {
                 var e = this.toString(16);
                 return Array(17 - e.length).join("0") + e
             }
             ,
-            e.prototype.readInt32 = function(e) {
+            e.prototype.readInt32 = function (e) {
                 return 16777216 * this.buffer[e] + (this.buffer[e + 1] << 16) + (this.buffer[e + 2] << 8) + this.buffer[e + 3]
             }
             ,
@@ -1909,10 +1949,10 @@
         } else {
             from = currentAPI.ChineseLang;
         }
-        let  traceId = new Xe
+        let traceId = new Xe
         let spanId = new Xe
 
-        const traceparent =  "00-0000000000000000".concat(traceId.toPaddedHexadecimalString(), "-")
+        const traceparent = "00-0000000000000000".concat(traceId.toPaddedHexadecimalString(), "-")
             .concat(spanId.toPaddedHexadecimalString(), "-0").concat(true ? "1" : "0")
 
         let header = {
@@ -1934,6 +1974,63 @@
                 "content": text,
                 "size": text.length
             }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
+
+    // Yandex Web
+    let yandex_reqid;
+    let yandex_uid;
+    let yandex_spravka;
+    let yandex_index = 0;
+
+    async function translatYandexWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+        if (!yandex_reqid) {
+            console.error("no yandex_reqid", yandex_reqid)
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+
+        let header = {
+            "accept": "*/*",
+            "content-type": "application/x-www-form-urlencoded",
+            "x-retpath-y": "https://translate.yandex.com",
+            "origin": "https://translate.yandex.com",
+            "Referer": "https://translate.yandex.com/",
+            "Sec-Fetch-Site": "cross-site"
+        }
+
+
+        GM_fetch({
+            method: "POST",
+            anonymous: true,
+            url: `https://translate.yandex.net/api/v1/tr.json/translate?id=${yandex_reqid}-${yandex_index++}-0&srv=tr-text&source_lang=${from}&target_lang=${lang}&reason=type-end&format=text&ajax=1&yu=${yandex_uid}${yandex_spravka ? '&spravka=' + yandex_spravka : ''}`,
+            headers: header,
+            data: `text=${encodeURIComponent(text)}&options=4`,
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
@@ -2187,8 +2284,10 @@ ${ali_uuid}\r
                                     translatDeepLWebAPI(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
                                     translatBaiduMobileWebAPI(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.FlittoWeb) {
+                                } else if (currentAPI.name === APIConst.FlittoWeb) {
                                     translatFlittoWebAPI(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.YandexWeb) {
+                                    translatYandexWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
@@ -2235,6 +2334,28 @@ ${ali_uuid}\r
             sogou_uuid = /uuid\":\"(.*?)\"/i.exec(res.responseText)[1]
             console.warn("secretCode", secretCode)
             console.warn("sogou_uuid", sogou_uuid)
+        } else {
+            console.error('访问失败了', res)
+        }
+    }
+
+    async function authYandex() {
+
+        yandex_uid = await GM_getValue("yandexuid") || ""
+        yandex_spravka = await GM_getValue("yandexspravka") || ""
+
+        if (!yandex_uid || !yandex_spravka) {
+            Toast.error("uid或speavka不存，可能存在错误，请前往https://translate.yandex.com 获取")
+        }
+
+        let res = await GM_fetch({
+            method: "GET",
+            url: "https://translate.yandex.com",
+            responseType: "text",
+        })
+        if (res.status === 200) {
+            yandex_reqid = yandex_reqid || /reqid = '(.*?)'/i.exec(res.responseText)[1]
+            console.warn("yandex_reqid", yandex_reqid)
         } else {
             console.error('访问失败了', res)
         }
@@ -2392,10 +2513,16 @@ ${ali_uuid}\r
             if (!ali_uuid) return;
         }
 
-        //阿里鉴权
+        //百度鉴权
         if (currentAPI.name === APIConst.BaiduMobileWeb && (!baidu_token || !baidu_gtk)) {
             await authBaiduMobile()
             if (!baidu_token || !baidu_gtk) return;
+        }
+
+        //百度鉴权
+        if (currentAPI.name === APIConst.YandexWeb && !yandex_reqid) {
+            await authYandex()
+            if (!yandex_reqid) return;
         }
 
 
