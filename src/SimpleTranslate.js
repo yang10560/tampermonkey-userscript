@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.2
+// @version      1.4.3
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -40,6 +40,7 @@
 // @connect      m.youdao.com
 // @connect      worldlingo.com
 // @connect      deepl.com
+// @connect      fanyi.baidu.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -54,6 +55,7 @@
     let sogou_uuid;//搜狗uuid
     const APIConst = {
         Baidu: 'baidu',
+        BaiduMobileWeb: 'baiduMobileWeb',//百度手机版web
         Microsoft: 'microsoft',
         Google: 'google',
         SogouWeb: 'sogouWeb',
@@ -74,6 +76,11 @@
             //appid 百度API有月额度(100w字符/月)限制，建议申请自己的秘钥，详见：https://fanyi-api.baidu.com/
             appid: '20230622001720783',  //appid 申请可见 这里需要修改成自己的appid
             secret: 'dQVha4zSH26nMDLpfoVC'// secret 申请可见 这里需要修改成自己的secret
+        },
+        BaiduMobileWebAPI: {
+            name: "baiduMobileWeb",
+            ChineseLang: 'zh',
+            EnglishLang: 'en',
         },
         MicrosoftAPI: {
             name: "microsoft",
@@ -449,7 +456,6 @@
         }, "selectMode");
 
 
-
     })
 
     //载入配置
@@ -663,6 +669,10 @@
                 case 13:
                     currentAPI = APIConst.DeepLWebAPI
                     Toast.success('已经切换DeepL Web翻译(有ip次数限制)')
+                    break
+                case 14:
+                    currentAPI = APIConst.BaiduMobileWebAPI
+                    Toast.success('已经切换百度翻译手机版 web')
                     break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
@@ -1012,15 +1022,17 @@
                 yiwen = JSON.parse(res.responseText).data.translateText
             } else if (currentAPI.name === APIConst.PapagoWeb) {
                 yiwen = JSON.parse(res.responseText).translatedText
-            }else if (currentAPI.name === APIConst.YoudaoMobileWeb) {
+            } else if (currentAPI.name === APIConst.YoudaoMobileWeb) {
                 let doc = document.implementation.createHTMLDocument();
                 doc.body.innerHTML = res.responseText;
-                yiwen =  doc.querySelector("#translateResult li").innerText.trim();
+                yiwen = doc.querySelector("#translateResult li").innerText.trim();
                 //debugger
-            }else if (currentAPI.name === APIConst.Worldlingo) {
+            } else if (currentAPI.name === APIConst.Worldlingo) {
                 yiwen = res.responseText;
-            }else if (currentAPI.name === APIConst.DeepLWeb) {
+            } else if (currentAPI.name === APIConst.DeepLWeb) {
                 yiwen = JSON.parse(res.responseText).result.translations[0].beams[0].sentences[0].text
+            } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
+                yiwen = JSON.parse(res.responseText).trans[0].dst
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -1539,8 +1551,8 @@
             method: "POST",
             url: `https://www2.deepl.com/jsonrpc?method=LMT_handle_jobs`,
             headers: header,
-            anonymous:true,
-            nocache:true,
+            anonymous: true,
+            nocache: true,
             data: JSON.stringify({
                 "jsonrpc": "2.0",
                 "method": "LMT_handle_jobs",
@@ -1634,6 +1646,7 @@
 
     //PapaGO
     let papaId;
+
     function translatPapagoWebAPI(text, node, lang) {
         if (!text) {
             console.error("no text:", text)
@@ -1660,7 +1673,7 @@
             "Authorization": 'PPG ' + papaId + ':' + CryptoJS.HmacMD5(papaId + '\nhttps://papago.naver.com/apis/n2mt/translate\n' + time, "v1.7.5_9b3c4db4fc").toString(CryptoJS.enc.Base64),
             "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
             "Device-Type": "pc",
-            "Sec-Fetch-Site":"same-origin",
+            "Sec-Fetch-Site": "same-origin",
             "Timestamp": `${time}`,
             "X-Apigw-Partnerid": "papago"
         }
@@ -1711,6 +1724,109 @@
             url: `https://m.youdao.com/translate`,
             headers: header,
             data: `inputtext=${encodeURIComponent(text)}&type=${from}2${lang}`,
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
+
+    //百度手机版 web
+
+    let baidu_gtk ; //windows.gtk
+    let baidu_token ; // token
+    function getBaiduSign(t, r) {
+        var o, i = t.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g);
+        if (null === i) {
+            var a = t.length;
+            a > 30 && (t = "".concat(t.substr(0, 10)).concat(t.substr(Math.floor(a / 2) - 5, 10)).concat(t.substr(-10, 10)))
+        } else {
+            for (var s = t.split(/[\uD800-\uDBFF][\uDC00-\uDFFF]/), c = 0, u = s.length, l = []; c < u; c++)
+                "" !== s[c] && l.push.apply(l, function (t) {
+                    if (Array.isArray(t))
+                        return e(t)
+                }(o = s[c].split("")) || function (t) {
+                    if ("undefined" != typeof Symbol && null != t[Symbol.iterator] || null != t["@@iterator"])
+                        return Array.from(t)
+                }(o) || function (t, n) {
+                    if (t) {
+                        if ("string" == typeof t)
+                            return e(t, n);
+                        var r = Object.prototype.toString.call(t).slice(8, -1);
+                        return "Object" === r && t.constructor && (r = t.constructor.name),
+                            "Map" === r || "Set" === r ? Array.from(t) : "Arguments" === r || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(r) ? e(t, n) : void 0
+                    }
+                }(o) || function () {
+                    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")
+                }()),
+                c !== u - 1 && l.push(i[c]);
+            var p = l.length;
+            p > 30 && (t = l.slice(0, 10).join("") + l.slice(Math.floor(p / 2) - 5, Math.floor(p / 2) + 5).join("") + l.slice(-10).join(""))
+        }
+        //debugger
+        for (var d = "".concat(String.fromCharCode(103)).concat(String.fromCharCode(116)).concat(String.fromCharCode(107)), h = (null !== r ? r : (r = window[d] || "") || "").split("."), f = Number(h[0]) || 0, m = Number(h[1]) || 0, g = [], y = 0, v = 0; v < t.length; v++) {
+            var _ = t.charCodeAt(v);
+            _ < 128 ? g[y++] = _ : (_ < 2048 ? g[y++] = _ >> 6 | 192 : (55296 == (64512 & _) && v + 1 < t.length && 56320 == (64512 & t.charCodeAt(v + 1)) ? (_ = 65536 + ((1023 & _) << 10) + (1023 & t.charCodeAt(++v)),
+                g[y++] = _ >> 18 | 240,
+                g[y++] = _ >> 12 & 63 | 128) : g[y++] = _ >> 12 | 224,
+                g[y++] = _ >> 6 & 63 | 128),
+                g[y++] = 63 & _ | 128)
+        }
+        for (var b = f, w = "".concat(String.fromCharCode(43)).concat(String.fromCharCode(45)).concat(String.fromCharCode(97)) + "".concat(String.fromCharCode(94)).concat(String.fromCharCode(43)).concat(String.fromCharCode(54)), k = "".concat(String.fromCharCode(43)).concat(String.fromCharCode(45)).concat(String.fromCharCode(51)) + "".concat(String.fromCharCode(94)).concat(String.fromCharCode(43)).concat(String.fromCharCode(98)) + "".concat(String.fromCharCode(43)).concat(String.fromCharCode(45)).concat(String.fromCharCode(102)), x = 0; x < g.length; x++)
+            b = n_baidu(b += g[x], w);
+        return b = n_baidu(b, k),
+        (b ^= m) < 0 && (b = 2147483648 + (2147483647 & b)),
+            "".concat((b %= 1e6).toString(), ".").concat(b ^ f)
+    }
+
+    function n_baidu(t, e) {
+        for (var n = 0; n < e.length - 2; n += 3) {
+            var r = e.charAt(n + 2);
+            r = "a" <= r ? r.charCodeAt(0) - 87 : Number(r),
+                r = "+" === e.charAt(n + 1) ? t >>> r : t << r,
+                t = "+" === e.charAt(n) ? t + r & 4294967295 : t ^ r
+        }
+        return t
+    }
+
+    function translatBaiduMobileWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        let header = {
+            "accept": "*/*",
+            "accept-language": "zh-CN,zh;q=0.9",
+            "content-type": "application/x-www-form-urlencoded",
+            "user-agent": "MQQBrowser/26 Mozilla/5.0 (Linux; U; Android 2.3.7; zh-cn; MB200 Build/GRJ22; CyanogenMod-7) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
+            "x-requested-with": "XMLHttpRequest",
+            "origin": "https://fanyi.baidu.com",
+            "Referer": "https://fanyi.baidu.com/"
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://fanyi.baidu.com/basetrans`,
+            headers: header,
+            data: `query=${encodeURIComponent(text)}&from=${from}&to=${lang}&token=${baidu_token}&sign=${getBaiduSign(text, baidu_gtk)}`,
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
@@ -1958,10 +2074,12 @@ ${ali_uuid}\r
                                     translatPapagoWebAPI(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.YoudaoMobileWeb) {
                                     translatYoudaoMobileWebAPI(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.Worldlingo) {
+                                } else if (currentAPI.name === APIConst.Worldlingo) {
                                     translatWorldlingoAPI(txt, node, lang)
-                                }else if (currentAPI.name === APIConst.DeepLWeb) {
+                                } else if (currentAPI.name === APIConst.DeepLWeb) {
                                     translatDeepLWebAPI(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
+                                    translatBaiduMobileWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
@@ -2022,6 +2140,23 @@ ${ali_uuid}\r
         if (res.status === 200) {
             ali_uuid = JSON.parse(res.responseText).token
             console.warn("ali_uuid", ali_uuid)
+        } else {
+            console.error('访问失败了', res)
+        }
+    }
+
+
+    async function authBaiduMobile() {
+        let res = await GM_fetch({
+            method: "GET",
+            url: "https://fanyi.baidu.com",
+            responseType: "text",
+        })
+        if (res.status === 200) {
+            baidu_token = /token: ('|")(.*?)('|")/.exec(res.responseText)[2];
+            baidu_gtk = /('|")(\d{6}\.\d{9})('|")/.exec(res.responseText)[2];
+            console.warn("baidu_token", baidu_token)
+            console.warn("baidu_gtk", baidu_gtk)
         } else {
             console.error('访问失败了', res)
         }
@@ -2146,6 +2281,12 @@ ${ali_uuid}\r
         if (currentAPI.name === APIConst.AlibabaWeb && !ali_uuid) {
             await authAliBaba()
             if (!ali_uuid) return;
+        }
+
+        //阿里鉴权
+        if (currentAPI.name === APIConst.BaiduMobileWeb && (!baidu_token || !baidu_gtk)) {
+            await authBaiduMobile()
+            if (!baidu_token || !baidu_gtk) return;
         }
 
 
