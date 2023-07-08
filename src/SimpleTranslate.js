@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.6
+// @version      1.4.7
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -436,11 +436,14 @@
             selectTolang = currentAPI.EnglishLang;
             console.log('当前目标语言为英语')
             Toast.success('当前目标语言为英语')
+            GM_setValue("selectTolang","EnglishLang")
         } else {
             selectTolang = currentAPI.ChineseLang;
             console.log('当前目标语言为中文')
             Toast.success('当前目标语言为中文')
+            GM_setValue("selectTolang","ChineseLang")
         }
+
     }
 
     function autoTranslateSwitch() {
@@ -510,7 +513,19 @@
         isDoubleShow = await GM_getValue("isDoubleShow", true)
         isHighlight = await GM_getValue("isHighlight", true)
         englishAutoTranslate = await GM_getValue("englishAutoTranslate", false)
-
+        leftSelectMode = await GM_getValue("leftSelectMode", false)
+        let selectlang = await GM_getValue("selectTolang", "ChineseLang")
+        setTimeout(()=>{
+            if(leftSelectMode){
+                leftSelectMode = false;
+                leftSelect()
+            }
+            if(selectlang === 'ChineseLang'){
+                selectTolang = currentAPI.ChineseLang
+            }else{
+                selectTolang = currentAPI.EnglishLang
+            }
+        })
         try {
             switchIndex = await GM_getValue("switchIndex", 0) - 1
             console.warn("switchIndex", switchIndex)
@@ -650,7 +665,6 @@
             document.removeEventListener('mouseup', handleMouseUpOrTouchend);
             document.removeEventListener('touchcancel', handleMouseUpOrTouchend);
             Toast.success('选词翻译已经关闭')
-
         } else {
             console.log('鼠标选词翻译已经开启', leftSelectMode)
             leftSelectMode = true;
@@ -658,6 +672,7 @@
             document.addEventListener('touchcancel', handleMouseUpOrTouchend);
             Toast.success('选词翻译已经开启')
         }
+        GM_setValue("leftSelectMode",leftSelectMode)
     }
 
 
@@ -2582,7 +2597,7 @@ ${ali_uuid}\r
             if (!baidu_token || !baidu_gtk) return;
         }
 
-        //百度鉴权
+        //Yandex 鉴权
         if (currentAPI.name === APIConst.YandexWeb && !yandex_reqid) {
             await authYandex()
             if (!yandex_reqid) return;
