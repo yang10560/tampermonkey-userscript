@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.8
+// @version      1.4.9
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -10,8 +10,18 @@
 // @exclude      *://*.baidu.com/*
 // @exclude      *://localhost:*/*
 // @exclude      *://127.0.0.1:*/*
-// @exclude      *://*.cn/*
 // @exclude      *://cn.bing.com/*
+// @exclude      *://*.qq.com/*
+// @exclude      *://*.bilibili.com/*
+// @exclude      *://*.jd.com/*
+// @exclude      *://*.taobao.com/*
+// @exclude      *://*.iqiyi.com/*
+// @exclude      *://*.360.cn/*
+// @exclude      *://*.gov.cn/*
+// @exclude      *://*.12306.cn/*
+// @exclude      *://*.ctrip.com/*
+// @exclude      *://*.hao123.com/*
+// @exclude      *://*.youku.com/*
 // @run-at       document-end
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=translate.google.com
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
@@ -47,6 +57,7 @@
 // @connect      translate.yandex.com
 // @connect      yandex.net
 // @connect      fanyi.pdf365.cn
+// @connect      dict.cnki.net
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -78,6 +89,7 @@
         FlittoWeb: 'flittoWeb',//易翻通
         YandexWeb: 'yandexWeb',//Yandex
         FuxiWeb: 'fuxiWeb',//福昕翻译    https://fanyi.pdf365.cn/
+        CNKIWeb: 'CNKIWeb',//cnki
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -174,6 +186,11 @@
             name: 'fuxiWeb',
             ChineseLang: "zh-CN",
             EnglishLang: "en"
+        },
+        CNKIWebAPI: {
+            name: 'CNKIWeb',
+            ChineseLang: "1",
+            EnglishLang: "0"
         }
 
     }
@@ -215,6 +232,11 @@
             GM_setValue("yandexspravka", getCookieValue(document.cookie, "spravka"))
             Toast.success("yandexuid 获取成功：" + getCookieValue(document.cookie, "yandexuid"))
             Toast.success("spravka 获取成功：" + getCookieValue(document.cookie, "spravka"))
+        }
+
+        if (location.href.includes('dict.cnki.net')) {
+            GM_setValue("CNKI_TOKEN", getCookieValue(document.cookie, "token"))
+            Toast.success("CNKI_TOKEN 获取成功：" + getCookieValue(document.cookie, "token"))
         }
     })
 
@@ -750,6 +772,10 @@
                     currentAPI = APIConst.FuxiWebAPI
                     Toast.success('已经切换福昕翻译 web')
                     break
+                case 18:
+                    currentAPI = APIConst.CNKIWebAPI
+                    Toast.success('已经切换CNKI web')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -1115,6 +1141,8 @@
                 yiwen = JSON.parse(res.responseText).text[0]
             }else if (currentAPI.name === APIConst.FuxiWeb) {
                 yiwen = JSON.parse(res.responseText).result
+            }else if (currentAPI.name === APIConst.CNKIWeb) {
+                yiwen = JSON.parse(res.responseText).data.mResult
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -2155,6 +2183,58 @@
 
     }
 
+    //CNKI
+    function encryptCNKI(txt) {
+
+        return  CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(txt), CryptoJS.enc.Utf8.parse("4e87183cfd3a45fe"), {
+            mode: CryptoJS.mode.ECB,
+            padding: CryptoJS.pad.Pkcs7
+        }).toString().replace(/\//g, "_").replace(/\+/g, "-")
+
+    }
+    let CNKI_TOKEN;
+    function translatCNKIWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (!CNKI_TOKEN) {
+            console.error("no CNKI_TOKEN:", CNKI_TOKEN)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        GM_fetch({
+            method: "POST",
+            url: `https://dict.cnki.net/fyzs-front-api/translate/literaltranslation`,
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "cache-control": "no-cache",
+                "content-type": "application/json;charset=UTF-8",
+                "sec-fetch-site": "same-origin",
+                "token": CNKI_TOKEN,
+                "Origin":"https://dict.cnki.net",
+                "Referer":"https://dict.cnki.net/index"
+            },
+            data: JSON.stringify({
+                "words": encryptCNKI(text),
+                "translateType": lang
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+    }
+
 
     //阿里翻译
     let ali_uuid;
@@ -2368,6 +2448,8 @@ ${ali_uuid}\r
                                     translatYandexWebAPI(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.FuxiWeb) {
                                     translatFuxiWebAPI(txt, node, lang)
+                                }   else if (currentAPI.name === APIConst.CNKIWeb) {
+                                    translatCNKIWebAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
@@ -2438,6 +2520,16 @@ ${ali_uuid}\r
             console.warn("yandex_reqid", yandex_reqid)
         } else {
             console.error('访问失败了', res)
+        }
+    }
+
+
+    async function authCNKI() {
+
+        CNKI_TOKEN = await GM_getValue("CNKI_TOKEN","")
+
+        if (!CNKI_TOKEN) {
+            Toast.error("CNKI_TOKEN不存，可能存在错误，请前往https://dict.cnki.net 获取")
         }
     }
 
@@ -2605,6 +2697,11 @@ ${ali_uuid}\r
             if (!yandex_reqid) return;
         }
 
+        //CNKI 鉴权
+        if (currentAPI.name === APIConst.CNKIWeb && !CNKI_TOKEN) {
+            await authCNKI()
+            if (!CNKI_TOKEN) return;
+        }
 
         console.log(`translate to....${lang} : ${currentAPI.name}`)
         const root = document.body;
