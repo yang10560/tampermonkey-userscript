@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.0
+// @version      1.5.1
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -2263,6 +2263,7 @@
             minute: '2-digit',
             second: '2-digit',
             timeZone: 'GMT',
+            hour12: false,
             timeZoneName: 'short'
         };
 
@@ -2272,7 +2273,7 @@
         let parts = rfc1123Date.split(",")
         let subparts = parts[1].split(" ")
 
-        const ret = `${parts[0]}, ${subparts[2]} ${subparts[1]}${parts[2]}${parts[3].replace("PM UTC","GMT").replace("AM UTC","GMT")}`;
+        const ret = `${parts[0]}, ${subparts[2]} ${subparts[1]}${parts[2]}${parts[3].replace("UTC","GMT")}`;
 
         console.log(ret)//Mon, 30 Nov 2020 02:34:33 GMT
 
@@ -2493,7 +2494,7 @@ ${ali_uuid}\r
             return;
         }
         //排除类名
-        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container|translate-span|highlight|translate-src|toast-)/i.test(node.className)) {
+        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container|translate-span|highlight|translate-src|toast-|code)/i.test(node.className)) {
             return;
         }
 
