@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.4.9
+// @version      1.5.0
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -58,6 +58,7 @@
 // @connect      yandex.net
 // @connect      fanyi.pdf365.cn
 // @connect      dict.cnki.net
+// @connect      itrans.xf-yun.com
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -90,6 +91,7 @@
         YandexWeb: 'yandexWeb',//Yandex
         FuxiWeb: 'fuxiWeb',//福昕翻译    https://fanyi.pdf365.cn/
         CNKIWeb: 'CNKIWeb',//cnki
+        Xunfei: 'xunfei',//讯飞 API
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -191,6 +193,14 @@
             name: 'CNKIWeb',
             ChineseLang: "1",
             EnglishLang: "0"
+        },
+        XunfeiAPI: {
+            name: 'xunfei',
+            ChineseLang: "cn",
+            EnglishLang: "en",
+            APPID: '535ee726',//讯飞翻译 appid 修改成自己的 详见https://console.xfyun.cn/services/its
+            APISecret: 'ZjExNzg3ZDcyYTNmNzIyMzk5YjE3NDFm',//讯飞翻译 APISecret 修改成自己的 详见https://console.xfyun.cn/services/its
+            APIKey: 'bb0425b8315242bb208b91d22a2fbd3a'//讯飞翻译 APIKey 修改成自己的 详见https://console.xfyun.cn/services/its
         }
 
     }
@@ -706,7 +716,7 @@
             switch (switchIndex) {
                 case 1:
                     currentAPI = APIConst.BaiduAPI
-                    Toast.success('已经切换百度翻译,未配置api需源码中修改秘钥')
+                    Toast.success('已经切换百度翻译,未配置api需源码中修改秘钥.建议申请自己的秘钥，详见：https://fanyi-api.baidu.com/')
                     break
                 case 2:
                     currentAPI = APIConst.GoogleAPI
@@ -726,7 +736,7 @@
                     break
                 case 6:
                     currentAPI = APIConst.YoudaoAPI
-                    Toast.success('已经切换有道翻译，未配置api key 需要到源码中修改秘钥')
+                    Toast.success('已经切换有道翻译，未配置api key 需要到源码中修改秘钥.建议申请自己的秘钥 进行修改，详见：https://ai.youdao.com/console/#/service-singleton/text-translation')
                     break
                 case 7:
                     currentAPI = APIConst.CaiyunWebAPI
@@ -775,6 +785,10 @@
                 case 18:
                     currentAPI = APIConst.CNKIWebAPI
                     Toast.success('已经切换CNKI web')
+                    break
+                case 19:
+                    currentAPI = APIConst.XunfeiAPI
+                    Toast.success('已经切换讯飞API版, 未配置api key 需要到源码中修改秘钥.申请key详见https://console.xfyun.cn/services/its')
                     break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
@@ -1143,6 +1157,8 @@
                 yiwen = JSON.parse(res.responseText).result
             }else if (currentAPI.name === APIConst.CNKIWeb) {
                 yiwen = JSON.parse(res.responseText).data.mResult
+            }else if (currentAPI.name === APIConst.Xunfei) {
+                yiwen = JSON.parse(decodeBase64toString(JSON.parse(res.responseText).payload.result.text)).trans_result.dst
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -2235,6 +2251,126 @@
 
     }
 
+    //讯飞
+    function getRfc1123Date(){
+        const date = new Date();
+        const options = {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'GMT',
+            timeZoneName: 'short'
+        };
+
+        const rfc1123Date = date.toLocaleString('en-US', options);
+        //console.log(rfc1123Date);//Sun, Jul 09, 2023, 12:08:48 PM UTC
+
+        let parts = rfc1123Date.split(",")
+        let subparts = parts[1].split(" ")
+
+        const ret = `${parts[0]}, ${subparts[2]} ${subparts[1]}${parts[2]}${parts[3].replace("PM UTC","GMT").replace("AM UTC","GMT")}`;
+
+        console.log(ret)//Mon, 30 Nov 2020 02:34:33 GMT
+
+        return ret;
+    }
+
+    function hmacSha256(text,secretKey) {
+        return  CryptoJS.HmacSHA256(text, secretKey);
+
+    }
+
+    function base64WordArray(WordArray) {
+        //var words = CryptoJS.enc.Utf8.parse(text); // WordArray object
+        return CryptoJS.enc.Base64.stringify(WordArray);
+    }
+    function base64Text(text) {
+        return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
+    }
+    function decodeBase64toString(base64Str) {
+        return CryptoJS.enc.Base64.parse(base64Str).toString(CryptoJS.enc.Utf8);
+    }
+
+
+    function translatXunfeiAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        const today = getRfc1123Date()
+
+        const signature_origin = "host: itrans.xf-yun.com\n" +
+            "date: "+ today +"\n" +
+            "POST /v1/its HTTP/1.1"
+
+        const signature_sha= hmacSha256(signature_origin , APIConst.XunfeiAPI.APISecret)
+
+        const signature = base64WordArray(signature_sha)
+
+        //console.log("signature", signature)
+
+        const authorization  = base64Text(`api_key="${APIConst.XunfeiAPI.APIKey}", algorithm="hmac-sha256", headers="host date request-line", signature="${signature}"`)
+
+        //console.log("authorization", authorization)
+
+        GM_fetch({
+            url: `https://itrans.xf-yun.com/v1/its?authorization=${authorization}&host=itrans.xf-yun.com&date=${encodeURIComponent(today)}`,
+            method: "POST",
+            headers: {
+                "content-type":"application/json",
+                "Authentication": authorization,
+                "date":today
+            },
+            data: JSON.stringify({
+                "header": {
+                    "app_id": APIConst.XunfeiAPI.APPID,
+                    "status": 3,
+                    "res_id": generateRandomString(6)
+                },
+                "parameter": {
+                    "its": {
+                        "from": from,
+                        "to": lang,
+                        "result": {}
+                    }
+                },
+                "payload": {
+                    "input_data": {
+                        "encoding": "utf8",
+                        "status": 3,
+                        "text": base64Text(text)
+                    }
+                }
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+
+    }
+
 
     //阿里翻译
     let ali_uuid;
@@ -2448,8 +2584,10 @@ ${ali_uuid}\r
                                     translatYandexWebAPI(txt, node, lang)
                                 } else if (currentAPI.name === APIConst.FuxiWeb) {
                                     translatFuxiWebAPI(txt, node, lang)
-                                }   else if (currentAPI.name === APIConst.CNKIWeb) {
+                                } else if (currentAPI.name === APIConst.CNKIWeb) {
                                     translatCNKIWebAPI(txt, node, lang)
+                                } else if (currentAPI.name === APIConst.Xunfei) {
+                                    translatXunfeiAPI(txt, node, lang)
                                 } else {
                                     //default microsoft
                                     translateMicrosoft(txt, node, lang)
