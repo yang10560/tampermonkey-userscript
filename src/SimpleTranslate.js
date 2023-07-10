@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.1
+// @version      1.5.2
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -1165,6 +1165,13 @@
             }
 
             if (yiwen === text) return
+
+            //连击翻译
+            if(/(input|textarea)/i.test(node.nodeName)){
+                node.value = yiwen
+                return
+            }
+
             /*node.innerText = text + "=>" + yiwen*/
             const outersp = document.createElement("span")
             outersp.innerText = text + " " //src text
@@ -2486,6 +2493,54 @@ ${ali_uuid}\r
     }
 
 
+    //API分流
+    function dispatchAPI(txt, node, lang) {
+        if (currentAPI.name === APIConst.Baidu) {
+            translateBaiduApi(txt, node, lang)
+        } else if (currentAPI.name === APIConst.Microsoft) {
+            translateMicrosoft(txt, node, lang)
+        } else if (currentAPI.name === APIConst.Google) {
+            translateGoogle(txt, node, lang)
+        } else if (currentAPI.name === APIConst.SogouWeb) {
+            translateSogouWeb(txt, node, lang)
+        } else if (currentAPI.name === APIConst.ICIBAWeb) {
+            translateICIBAWeb(txt, node, lang)
+        } else if (currentAPI.name === APIConst.HujiangWeb) {
+            translatHujiangWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.Youdao) {
+            translatYoudaoAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.CaiyunWeb) {
+            translatCaiyunWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.TransmartWeb) {
+            translatTransmartWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.AlibabaWeb) {
+            translatAlibabaWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.PapagoWeb) {
+            translatPapagoWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.YoudaoMobileWeb) {
+            translatYoudaoMobileWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.Worldlingo) {
+            translatWorldlingoAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.DeepLWeb) {
+            translatDeepLWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
+            translatBaiduMobileWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.FlittoWeb) {
+            translatFlittoWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.YandexWeb) {
+            translatYandexWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.FuxiWeb) {
+            translatFuxiWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.CNKIWeb) {
+            translatCNKIWebAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.Xunfei) {
+            translatXunfeiAPI(txt, node, lang)
+        } else {
+            //default microsoft
+            translateMicrosoft(txt, node, lang)
+        }
+    }
+
     //遍历
     async function traversePlus(node, lang) {
         if (!node) return;
@@ -2549,50 +2604,8 @@ ${ali_uuid}\r
                                 //缓存失败
 
                                 //API分流
-                                if (currentAPI.name === APIConst.Baidu) {
-                                    translateBaiduApi(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.Microsoft) {
-                                    translateMicrosoft(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.Google) {
-                                    translateGoogle(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.SogouWeb) {
-                                    translateSogouWeb(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.ICIBAWeb) {
-                                    translateICIBAWeb(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.HujiangWeb) {
-                                    translatHujiangWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.Youdao) {
-                                    translatYoudaoAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.CaiyunWeb) {
-                                    translatCaiyunWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.TransmartWeb) {
-                                    translatTransmartWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.AlibabaWeb) {
-                                    translatAlibabaWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.PapagoWeb) {
-                                    translatPapagoWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.YoudaoMobileWeb) {
-                                    translatYoudaoMobileWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.Worldlingo) {
-                                    translatWorldlingoAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.DeepLWeb) {
-                                    translatDeepLWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.BaiduMobileWeb) {
-                                    translatBaiduMobileWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.FlittoWeb) {
-                                    translatFlittoWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.YandexWeb) {
-                                    translatYandexWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.FuxiWeb) {
-                                    translatFuxiWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.CNKIWeb) {
-                                    translatCNKIWebAPI(txt, node, lang)
-                                } else if (currentAPI.name === APIConst.Xunfei) {
-                                    translatXunfeiAPI(txt, node, lang)
-                                } else {
-                                    //default microsoft
-                                    translateMicrosoft(txt, node, lang)
-                                }
+                                dispatchAPI(txt, node, lang)
+
                             });
                         //return;
                     }
@@ -2989,6 +3002,38 @@ ${ali_uuid}\r
             translateTo(currentAPI.ChineseLang)
 
         }
+    }, 2000)
+
+    //输入框连击三下空格翻译
+    setTimeout( () => {
+        let spaceCount = 0;
+        let lastKeyPressTime = 0;
+        let timeThreshold = 300; // 时间阈值，单位为毫秒
+
+        document.body.addEventListener('keydown', function(event) {
+            if (event.keyCode === 32) { // 按下空格键
+                let currentTime = new Date().getTime();
+                console.log(currentTime - lastKeyPressTime)
+                if (currentTime - lastKeyPressTime < timeThreshold) {
+                    spaceCount++;
+                } else {
+                    spaceCount = 1;
+                }
+
+                lastKeyPressTime = currentTime;
+
+                if (spaceCount === 3) {
+                    console.log('连续三次按下空格键事件已触发！',event.target.nodeName);
+                    const node = event.target;
+                    Toast.success(`正在翻译,如需要切换请点击"语言"..=>${selectTolang}`)
+                    if(/(input|textarea)/i.test(node.nodeName)){
+                        dispatchAPI(node.innerText || node.value.trim(), node, selectTolang)
+                    }
+                    spaceCount = 0; // 重置空格键计数
+
+                }
+            }
+        });
     }, 2000)
 
 
