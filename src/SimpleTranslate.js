@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.3
+// @version      1.5.4
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -593,10 +593,10 @@
             "positionClass": "toast-top-right", // 提示框位置，这里填类名
             // "preventDuplicates": false,
             // "onclick": null,
-            "showDuration": "300",              // 提示框渐显所用时间
-            "hideDuration": "300",              // 提示框隐藏渐隐时间
-            "timeOut": "3000",                  // 提示框持续时间
-            "extendedTimeOut": "1000",
+            "showDuration": "1000",              // 提示框渐显所用时间
+            "hideDuration": "1000",              // 提示框隐藏渐隐时间
+            "timeOut": "5000",                  // 提示框持续时间
+            "extendedTimeOut": "2000",
             "showEasing": "swing",
             "hideEasing": "linear",
             "showMethod": "fadeIn",
@@ -776,7 +776,7 @@
                     break
                 case 16:
                     currentAPI = APIConst.YandexWebAPI
-                    Toast.success('已经切换Yandex web')
+                    Toast.success('已经切换Yandex web  https://translate.yandex.com/')
                     break
                 case 17:
                     currentAPI = APIConst.FuxiWebAPI
@@ -784,7 +784,7 @@
                     break
                 case 18:
                     currentAPI = APIConst.CNKIWebAPI
-                    Toast.success('已经切换CNKI web')
+                    Toast.success('已经切换CNKI web .频繁不出结果需要到官网刷新验证码.https://dict.cnki.net/index')
                     break
                 case 19:
                     currentAPI = APIConst.XunfeiAPI
@@ -2681,7 +2681,7 @@ ${ali_uuid}\r
         CNKI_TOKEN = await GM_getValue("CNKI_TOKEN","")
 
         if (!CNKI_TOKEN) {
-            Toast.error("CNKI_TOKEN不存，可能存在错误，请前往https://dict.cnki.net 获取")
+            Toast.error("CNKI_TOKEN不存在，可能存在错误，请前往https://dict.cnki.net 获取")
         }
     }
 
@@ -3011,7 +3011,7 @@ ${ali_uuid}\r
         let timeThreshold = 300; // 时间阈值，单位为毫秒
 
         document.body.addEventListener('keydown', function(event) {
-            if (event.keyCode === 32) { // 按下空格键
+            if (event.key === ' ' || event.keyCode === 32) { // 按下空格键
                 let currentTime = new Date().getTime();
                 console.log(currentTime - lastKeyPressTime)
                 if (currentTime - lastKeyPressTime < timeThreshold) {
