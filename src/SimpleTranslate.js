@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.4
+// @version      1.5.5
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -59,6 +59,7 @@
 // @connect      fanyi.pdf365.cn
 // @connect      dict.cnki.net
 // @connect      itrans.xf-yun.com
+// @connect      kuaiyi.wps.cn
 // @website      https://greasyfork.org/zh-CN/scripts/469073
 // @license      MIT
 
@@ -92,6 +93,7 @@
         FuxiWeb: 'fuxiWeb',//福昕翻译    https://fanyi.pdf365.cn/
         CNKIWeb: 'CNKIWeb',//cnki
         Xunfei: 'xunfei',//讯飞 API
+        WPSKuaiyiWeb: 'WPSKuaiyiWeb',//WSP 金山快译 web
         BaiduAPI: {
             name: "baidu",
             ChineseLang: 'zh',
@@ -201,6 +203,11 @@
             APPID: '535ee726',//讯飞翻译 appid 修改成自己的 详见https://console.xfyun.cn/services/its
             APISecret: 'ZjExNzg3ZDcyYTNmNzIyMzk5YjE3NDFm',//讯飞翻译 APISecret 修改成自己的 详见https://console.xfyun.cn/services/its
             APIKey: 'bb0425b8315242bb208b91d22a2fbd3a'//讯飞翻译 APIKey 修改成自己的 详见https://console.xfyun.cn/services/its
+        },
+        WPSKuaiyiWebAPI: {
+            name: 'WPSKuaiyiWeb',
+            ChineseLang: "zh",
+            EnglishLang: "en"
         }
 
     }
@@ -247,6 +254,11 @@
         if (location.href.includes('dict.cnki.net')) {
             GM_setValue("CNKI_TOKEN", getCookieValue(document.cookie, "token"))
             Toast.success("CNKI_TOKEN 获取成功：" + getCookieValue(document.cookie, "token"))
+        }
+
+        if (location.href.includes('kuaiyi.wps.cn')) {
+            GM_setValue("wps_xcsrftoken", getCookieValue(document.cookie, "_xsrf"))
+            Toast.success("wps_xcsrftoken 获取成功：" + getCookieValue(document.cookie, "_xsrf"))
         }
     })
 
@@ -790,6 +802,10 @@
                     currentAPI = APIConst.XunfeiAPI
                     Toast.success('已经切换讯飞API版, 未配置api key 需要到源码中修改秘钥.申请key详见https://console.xfyun.cn/services/its')
                     break
+                case 20:
+                    currentAPI = APIConst.WPSKuaiyiWebAPI
+                    Toast.success('已经切换金山快译 需要到https://kuaiyi.wps.cn获取token')
+                    break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
                     Toast.success('已经切换微软翻译')
@@ -1159,6 +1175,8 @@
                 yiwen = JSON.parse(res.responseText).data.mResult.replace(/\(.*?ad\.html\)/g, '').trim()
             }else if (currentAPI.name === APIConst.Xunfei) {
                 yiwen = JSON.parse(decodeBase64toString(JSON.parse(res.responseText).payload.result.text)).trans_result.dst
+            }else if (currentAPI.name === APIConst.WPSKuaiyiWeb) {
+                yiwen = JSON.parse(res.responseText).data.trans_result[0].tgt_para;
             } else {
                 //default
                 yiwen = JSON.parse(res.responseText)[0].translations[0].text;
@@ -2380,6 +2398,96 @@
     }
 
 
+    //wps web
+    function getSignatureStr(obj)  {
+        const newkey = Object.keys(obj).sort()
+        let signatureStr = ''
+        newkey.forEach((item) => {
+            // 空参数不参与签名
+            if (obj[item] === 0) {
+                signatureStr += item + '=' + obj[item]
+            } else if (obj[item] != 'undefined' && obj[item] != null && obj[item] != '' && typeof obj[item] != 'object') {
+                signatureStr += item + '=' + obj[item]
+            }
+        })
+        return signatureStr
+    }
+
+    let wps_xcsrftoken ;
+    function translatWPSKuaiyiWebAPI(text, node, lang) {
+        if (!text) {
+            console.error("no text:", text)
+            return
+        }
+        if (!wps_xcsrftoken) {
+            console.error("no wps_xcsrftoken:", wps_xcsrftoken)
+            return
+        }
+        if (noTranslateWords.includes(text)) {
+            return;
+        }
+
+        let from;
+        if (lang === currentAPI.ChineseLang) {
+            from = currentAPI.EnglishLang;
+        } else {
+            from = currentAPI.ChineseLang;
+        }
+
+        // ***** 统一新增签名修堵 漏洞 ***** //
+        const timestamp = new Date().getTime()
+        //加入时间戳
+        const nonce = `${Math.floor(Math.random() * 10000000000)}`
+
+        const needSortObj ={
+            "timestamp": timestamp,
+            "nonce": nonce,
+            "text": text,
+            "from_lang": from,
+            "to_lang": lang
+        }
+
+        const signatureStr = getSignatureStr(needSortObj)
+        const sign_x = `appid=zxcde321456tgbvf&nonce=${nonce}&timestamp=${timestamp}`
+        const signature = CryptoJS.MD5(`/v1/mt/trans_text${signatureStr}d5cefewwheuasfd2c9ef83996fd0d82`).toString()
+
+        GM_fetch({
+            url: `https://kuaiyi.wps.cn/v1/mt/trans_text`,
+            method: "POST",
+            headers:{
+                "accept": "application/json, text/plain, */*",
+                "content-type": "application/json",
+                "origin": "https://kuaiyi.wps.cn",
+                "Referer": "https://kuaiyi.wps.cn/txt-translate?banGetPreTxt=true",
+                "sec-fetch-site": "same-origin",
+                "sign-x": sign_x,
+                "signature": signature,
+                "x-csrftoken": wps_xcsrftoken
+            },
+            data: JSON.stringify({
+                "text": text,
+                "from_lang": from,
+                "to_lang": lang
+            }),
+            responseType: "text",
+        }).then(function (res) {
+            if (res.status === 200) {
+                renderPage(res, text, node, lang)
+            } else {
+                console.error('访问失败了', res)
+            }
+        }, function (reason) {
+            console.error(`出错了`, reason)
+        });
+
+
+
+
+
+
+    }
+
+
     //阿里翻译
     let ali_uuid;
     let webFormBoundary = generateRandomString(16)
@@ -2535,6 +2643,8 @@ ${ali_uuid}\r
             translatCNKIWebAPI(txt, node, lang)
         } else if (currentAPI.name === APIConst.Xunfei) {
             translatXunfeiAPI(txt, node, lang)
+        } else if (currentAPI.name === APIConst.WPSKuaiyiWeb) {
+            translatWPSKuaiyiWebAPI(txt, node, lang)
         } else {
             //default microsoft
             translateMicrosoft(txt, node, lang)
@@ -2650,6 +2760,12 @@ ${ali_uuid}\r
             console.warn("sogou_uuid", sogou_uuid)
         } else {
             console.error('访问失败了', res)
+        }
+    }
+    async function authWps() {
+        wps_xcsrftoken = await GM_getValue("wps_xcsrftoken","")
+        if(!wps_xcsrftoken){
+            Toast.error("wps_xcsrftoken为空,请打开到https://kuaiyi.wps.cn/获取")
         }
     }
 
@@ -2853,6 +2969,11 @@ ${ali_uuid}\r
         if (currentAPI.name === APIConst.CNKIWeb && !CNKI_TOKEN) {
             await authCNKI()
             if (!CNKI_TOKEN) return;
+        }
+        //wps 鉴权
+        if (currentAPI.name === APIConst.WPSKuaiyiWeb && !wps_xcsrftoken) {
+            await authWps()
+            return;
         }
 
         console.log(`translate to....${lang} : ${currentAPI.name}`)
