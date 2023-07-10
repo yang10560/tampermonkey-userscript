@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.63
+// @version      4.64
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -528,7 +528,7 @@
                                 role: "assistant",
                                 content: finalResult
                             })
-                            GM_fillBotResponseAndSave(finalResult)
+                            GM_fillBotResponseAndSave(your_qus,finalResult)
                         } catch (e) {
                             console.log(e)
                         }
