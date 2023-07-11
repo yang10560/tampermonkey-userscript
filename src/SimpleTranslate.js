@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.6
+// @version      1.5.7
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -504,6 +504,28 @@
         }
     }
 
+    function rightSelectMode() {
+        if (selectMode) {
+            console.log('鼠标右击选词翻译已经关闭', selectMode)
+            selectMode = false;
+            //移除事件
+            document.removeEventListener('mousemove', handleMousemove);
+            document.removeEventListener('mouseout', handleMouseout);
+            document.removeEventListener('contextmenu', handleContextmenu);//右击事件
+
+            Toast.success('鼠标右击选词翻译已经关闭')
+
+        } else {
+            console.log('鼠标右击选词翻译已经开启', selectMode)
+            selectMode = true;
+            //增加事件
+            document.addEventListener('mousemove', handleMousemove);
+            document.addEventListener('mouseout', handleMouseout);
+            document.addEventListener('contextmenu', handleContextmenu);//右击事件
+            Toast.success('鼠标右击选词翻译已经开启')
+        }
+    }
+
     //注册菜单
     setTimeout(() => {
         GM_registerMenuCommand("更新脚本", function (event) {
@@ -528,28 +550,7 @@
             console.log(excludeSites)
         }, "excludeWeb");
 
-        GM_registerMenuCommand("鼠标右击选词开关", function (event) {
-            if (selectMode) {
-                console.log('鼠标右击选词翻译已经关闭', selectMode)
-                selectMode = false;
-                //移除事件
-                document.removeEventListener('mousemove', handleMousemove);
-                document.removeEventListener('mouseout', handleMouseout);
-                document.removeEventListener('contextmenu', handleContextmenu);//右击事件
-
-                Toast.success('鼠标右击选词翻译已经关闭')
-
-            } else {
-                console.log('鼠标右击选词翻译已经开启', selectMode)
-                selectMode = true;
-                //增加事件
-                document.addEventListener('mousemove', handleMousemove);
-                document.addEventListener('mouseout', handleMouseout);
-                document.addEventListener('contextmenu', handleContextmenu);//右击事件
-                Toast.success('鼠标右击选词翻译已经开启')
-            }
-
-        }, "selectMode");
+       // GM_registerMenuCommand("鼠标右击选词开关", rightSelectMode, "selectMode");
 
 
     })
@@ -1059,6 +1060,15 @@
        </a>
        <a id="changeSelectLang" href="javascript:void(0)">
         <span>语言</span>
+       </a>
+      </li>
+      
+      <li style="display: flex; justify-content: center ">
+       <a id="rightSelectMode" href="javascript:void(0)">
+        <span>右击</span>
+       </a>
+       <a id="updateScript" href="javascript:void(0)">
+        <span>更新</span>
        </a>
       </li>
       
@@ -3116,6 +3126,20 @@ ${ali_uuid}\r
     changeSelectLangBtn.addEventListener("click", (event) => {
         event.stopPropagation()
         changeSelectLang()
+    })
+
+    //切换右击选词语言
+    const rightSelectModeBtn = document.querySelector("#rightSelectMode")
+    rightSelectModeBtn.addEventListener("click", (event) => {
+        event.stopPropagation()
+        rightSelectMode()
+    })
+
+    //更新
+    const updateScriptBtn = document.querySelector("#updateScript")
+    updateScriptBtn.addEventListener("click", (event) => {
+        event.stopPropagation()
+        GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
     })
 
 
