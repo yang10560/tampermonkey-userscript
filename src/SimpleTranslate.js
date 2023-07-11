@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.5
+// @version      1.5.6
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -2439,13 +2439,29 @@
         //加入时间戳
         const nonce = `${Math.floor(Math.random() * 10000000000)}`
 
-        const needSortObj ={
-            "timestamp": timestamp,
-            "nonce": nonce,
-            "text": text,
-            "from_lang": from,
-            "to_lang": lang
+        const options = {
+            "data": {
+                "text": text,
+                "from_lang": from,
+                "to_lang": lang
+            }
         }
+
+        const needSortObj = Object.assign(
+            {
+                timestamp,
+                nonce,
+            },
+            options.params || options.data
+        )
+        //
+        // const needSortObj ={
+        //     "timestamp": timestamp,
+        //     "nonce": nonce,
+        //     "text": text,
+        //     "from_lang": from,
+        //     "to_lang": lang
+        // }
 
         const signatureStr = getSignatureStr(needSortObj)
         const sign_x = `appid=zxcde321456tgbvf&nonce=${nonce}&timestamp=${timestamp}`
@@ -2464,11 +2480,7 @@
                 "signature": signature,
                 "x-csrftoken": wps_xcsrftoken
             },
-            data: JSON.stringify({
-                "text": text,
-                "from_lang": from,
-                "to_lang": lang
-            }),
+            data: JSON.stringify(options.data),
             responseType: "text",
         }).then(function (res) {
             if (res.status === 200) {
@@ -2973,7 +2985,7 @@ ${ali_uuid}\r
         //wps 鉴权
         if (currentAPI.name === APIConst.WPSKuaiyiWeb && !wps_xcsrftoken) {
             await authWps()
-            return;
+            if (!wps_xcsrftoken) return;
         }
 
         console.log(`translate to....${lang} : ${currentAPI.name}`)
