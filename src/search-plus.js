@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.0.0
+// @version      3.0.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -83,6 +83,7 @@
 // @connect   freeopenai.xyz
 // @connect   supremes.pro
 // @connect   bnu120.space
+// @connect   free-chat.asia
 // @connect   chat7.aifks001.online
 // @connect   a0.chat
 // @connect   ai.usesless.com
@@ -158,7 +159,7 @@
     'use strict';
 
 
-    const JSver = '3.0.0';
+    const JSver = '3.0.1';
 
 
     function getGPTMode() {
@@ -5974,7 +5975,7 @@
     let bnuList;
     let bnuInt = localStorage.getItem("bnuInt") || Math.floor(Math.random() * 7);
 
-    //https://ic.muspimerol.site/
+    //https://ic.free-chat.asia/
     function BNU120() {
 
         let now = Date.now();
@@ -6393,7 +6394,7 @@
     let messageChain_anseapp = [];
     async function ANSEAPP() {
 
-        let baseURL = "https://forward.openai.muspimerol.site/";
+        let baseURL = "https://forward.free-chat.asia/";
         addMessageChain(messageChain_anseapp, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
@@ -6401,7 +6402,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "authorization": `Bearer undefined`,
-                "Referer": 'https://anse.app.bnu120.space/'
+                "Referer": 'https://anse.free-chat.asia/'
             },
             data: JSON.stringify({
                 "model": "gpt-3.5-turbo-16k",

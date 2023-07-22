@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.65
+// @version      4.66
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -29,6 +29,7 @@
 // @connect    free.anzz.top
 // @connect   supremes.pro
 // @connect   bnu120.space
+// @connect   free-chat.asia
 // @connect   chat7.aifks001.online
 // @connect   geekr.dev
 // @connect   sunls.me
@@ -76,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.63"
+    const JSVer = "v4.66"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1498,7 +1499,7 @@
     async function ANSEAPP(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
-        let baseURL = "https://forward.openai.muspimerol.site/";
+        let baseURL = "https://forward.free-chat.asia/";
         addMessageChain(messageChain_anseapp, {role: "user", content: your_qus})//连续话
         GM_fetch({
             method: "POST",
@@ -1506,7 +1507,7 @@
             headers: {
                 "Content-Type": "application/json",
                 "authorization": `Bearer undefined`,
-                "Referer": 'https://anse.app.bnu120.space/'
+                "Referer": 'https://anse.free-chat.asia/'
             },
             data: JSON.stringify({
                 "model": "gpt-3.5-turbo-16k",
