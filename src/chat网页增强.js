@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.66
+// @version      4.67
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.66"
+    const JSVer = "v4.67"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -308,107 +308,107 @@
 
 
 
-    function setChataiKey() {
-
-        GM_fetch({
-            method: "GET",
-            url: "https://chatai.to/?" + Math.random()
-        }).then((response)=> {
-            let resp = response.responseText;
-            let regex = /component-url="(.*?)"/i;
-            let match = resp.match(regex);
-            let jsurl = match[1];
-            console.log("js url:" + jsurl);
-            if (jsurl) {
-                GM_fetch({
-                    method: "GET",
-                    url: "https://chatai.to" + jsurl + "?" + Math.random()
-                }).then((response)=> {
-                    let resp = response.responseText;
-                    let regex = /\`\$\{e\}:\$\{r\}:(.*?)\`/;
-                    let match = resp.match(regex);
-                    console.log("chataikey:",match[1]);
-                    chataiKey = match[1];
-                })
-            }
-
-        })
-
-    }
-    setTimeout(setChataiKey)
-    var chataiKey;
-    function kill(question) {
-        let aikey = localStorage.getItem("myAIkey") ? localStorage.getItem("myAIkey") : "";
-        console.log("aikey:" + aikey)
-        let your_qus = question;//你的问题
-        let now = Date.now();
-        let pk = chataiKey || "FjyXA27v77";//查看js的generateSignature函数中的key FjyXA27v77
-        let Baseurl = "https://chatai.to/";
-        console.log(pk)
-        addMessageChain(messageChain0, {role: "user", content: your_qus})//连续话
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: pk
-        }).then(sign => {
-            GM_handleUserInput(3)
-            console.log(sign)
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    "X-Forwarded-For": generateRandomIP(),
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
-                    messages: messageChain0,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: aikey
-                }),
-                onloadstart: (stream) => {
-                    let result = [];
-                    GM_simulateBotResponse("...")
-                    const reader = stream.response.getReader();
-                    reader.read().then(function processText({done, value}) {
-                        if (done) {
-                            let finalResult = result.join("")
-                            try {
-                                GM_saveHistory(your_qus, finalResult)
-                                addMessageChain(messageChain0, {
-                                    role: "assistant",
-                                    content: finalResult
-                                })//连续对话
-                            } catch (e) {
-                                //TODO handle the exception
-                            }
-                            GM_fillBotResponse(finalResult)
-                            return;
-                        }
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        GM_fillBotResponse(result.join(""))
-                        return reader.read().then(processText);
-                    });
-                },
-                responseType: "stream",
-                onprogress: function (msg) {
-                    //console.log(msg) //Todo
-                },
-                onerror: function (err) {
-                    console.log(err)
-                },
-                ontimeout: function (err) {
-                    console.log(err)
-                }
-            });
-
-        });
-    }
+    // function setChataiKey() {
+    //
+    //     GM_fetch({
+    //         method: "GET",
+    //         url: "https://chatai.to/?" + Math.random()
+    //     }).then((response)=> {
+    //         let resp = response.responseText;
+    //         let regex = /component-url="(.*?)"/i;
+    //         let match = resp.match(regex);
+    //         let jsurl = match[1];
+    //         console.log("js url:" + jsurl);
+    //         if (jsurl) {
+    //             GM_fetch({
+    //                 method: "GET",
+    //                 url: "https://chatai.to" + jsurl + "?" + Math.random()
+    //             }).then((response)=> {
+    //                 let resp = response.responseText;
+    //                 let regex = /\`\$\{e\}:\$\{r\}:(.*?)\`/;
+    //                 let match = resp.match(regex);
+    //                 console.log("chataikey:",match[1]);
+    //                 chataiKey = match[1];
+    //             })
+    //         }
+    //
+    //     })
+    //
+    // }
+    // setTimeout(setChataiKey)
+    // var chataiKey;
+    // function kill(question) {
+    //     let aikey = localStorage.getItem("myAIkey") ? localStorage.getItem("myAIkey") : "";
+    //     console.log("aikey:" + aikey)
+    //     let your_qus = question;//你的问题
+    //     let now = Date.now();
+    //     let pk = chataiKey || "FjyXA27v77";//查看js的generateSignature函数中的key FjyXA27v77
+    //     let Baseurl = "https://chatai.to/";
+    //     console.log(pk)
+    //     addMessageChain(messageChain0, {role: "user", content: your_qus})//连续话
+    //     generateSignatureWithPkey({
+    //         t: now,
+    //         m: your_qus || "",
+    //         pkey: pk
+    //     }).then(sign => {
+    //         GM_handleUserInput(3)
+    //         console.log(sign)
+    //         GM_xmlhttpRequest({
+    //             method: "POST",
+    //             url: Baseurl + "api/generate",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 // "Authorization": "Bearer null",
+    //                 "Referer": Baseurl,
+    //                 "X-Forwarded-For": generateRandomIP(),
+    //                 "accept": "application/json, text/plain, */*"
+    //             },
+    //             data: JSON.stringify({
+    //                 messages: messageChain0,
+    //                 time: now,
+    //                 pass: null,
+    //                 sign: sign,
+    //                 key: aikey
+    //             }),
+    //             onloadstart: (stream) => {
+    //                 let result = [];
+    //                 GM_simulateBotResponse("...")
+    //                 const reader = stream.response.getReader();
+    //                 reader.read().then(function processText({done, value}) {
+    //                     if (done) {
+    //                         let finalResult = result.join("")
+    //                         try {
+    //                             GM_saveHistory(your_qus, finalResult)
+    //                             addMessageChain(messageChain0, {
+    //                                 role: "assistant",
+    //                                 content: finalResult
+    //                             })//连续对话
+    //                         } catch (e) {
+    //
+    //                         }
+    //                         GM_fillBotResponse(finalResult)
+    //                         return;
+    //                     }
+    //                     let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+    //                     result.push(d)
+    //                     GM_fillBotResponse(result.join(""))
+    //                     return reader.read().then(processText);
+    //                 });
+    //             },
+    //             responseType: "stream",
+    //             onprogress: function (msg) {
+    //                 //console.log(msg)
+    //             },
+    //             onerror: function (err) {
+    //                 console.log(err)
+    //             },
+    //             ontimeout: function (err) {
+    //                 console.log(err)
+    //             }
+    //         });
+    //
+    //     });
+    // }
 
 
     let pizzaSecret;
@@ -3163,8 +3163,8 @@
                     console.log("MixerBox")
                     MixerBox(qus);
                     break;
-                default:
-                    kill(qus);
+             default:
+                    ANSEAPP(qus);
             }
 
         });
