@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.67
+// @version      4.68
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.67"
+    const JSVer = "v4.68"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1209,7 +1209,7 @@
         console.log("authANZZ")
         GM_fetch({
             method: "POST",
-            url: "https://free.anzz.top/api/session",
+            url: "https://free.anzz.top/zh",
             headers: {
                 "Content-Type": "application/json",
                 "Referer": `https://free.anzz.top/`
@@ -1232,7 +1232,7 @@
         console.log(ops)
          GM_xmlhttpRequest({
             method: "POST",
-            url: "https://free.anzz.top/api/chat-process",
+            url: "https://free.anzz.top/api/chat",
             headers: {
                 "Content-Type": "application/json",
                 "Referer": "https://free.anzz.top/",
@@ -1240,46 +1240,64 @@
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                top_p: 1,
-                prompt: your_qus,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                temperature: 0.8,
-                options: ops
+                "uuid": uuidv4(),
+                "model": {
+                    "id": "gpt-3.5-turbo-0613",
+                    "name": "GPT-3.5",
+                    "maxLength": 12000,
+                    "tokenLimit": 16000
+                },
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": your_qus
+                    }
+                ],
+                "key": "",
+                "prompt": "你是Hello-AI, 一个基于gpt-3.5-turbo接口的ChatGPT应用。你会仔细遵循用户的指示，使用Markdown格式进行回应。请对回应的重点或核心内容进行加粗",
+                "temperature": 0.8,
+                "deviceId":  uuidv4()
             }),
             onloadstart: (stream) => {
-                let result = "";
+                let result = [];
                 GM_simulateBotResponse("请稍后...")
                 const reader = stream.response.getReader();
                 //     console.log(reader.read)
                 let finalResult;
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        GM_saveHistory(your_qus, finalResult);
+                        GM_saveHistory(your_qus, result.join("").replace(/[anzz.top]/gi,"")
+                            .replace(/hello-ai/gi,"")
+                            .replace(/xxxily/gi,""));
                         return;
                     }
 
-                    const chunk = value;
-                    result += chunk;
                     try {
 
-                        let byteArray = new Uint8Array(chunk);
+                        let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
                         let d = decoder.decode(byteArray);
 
-                        let dd = d.split("\n");
-                        console.log(dd[dd.length - 1])
-                        let nowResult = JSON.parse(dd[dd.length - 1])
+                        result.push(d)
 
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            GM_fillBotResponse(finalResult.replace(/hello-ai.anzz.top/gi,"")
-                                .replace(/hello-ai/gi,"")
-                                .replace(/xxxily/gi,""))
-                        }
-                        if (nowResult.id) {
-                            parentID_anzz = nowResult.id;
-                        }
+                        GM_fillBotResponse(result.join("").replace(/[anzz.top]/gi,"")
+                            .replace(/hello-ai/gi,"")
+                            .replace(/xxxily/gi,""))
+
+                        // let dd = d.split("\n");
+                        // console.log(dd[dd.length - 1])
+                        // let nowResult = JSON.parse(dd[dd.length - 1])
+                        //
+                        // if (nowResult.text) {
+                        //     console.log(nowResult)
+                        //     finalResult = nowResult.text
+                        //     GM_fillBotResponse(finalResult.replace(/hello-ai.anzz.top/gi,"")
+                        //         .replace(/hello-ai/gi,"")
+                        //         .replace(/xxxily/gi,""))
+                        // }
+                        // if (nowResult.id) {
+                        //     parentID_anzz = nowResult.id;
+                        // }
 
                     } catch (e) {
                     }
