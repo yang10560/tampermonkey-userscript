@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.69
+// @version      4.70
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.69"
+    const JSVer = "v4.70"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1444,14 +1444,14 @@
     }
 
     let bnuKey;
+    let bnuList;
     let bnuInt = 0;
     let messageChain9 = []
-    //https://chat.bnu120.space/
     function BNU120(question) {
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
         let now = Date.now();
-        let Baseurl = `https://chat.${bnuInt}.bnu120.space/`
+        let Baseurl = bnuList[bnuInt].url
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
@@ -2923,6 +2923,7 @@
             //bnuList
             bnuInt = result.bnu.bnuInt
             bnuKey = result.bnu.bnukey
+            bnuList = result.bnu.list
             console.log("bnuInt:",bnuInt)
             console.log("bnuKey:",bnuKey)
 
