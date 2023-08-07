@@ -29,7 +29,9 @@
         console.log("myhash:" + Hash)
         if(!album_id) var album_id = ''
         console.log("album_id:" + album_id)
-        var mid = md5(Guid());
+        var mid = Md5.md5(Guid());
+        //"http://trackercdn.kugou.com/i/v2/?appid=1005&pid=2&cmd=25&behavior=play&hash=" + Hash + "&key=" + Md5.md5(Hash + "kgcloudv2")
+
         GM_xmlhttpRequest({
             method: "get",
 //			https://wwwapi.kugou.com/yy/index.php?r=play/getdata&mid=f4021358be9ef5dcd551eee96cc72505&encode_album_audio_id=7pzmfved
