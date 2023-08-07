@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.0.3
+// @version      3.0.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -134,7 +134,7 @@
 // @connect   openai.com
 // @connect   tongyi.aliyun.com
 // @connect   qianwen.aliyun.com
-// @connect   haohuola.com
+// @connect   ai-yuxin.space
 // @connect   xinghuo.xfyun.cn
 // @connect   geetest.com
 // @connect   neice.tiangong.cn
@@ -159,7 +159,7 @@
     'use strict';
 
 
-    const JSver = '3.0.3';
+    const JSver = '3.0.4';
 
 
     function getGPTMode() {
@@ -973,10 +973,10 @@
             YQCLOUD()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE === "HAOHUOLA") {
-            console.log("HAOHUOLA")
+        } else if (GPTMODE && GPTMODE === "YUXIN") {
+            console.log("YUXIN")
 
-            HAOHUOLA();
+            YUXIN();
 
             //end if
             return;
@@ -1376,7 +1376,7 @@
       <option value="ANZZ">ANZZ</option>
       <option value="THEBAI">THEBAI[科学]</option>
       <option value="YQCLOUD">YQCLOUD</option>
-      <option value="HAOHUOLA">HAOHUOLA</option>
+      <option value="YUXIN">YUXIN</option>
       <option value="BNU120">BNU120</option>
       <option value="ANSEAPP">ANSEAPP</option>
       <option value="DOG2">DOG2</option>
@@ -3269,12 +3269,9 @@
 
 
 
-    let conversationId_haohuola;
-    let tokens_haohuola = ['null'];
-    let tk_haohuola;
+
 
     setTimeout(async () => {
-        //if(getGPTMode() !== 'HAOHUOLA') return
         let rr = await GM_fetch({
             method: "GET",
             url: `https://yeyu1024.xyz/chat/haohula.json?r=${Math.random()}`
@@ -3282,14 +3279,6 @@
         if (rr.status === 200) {
             console.log(rr)
             let result = JSON.parse(rr.responseText);
-            tokens_haohuola = result.haohula.token;
-            try {
-                tokens_haohuola && (tk_haohuola = tokens_haohuola[Math.floor(Math.random() * tokens_haohuola.length)]);
-                console.log("tk_haohuola：", tk_haohuola)
-            } catch (e) {
-                console.error(e)
-            }
-
 
             //AILS
             ails_clientv = result.ails.clientv
@@ -3362,67 +3351,67 @@
 
         return true;
     }
-    // 2023年5月13日
-    function HAOHUOLA() {
-        if(isTokenExpired(tk_haohuola)){
-            Toast.error("token过期，请重新刷新页面")
-            return
-        }
 
-        let ops = {
-            prompt: your_qus
-        };
-        if (conversationId_haohuola) {
-            ops.conversationId = conversationId_haohuola;
-        }
-        console.log(ops)
-        let finalResult = [];
+
+    // 2023年8月7日 https://www.ai-yuxin.space/chat/gpt3.5.html?InvitationCode=uTEdfRwk
+
+    let message_yuxin = [{
+        "role": "system",
+        "content": "You are an AI assistant called ‘ai’ or ‘智能机器人’ in Chinese that based on the language model gpt-3.5-turbo, you are helpful, creative, clever, friendly and honest.\n          Current date: Mon Aug 07 2023 11:39:55 GMT+0800 (中国标准时间)"
+    },
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }]
+    function YUXIN() {
+        message_yuxin.push({
+            "role": "user",
+            "content": your_qus
+        })
         GM_httpRequest({
             method: "POST",
-            url: "https://wetabchat.haohuola.com/api/chat/conversation",
+            url: "https://www.ai-yuxin.space/proxy/v1/chat/completions",
             headers: {
-                "I-App":"hitab",
-                "I-Branch":"zh",
-                "I-Lang":"zh-CN",
-                "I-Platform":"chrome",
-                "I-Version":"1.0.43",
                 "Content-Type": "application/json;charset=UTF-8",
-                "Authorization": `Bearer ${tk_haohuola}`,
-                "Referer": "https://wetabchat.haohuola.com/api/chat/conversation",
-                "origin": "chrome-extension://aikflfpejipbpjdlfabpgclhblkpaafo",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
+                "Referer": "https://www.ai-yuxin.space/chat/gpt3.5.html?InvitationCode=uTEdfRwk",
+                "origin": "https://www.ai-yuxin.space"
             },
-            data: JSON.stringify(ops),
+            data: JSON.stringify({
+                "messages": message_yuxin,
+                "model": "gpt-3.5",
+                "stream": true,
+                "max_tokens": 512
+            }),
             responseType: "stream"
         },(stream) => {
+            let result = []
             const reader = stream.response.getReader();
-            //     console.log(reader.read)
             reader.read().then(function processText({done, value}) {
                 if (done) {
-
+                    message_yuxin.push({
+                        "role": "assistant",
+                        "content": result.join("")
+                    })
                     return;
                 }
                 try {
 
                     let byteArray = new Uint8Array(value);
                     let decoder = new TextDecoder('utf-8');
-                    //console.log(decoder.decode(byteArray))
-                    let items = decoder.decode(byteArray).split(/_.*?_/);
+                    console.log(decoder.decode(byteArray))
+                    let items = decoder.decode(byteArray).split("data:");
                     console.log(items)
                     items.forEach((item) =>{
                         try{
                             let dataVal = JSON.parse(item)
-                            if (dataVal.data && dataVal.message !== 'stream done') {
-                                finalResult.push(dataVal.data)
-                                showAnserAndHighlightCodeStr(finalResult.join(""))
-                            }
-                            if (dataVal.data && dataVal.message === 'stream done') {
-                                conversationId_haohuola = JSON.parse(dataVal.data).conversationId;
+                            if (dataVal.choices[0].delta.content) {
+                                result.push(dataVal.choices[0].delta.content)
                             }
                         }catch (e) {
-                            
+
                         }
                     })
+                    showAnserAndHighlightCodeStr(result.join(""))
 
                 } catch (e) {
                    // console.log(e)
