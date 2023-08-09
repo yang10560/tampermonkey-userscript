@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.0.4
+// @version      3.0.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -159,7 +159,7 @@
     'use strict';
 
 
-    const JSver = '3.0.4';
+    const JSver = '3.0.5';
 
 
     function getGPTMode() {
@@ -3294,8 +3294,10 @@
             promptboom_did = result.ptrboom.did
             promptboom_token = result.ptrboom.token
             promptboom_url = result.ptrboom.url
+            promptboom_version = result.ptrboom.version
             console.log("promptboom_did:",promptboom_did)
             console.log("promptboom_url:",promptboom_url)
+            console.log("promptboom_version:",promptboom_version)
 
 
             //extkj
@@ -6306,6 +6308,7 @@
     let promptboom_did = 'dd633043916550bea93f56e1af08debd'
     let promptboom_token = ''
     let promptboom_url = ''
+    let promptboom_version = '1.0'
     async function PRTBOOM() {
 
         addMessageChain(messageChain10, {role: "user", content: your_qus})//连续话
@@ -6335,6 +6338,7 @@
             url: promptboom_url ? promptboom_url : 'https://api2.promptboom.com/cfdoctetstream',
             headers: {
                 "Content-Type": "application/json",
+                "version": promptboom_version,
                 "origin": "https://www.promptboom.com",
                 "Referer": "https://www.promptboom.com/",
                 "accept": "*/*"

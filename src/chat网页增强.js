@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.70
+// @version      4.71
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.70"
+    const JSVer = "v4.71"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -2214,6 +2214,7 @@
     let promptboom_did = 'dd633043916550bea93f56e1af08debd'
     let promptboom_token = ''
     let promptboom_url = ''
+    let promptboom_version = '1.0'
     let messageChain10 = []
     async function PRTBOOM(question) {
         let your_qus = question;//你的问题
@@ -2245,6 +2246,7 @@
             url: promptboom_url ? promptboom_url : 'https://api2.promptboom.com/cfdoctetstream',
             headers: {
                 "Content-Type": "application/json",
+                "version": promptboom_version,
                 "origin": "https://www.promptboom.com",
                 "Referer": "https://www.promptboom.com/",
                 "accept": "*/*"
@@ -2911,8 +2913,10 @@
             promptboom_did = result.ptrboom.did
             promptboom_token = result.ptrboom.token
             promptboom_url = result.ptrboom.url
+            promptboom_version = result.ptrboom.version
             console.log("promptboom_did:",promptboom_did)
             console.log("promptboom_url:",promptboom_url)
+            console.log("promptboom_version:",promptboom_version)
 
             //extkj
             extkj_key = result.extkj.key
