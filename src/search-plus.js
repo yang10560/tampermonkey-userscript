@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.0.5
+// @version      3.0.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -159,7 +159,7 @@
     'use strict';
 
 
-    const JSver = '3.0.5';
+    const JSver = '3.0.6';
 
 
     function getGPTMode() {
@@ -1016,28 +1016,6 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE === "COOLAI") {
-            console.log("COOLAI")
-            try {
-                resultCoolAI = [];
-                WebsocketCoolAI.send(`42["ask",{"userId":"cool","content":"${your_qus}"}]`)
-            } catch (e) {
-                initSocket()
-            }
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "XBOAT") {
-            console.log("XBOAT")
-            try {
-                resultXBOAT = [];
-                WebsocketXBOAT.send(your_qus)
-            } catch (e) {
-                initSocketXBOAT()
-            }
-
-            return;
-            //end if
         } else if (GPTMODE && GPTMODE === "PHIND") {
             console.log("PHIND")
             PHIND();
@@ -1150,12 +1128,6 @@
         }else if (GPTMODE && GPTMODE === "LEMURCHAT") {
             console.log("LEMURCHAT")
             LEMURCHAT();
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "CHAT1") {
-            console.log("CHAT1")
-            CHAT1();
 
             return;
             //end if
@@ -1372,9 +1344,8 @@
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="ChatGO">ChatGO</option>
       <option value="MixerBox">MixerBox</option>
-      <option value="XBOAT">XBOAT[兼容]</option>
       <option value="ANZZ">ANZZ</option>
-      <option value="THEBAI">THEBAI[科学]</option>
+      <option style="display: none" value="THEBAI">THEBAI[科学]</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="YUXIN">YUXIN</option>
       <option value="BNU120">BNU120</option>
@@ -1383,9 +1354,8 @@
       <option value="PIZZA">PIZZA[兼容]</option>
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
-      <option value="GEEKR">GEEKR</option>
+      <option style="display: none" value="GEEKR">GEEKR</option>
       <option value="LEMURCHAT">LEMURCHAT</option>
-      <option value="CHAT1">CHAT1</option>
       <option value="OhMyGPT">OhMyGPT</option>
       <option value="CHATWEB1">CHATWEB1</option>
       <option value="CYTSEE">CYTSEE</option>
@@ -1396,7 +1366,6 @@
       <option value="CHATDDD">CHATDDD[x]</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
-      <option value="COOLAI">COOLAI[x]</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ[国内]</option>
@@ -1775,14 +1744,6 @@
             const selectEl = document.getElementById('modeSelect');
             const selectedValue = selectEl.options[selectEl.selectedIndex].value;
             localStorage.setItem('GPTMODE', selectedValue);
-
-            if (selectedValue === 'COOLAI') {
-                initSocket();
-            }
-
-            if (selectedValue === 'XBOAT') {
-                initSocketXBOAT();
-            }
 
             Toast.success(`切换成功，当前线路:${selectedValue}`)
         });
@@ -3324,6 +3285,10 @@
             console.log("xwz_token:",xwz_token)
             console.log("xwz_url:",xwz_url)
 
+            //ohmygpt_token
+            ohmygpt_token = result.ohmygpt.token
+            console.log("ohmygpt_token:",xwz_token)
+
         } else {
             console.error(rr)
         }
@@ -3355,16 +3320,9 @@
     }
 
 
-    // 2023年8月7日 https://www.ai-yuxin.space/chat/gpt3.5.html?InvitationCode=uTEdfRwk
+    // 2023年8月14日 https://www.ai-yuxin.space/chat/gpt3.5.html?InvitationCode=uTEdfRwk
 
-    let message_yuxin = [{
-        "role": "system",
-        "content": "You are an AI assistant called ‘ai’ or ‘智能机器人’ in Chinese that based on the language model gpt-3.5-turbo, you are helpful, creative, clever, friendly and honest.\n          Current date: Mon Aug 07 2023 11:39:55 GMT+0800 (中国标准时间)"
-    },
-        {
-            "role": "system",
-            "content": "You are a helpful assistant."
-        }]
+    let message_yuxin = []
     function YUXIN() {
         message_yuxin.push({
             "role": "user",
@@ -3372,17 +3330,17 @@
         })
         GM_httpRequest({
             method: "POST",
-            url: "https://www.ai-yuxin.space/proxy/v1/chat/completions",
+            url: "https://www.ai-yuxin.space/fastapi/api/chat/chatgpt_free",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
-                "Referer": "https://www.ai-yuxin.space/chat/gpt3.5.html?InvitationCode=uTEdfRwk",
+                "Referer": "https://www.ai-yuxin.space/chat/chatgpt.html",
                 "origin": "https://www.ai-yuxin.space"
             },
             data: JSON.stringify({
-                "messages": message_yuxin,
-                "model": "gpt-3.5",
-                "stream": true,
-                "max_tokens": 512
+                "user_id": 0,
+                "token": 0,
+                "msg": message_yuxin,
+                "model": "gpt-3.5-turbo"
             }),
             responseType: "stream"
         },(stream) => {
@@ -3426,65 +3384,6 @@
 
 
 
-    let parentID_chat1;
-    //fix 2023年5月26日 1.1ai.fun
-    function CHAT1() {
-        let ops = {};
-        if (parentID_chat1) {
-            ops = {parentMessageId: parentID_chat1};
-        }
-        console.log(ops)
-        let finalResult = [];
-        GM_httpRequest({
-            method: "POST",
-            url: "https://chatapicn.a3r.fun/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://2chat.c3r.ink/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops,
-                regenerate: false,
-                roomId: 1002,
-                uuid: Date.now(),
-                systemMessage:"You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                top_p:1,
-                temperature:0.8
-            }),
-            responseType: "stream"
-        },(stream) => {
-            const reader = stream.response.getReader();
-            //     console.log(reader.read)
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    return;
-                }
-                try {
-                    // console.log(normalArray)
-                    let byteArray = new Uint8Array(value);
-                    let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    let jsonLines = decoder.decode(byteArray).split("\n");
-                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-                    if (nowResult.text) {
-                        console.log(nowResult)
-                        finalResult = nowResult.text
-                        showAnserAndHighlightCodeStr(finalResult)
-                    }
-                    if (nowResult.id) {
-                        parentID_chat1 = nowResult.id;
-                    }
-
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-        })
-    }
 
 
 
@@ -5027,14 +4926,17 @@
                     d.split("\n").forEach(item=>{
                         try {
                             if(item.startsWith("data")){
-                                result.push(item.replace(/data: /gi,""))
+                                result.push(item.replace(/data:/gi,""))
                             }
                         }catch (ex){
 
                         }
                     })
                     showAnserAndHighlightCodeStr(result.join("").
-                    replace(/\[space\]/gi," ").replace(/\[NEWLINE\]/gi,"\n"))
+                    replace(/\[space\]/gi," ").
+                    replace(/\[NEWLINE\]/gi,"\n").
+                    replace(/message_donedone/gi,"\n").
+                    replace(/\[DONE\]/gi,"\n"))
 
                 } catch (e) {
                     console.log(e)
@@ -5055,6 +4957,7 @@
 
 
     let ohmygpt_session_id = '53793dce-7805-45ac-a226-7bc62bc4aef4';
+    let ohmygpt_token = '';
     let ohmygpt_messageChain = [{"role":"system","content":"You are ChatGPT, a large language model trained by OpenAI."}]
     async function OhMyGPT() {
         addMessageChain(ohmygpt_messageChain, {"role":"user","content":your_qus},10)
@@ -5075,7 +4978,7 @@
             url: `https://www.ohmygpt.com/api/v1/ai/chatgpt/chat`,
             headers: {
                 "Referer": "https://www.ohmygpt.com/",
-                "authorization": "Bearer eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ0OTciLCJlbWFpbCI6InhpYW95YW5nNjY4OEBmb3htYWlsLmNvbSIsInB1cnBvc2UiOiJ3ZWIiLCJpYXQiOjE2ODY0NTMzODIsImV4cCI6MTY4NzY2Mjk4Mn0.AWywkwDRd6d3h4imvhG1SUn0eg3Rb_-MAqZkfoAQAsUJlznBkYP_mIHU2YWpJxS_XbdXt2TwZ5PIT9PgcnQu3Y4WAMWoBxJxFb0TIjJ5hmLp7aTeR6Hctp0-o3E87FrlEShvBOWoOXQPuAmIeNHaMv2nwtw-MShyn8J_RJ9lt2SCBWT6",
+                "authorization": ohmygpt_token,
                 "origin": "https://www.ohmygpt.com",
                 "accept": "text/event-stream",
                 "content-type": 'application/x-www-form-urlencoded',
@@ -6548,10 +6451,10 @@
     function TDCHAT(){
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "http://wes.zw7.lol/chat.php",
+            url: "http://7shi.zw7.lol/chat.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "Referer": "http://wes.zw7.lol/chat",
+                "Referer": "http://7shi.zw7.lol/",
                 "accept": "application/json, text/plain, */*"
             },
             data: `id=3.5&key=&role=&title=&text=${encodeURIComponent(your_qus).replace(/%/g, '‰')}&length=${your_qus.length}&stream=1`,
@@ -6646,94 +6549,6 @@
     }
 
 
-
-    let WebsocketCoolAI;
-    let resultCoolAI = [];
-    let initSocket = function () {
-        // 创建WebSocket连接
-        const socket = new WebSocket(`wss://sd-wx.cool-js.cloud/socket.io/?apiKey=905733647bb7431b81233e12be12cfaa&url=https%3A%2F%2Fcool-js.com%2Fai%2Fchat%2Findex.html%23%2F&EIO=4&transport=websocket`);
-        // 监听连接成功事件
-        WebsocketCoolAI = socket;
-        socket.addEventListener('open', (event) => {
-            console.log('连接成功');
-
-            Toast.success("COOLAI:ws已经连接")
-        });
-        let isFirst = false;
-
-
-        // 监听接收消息事件
-        socket.addEventListener('message', (event) => {
-            console.log('接收到消息：', event.data);
-            let revData = event.data;
-            if (!isFirst) {
-                socket.send("40")
-                isFirst = true
-                setTimeout(() => socket.send("3"), 3000)
-            }
-            if (revData === "3") {
-                socket.send("2");
-            }
-            if (revData === "2") {
-                socket.send("3");
-            }
-            if (revData.match(/40/)) {
-                try {
-                    webSessionId = JSON.parse(revData.replace(/40/, "").trim()).sid;
-                    console.log("webSessionId ", webSessionId)
-                } catch (e) {
-                    console.log(e)
-                }
-            }
-            if (revData.match(/42/)) {
-                //收信
-                try {
-                    //42["data",{"type":"text","data":"\u662f"}]
-                    let chunk = eval(revData.replace(/42/, "").trim())[1].data;
-                    console.log(chunk)
-                    resultCoolAI.push(chunk)
-                    showAnserAndHighlightCodeStr(resultCoolAI.join(""))
-
-                } catch (e) {
-                    console.log(e)
-                }
-            }
-
-        });
-    }
-    if (getGPTMode() === "COOLAI") {
-        setTimeout(initSocket, 1500);
-    }
-
-    let WebsocketXBOAT;
-    let resultXBOAT = [];
-
-    let initSocketXBOAT = function () {
-        // 创建WebSocket连接
-        const socket = new WebSocket(`wss://box.xboat.cc/wsschat`);
-        // 监听连接成功事件
-        WebsocketXBOAT = socket;
-        socket.addEventListener('open', (event) => {
-            console.log('连接成功');
-
-            Toast.success("WebsocketXBOAT:ws已经连接")
-        });
-
-
-        // 监听接收消息事件
-        socket.addEventListener('message', (event) => {
-            console.log('接收到消息：', event.data);
-            let revData = event.data;
-            if(!revData.startsWith("/end")){
-                resultXBOAT.push(revData)
-            }
-            showAnserAndHighlightCodeStr(resultXBOAT.join(""))
-
-        });
-    }
-    if (getGPTMode() === "XBOAT") {
-        setTimeout(initSocketXBOAT, 1000);
-    }
 
 
     //默认设置

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.71
+// @version      4.72
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -31,7 +31,6 @@
 // @connect   bnu120.space
 // @connect   free-chat.asia
 // @connect   chat7.aifks001.online
-// @connect   geekr.dev
 // @connect   sunls.me
 // @connect   theb.ai
 // @connect   www.ftcl.store
@@ -77,7 +76,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.71"
+    const JSVer = "v4.72"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -638,11 +637,11 @@
         GM_xmlhttpRequest({
             method: "POST",
             //http://5p2ag.tdchat0.com/
-            url: "http://wes.zw7.lol/chat.php",
+            url: "http://7shi.zw7.lol/chat.php",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                 // "Authorization": "Bearer null",
-                "Referer": "http://wes.zw7.lol/",
+                "Referer": "http://7shi.zw7.lol/",
                 //"Host":"www.aiai.zone",
                 "accept": "application/json, text/plain, */*"
             },
@@ -1799,80 +1798,6 @@
     }
 
 
-    //https://chat.geekr.dev/ 2023年5月11日
-    async function GEEKR(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let baseURL = "https://chat.geekr.dev/";
-        let res = await GM_fetch({
-            method: "POST",
-            url: baseURL + "chat",
-            headers: {
-                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryunS2PBTi514UmKrN",
-                "accept": "*/*",
-                "Referer": baseURL
-            },
-            data:  `------WebKitFormBoundaryunS2PBTi514UmKrN\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundaryunS2PBTi514UmKrN\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundaryunS2PBTi514UmKrN--\r\n`
-        });
-        if (res.status === 200) {
-            console.log('成功....')
-            console.log(res)
-            let chat_id = JSON.parse(res.responseText).chat_id;
-            console.log("chat_id",chat_id)
-            GM_fetch({
-                method: "GET",
-                url: `https://chat.geekr.dev/stream?chat_id=${chat_id}&api_key=`,
-                headers: {
-                    "Referer": "https://chat.geekr.dev/",
-                    "accept": "text/event-stream"
-                },
-                responseType: "stream"
-            }).then((stream) => {
-                let result = [];
-                let finalResult;
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        finalResult = result.join("")
-                        GM_fillBotResponseAndSave(your_qus,finalResult)
-                        return;
-                    }
-
-                    try {
-
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        console.log("raw:",d)
-                        let dd = d.replace(/data: /g, "").split("\n")
-                        console.log("dd:",dd)
-                        dd.forEach(item=>{
-                            try {
-                                let delta = JSON.parse(item).choices[0].delta.content
-                                result.push(delta)
-                                GM_fillBotResponse(result.join(""))
-                            }catch (e) {
-
-                            }
-                        })
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },function (err) {
-                console.log(err)
-            }).catch((ex)=>{
-                console.log(ex)
-            })
-
-
-        } else {
-            console.log(res)
-            GM_simulateBotResponseAndSave('访问失败了')
-        }
-
-    }
 
 
 
@@ -2420,7 +2345,7 @@
                     d.split("\n").forEach(item=>{
                         try {
                             if(item.startsWith("data")){
-                                result.push(item.replace(/data: /gi,""))
+                                result.push(item.replace(/data:/gi,""))
                             }
                         }catch (ex){
 
@@ -2696,80 +2621,6 @@
 
 
 
-
-    var parentID_thebai;
-
-    function THEBAI(question) {
-        let your_qus = question;
-        GM_handleUserInput(null)
-        let ops = {};
-        if (parentID_thebai) {
-            ops = {parentMessageId: parentID_thebai};
-        }
-        console.log(ops)
-
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://chatbot.theb.ai/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://chatbot.theb.ai/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops
-            }),
-            onloadstart: (stream) => {
-                let finalResult = [];
-                GM_simulateBotResponse("...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_fillBotResponseAndSave(your_qus,finalResult)
-                        return;
-                    }
-                    try {
-
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let d = decoder.decode(byteArray);
-                        console.log(d)
-
-                        d.split("\n").forEach(item=>{
-                            try {
-                                let jsonObj = JSON.parse(item.trim())
-                                if (jsonObj.text) {
-                                    // console.warn(jsonObj)
-                                    finalResult = jsonObj.text;
-                                    GM_fillBotResponse(jsonObj.text)
-                                }
-                                if (jsonObj.id) {
-                                    parentID_thebai = jsonObj.id;
-                                }
-                            }catch (ex){
-
-                            }
-                        })
-
-                    } catch (ex) {
-                        console.log(ex)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
-        })
-
-    }
-
     //狐猴内置 2023年5月12日
     function LEMURCHAT(question) {
         let your_qus = question;
@@ -2967,14 +2818,7 @@
     }
 
 
-    let message_yuxin = [{
-        "role": "system",
-        "content": "You are an AI assistant called ‘ai’ or ‘智能机器人’ in Chinese that based on the language model gpt-3.5-turbo, you are helpful, creative, clever, friendly and honest.\n          Current date: Mon Aug 07 2023 11:39:55 GMT+0800 (中国标准时间)"
-    },
-        {
-            "role": "system",
-            "content": "You are a helpful assistant."
-        }]
+    let message_yuxin = []
     function YUXIN(question) {
 
         let your_qus = question;
@@ -2986,17 +2830,17 @@
 
         GM_httpRequest({
             method: "POST",
-            url: "https://www.ai-yuxin.space/proxy/v1/chat/completions",
+            url: "https://www.ai-yuxin.space/fastapi/api/chat/chatgpt_free",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
-                "Referer": "https://www.ai-yuxin.space/chat/gpt3.5.html?InvitationCode=uTEdfRwk",
+                "Referer": "https://www.ai-yuxin.space/chat/chatgpt.html",
                 "origin": "https://www.ai-yuxin.space"
             },
             data: JSON.stringify({
-                "messages": message_yuxin,
-                "model": "gpt-3.5",
-                "stream": true,
-                "max_tokens": 512
+                "user_id": 0,
+                "token": 0,
+                "msg": message_yuxin,
+                "model": "gpt-3.5-turbo"
             }),
             responseType: "stream"
         },(stream) => {
@@ -3113,9 +2957,6 @@
                 case "NBAI":
                     NBAI(qus);
                     break;
-                case "GEEKR":
-                    GEEKR(qus);
-                    break;
                case "SUNLE":
                    SUNLE(qus);
                     break;
@@ -3154,10 +2995,6 @@
                     console.log("XEASY")
                     XEASY(qus);
                     break;
-               case "THEBAI":
-                    console.log("THEBAI")
-                   THEBAI(qus);
-                    break;
                case "LEMURCHAT":
                     console.log("LEMURCHAT")
                    LEMURCHAT(qus);
@@ -3187,7 +3024,6 @@
         document.getElementById("modeSelect").innerHTML = `<option selected value="Defalut">默认</option>
  <option value="PIZZA">PIZZA</option>
  <option value="YQCLOUD">YQCLOUD</option>
- <option value="THEBAI">THEBAI</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
@@ -3207,7 +3043,6 @@
  <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
  <option value="NBAI">NBAI</option>
- <option value="GEEKR">GEEKR</option>
  <option value="PRTBOOM">PRTBOOM</option>
  <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
