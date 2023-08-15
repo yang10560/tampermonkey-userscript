@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.9
+// @version      1.6.0
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -1200,12 +1200,14 @@
 
             //连击翻译及特殊处理
             if(/(input|textarea)/i.test(node.nodeName)){
-                if(node.value){
-                    node.value = yiwen
-                }else if (node.hasAttribute('placeholder')){
+
+                if (node.getAttribute("triple")){
+                    if(node.value){
+                        node.value = yiwen //三击
+                    }
+                }else if(node.hasAttribute('placeholder')){
+                    //提示词
                     node.setAttribute('placeholder', yiwen);
-                }else{
-                    node.value = yiwen
                 }
                 return
             }
@@ -3201,6 +3203,7 @@ ${ali_uuid}\r
                     const node = event.target;
                     Toast.success(`正在翻译,如需要切换请点击"语言"..=>${selectTolang}`)
                     if(/(input|textarea)/i.test(node.nodeName)){
+                        node.setAttribute("triple","triple")
                         dispatchAPI(node.innerText || node.value.trim(), node, selectTolang)
                     }
                     spaceCount = 0; // 重置空格键计数
