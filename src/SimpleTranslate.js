@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.5.8
+// @version      1.5.9
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -1198,9 +1198,15 @@
 
             if (yiwen === text) return
 
-            //连击翻译
+            //连击翻译及特殊处理
             if(/(input|textarea)/i.test(node.nodeName)){
-                node.value = yiwen
+                if(node.value){
+                    node.value = yiwen
+                }else if (node.hasAttribute('placeholder')){
+                    node.setAttribute('placeholder', yiwen);
+                }else{
+                    node.value = yiwen
+                }
                 return
             }
 
@@ -2695,21 +2701,26 @@ ${ali_uuid}\r
         }
 
 
+
         // console.error("nodeType:", node.nodeType)
-
-        if (lang === currentAPI.EnglishLang && !hasChinese(node.textContent)) {
-            //不含中文
-            return;
-        }
-
-        if (lang === currentAPI.ChineseLang && !hasEnglish(node.textContent)) {
-            //不含英文
-            return;
-        }
 
 
         // 如果节点没有子节点，则打印节点内容
         if (node.childNodes.length === 0) {
+
+            // 特殊标签文本处理
+            if (!/^(INPUT|textarea)$/i.test(node.nodeName)) {
+                if (lang === currentAPI.EnglishLang && !hasChinese(node.textContent)) {
+                    //不含中文
+                    return;
+                }
+
+                if (lang === currentAPI.ChineseLang && !hasEnglish(node.textContent)) {
+                    //不含英文
+                    return;
+                }
+            }
+
             if (node.textContent) {
                 //if(node.textContent.includes("checkCurrentAuth")) debugger
                 const srcText = node.textContent.trim();
@@ -2749,6 +2760,8 @@ ${ali_uuid}\r
 
                 }
 
+            }else if(/(input|textarea)/i.test(node.nodeName) && node.hasAttribute('placeholder')){
+                dispatchAPI(node.getAttribute('placeholder'), node, lang)
             }
         } else {
             // 如果有子节点，则递归遍历子节点
