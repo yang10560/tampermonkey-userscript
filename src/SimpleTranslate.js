@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.6.0
+// @version      1.6.1
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -231,6 +231,10 @@
     let enableCache = true; //是否启用缓存 true/false 默认启用
     let maxCacheCount = 1500; //最大缓存数量
 
+
+    try {
+        highlightColor = GM_getValue("highlightColor", highlightColor)
+    }catch (e) { }
 
     function getCookieValue(cookies, cookieName) {
         let name = cookieName + "=";
@@ -535,6 +539,65 @@
         GM_registerMenuCommand("更新脚本", function (event) {
             GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
         }, "updateTranslateJS");
+
+
+        GM_registerMenuCommand("高亮颜色选择", function (event) {
+           $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;left: 100px;width: 300px;top: 50px;height: 350px;border: 1px salmon solid;position: fixed;" id="MyColorSelector">
+        <div>
+          <label for="redRange">红/Red:</label>
+          <input type="range" id="redRange" min="0" max="255" value="0">
+        </div>
+        <div>
+          <label for="greenRange">绿/Green:</label>
+          <input type="range" id="greenRange" min="0" max="255" value="0">
+        </div>
+        <div>
+          <label for="blueRange">蓝/Blue:</label>
+          <input type="range" id="blueRange" min="0" max="255" value="0">
+        </div>
+        <div>
+          <div style=" width: 100px; height: 100px; margin-top: 10px;margin-bottom: 10px;" id="colorDisplay"></div>
+          <div style="font-size: 30px;" id="colorPreview">文字预览</div>
+        </div>
+        <button style="font-size: 14px;width: 60px; height: 60px;margin-top: 10px;" id="selectColorBtn">确定</button>
+        </div>
+        `);
+            const MyColorSelector = document.getElementById("MyColorSelector");
+            const redRange = document.getElementById("redRange");
+            const greenRange = document.getElementById("greenRange");
+            const blueRange = document.getElementById("blueRange");
+            const colorDisplay = document.getElementById("colorDisplay");
+            const colorPreview = document.getElementById("colorPreview");
+            const selectColorBtn = document.getElementById("selectColorBtn");
+
+            // 更新颜色显示区域的颜色
+            function updateColorDisplay() {
+                const redValue = redRange.value;
+                const greenValue = greenRange.value;
+                const blueValue = blueRange.value;
+
+                const selectedColor = `rgb(${redValue},${greenValue},${blueValue})`;
+                colorDisplay.style.backgroundColor = selectedColor;
+                colorPreview.style.color = selectedColor
+            }
+
+            // 添加滑块的 input 事件处理程序
+            redRange.addEventListener("input", updateColorDisplay);
+            greenRange.addEventListener("input", updateColorDisplay);
+            blueRange.addEventListener("input", updateColorDisplay);
+            selectColorBtn.addEventListener("click", (ev)=>{
+                const redValue = redRange.value;
+                const greenValue = greenRange.value;
+                const blueValue = blueRange.value;
+                const selectedColor = `rgb(${redValue},${greenValue},${blueValue})`;
+                GM_setValue("highlightColor", selectedColor)
+                Toast.success("请重新刷新页面生效!")
+                MyColorSelector.remove()
+            });
+
+            // 初始化颜色显示
+            updateColorDisplay();
+        }, "HeightLightColor");
 
 
         GM_registerMenuCommand("排除/放行该站", function (event) {
@@ -2693,7 +2756,7 @@ ${ali_uuid}\r
             return;
         }
         //排除类名
-        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container|translate-span|highlight|translate-src|toast-|code)/i.test(node.className)) {
+        if (/(translate-main|bbCodeCode|mathjax-tex|gpt-container|translate-span|highlight|translate-src|toast-|code|MyColorSelector)/i.test(node.className)) {
             return;
         }
 
@@ -3028,17 +3091,39 @@ ${ali_uuid}\r
     const translatearrow = document.querySelector(".translate-arrow")
 
     //展开
-    translatemainDom.addEventListener("click", () => {
-        console.log("--1-")
-        translatemainDom.classList.add("unfold")
-    })
+    if(!isMobile()){
+        translatemainDom.addEventListener("mouseover", () => {
+            console.log("--2-")
+            translatemainDom.classList.add("unfold")
+        })
+    }else {
+        translatemainDom.addEventListener("click", () => {
+            console.log("--1-")
+            translatemainDom.classList.add("unfold")
+        })
+    }
+
 
     //收起
-    translatearrow.addEventListener("click", (event) => {
-        event.stopPropagation()
-        // console.log("--2-")
-        translatemainDom.classList.remove("unfold")
-    })
+    if(!isMobile()){
+        translatearrow.addEventListener("mouseout", (event) => {
+            event.stopPropagation()
+            console.log("--4-")
+            translatemainDom.classList.remove("unfold")
+        })
+        translatemainDom.addEventListener('mouseleave', function() {
+            console.log("--5-")
+            translatemainDom.classList.remove('unfold');
+        });
+    }else {
+        translatearrow.addEventListener("click", (event) => {
+            event.stopPropagation()
+            console.log("--3-")
+            translatemainDom.classList.remove("unfold")
+        })
+
+    }
+
 
     //英转中
     document.querySelector("#en2zh").addEventListener("click", async (event) => {
