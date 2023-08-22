@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         百度文心一言去水印
 // @namespace    http://tampermonkey.net/
-// @version      2.6
+// @version      2.7
 // @description  去文心一言水印、去星火水印。去天工水印。去chatGLM水印。去通义千问水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。
 // @author       夜雨
 // @match        *://yiyan.baidu.com/*
@@ -116,11 +116,16 @@
     setInterval(() => {
         //document.body.parentElement.scrollTo(0, 0)
         if(location.href.includes("yiyan")){
-            /*if (document.querySelector(".ant-modal-root")) {
+            if (document.querySelector(".ant-modal-root")) {
                 document.querySelectorAll(".ant-modal-root").forEach(item => {
-                    item.remove()
+                    try {
+                        if(!item.querySelector(".ant-modal-body").innerHTML.match(/上传/gi)){
+                            item.remove()
+                        }
+                    }catch (e) {}
+
                 })
-            }*/
+            }
 
             if (document.querySelector("img")) {
                 document.querySelectorAll("img").forEach(item => {
