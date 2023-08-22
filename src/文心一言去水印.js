@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         百度文心一言去水印
 // @namespace    http://tampermonkey.net/
-// @version      2.7
+// @version      2.8
 // @description  去文心一言水印、去星火水印。去天工水印。去chatGLM水印。去通义千问水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。
 // @author       夜雨
 // @match        *://yiyan.baidu.com/*
@@ -164,6 +164,7 @@
                         item.remove()
                     }
                 }catch (e) {
+                    item.remove()
                     console.log(e)
                 }
             })
