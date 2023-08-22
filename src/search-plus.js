@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.0.6
+// @version      3.0.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -159,7 +159,7 @@
     'use strict';
 
 
-    const JSver = '3.0.6';
+    const JSver = '3.0.7';
 
 
     function getGPTMode() {
@@ -405,7 +405,7 @@
             })
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
-                bnuInt = (bnuInt + 1) > 6 ? 0 : (bnuInt + 1)
+                bnuInt = (bnuInt + 1) > bnuList.length ? 0 : (bnuInt + 1)
                 try {
                     bnuKey = bnuList[bnuInt].key;
                     if(bnuKey){
@@ -1029,13 +1029,7 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE === "HEHANWANG") {
-            console.log("HEHANWANG")
-            HEHANWANG();
-
-            return;
-            //end if
-        } else if (GPTMODE && GPTMODE === "EXTKJ") {
+        }  else if (GPTMODE && GPTMODE === "EXTKJ") {
             console.log("EXTKJ")
             EXTKJ();
 
@@ -1047,13 +1041,7 @@
 
             return;
             //end if
-        }  else if (GPTMODE && GPTMODE === "USESLESS") {
-            console.log("USESLESS")
-            USESLESS();
-
-            return;
-            //end if
-        } else if (GPTMODE && GPTMODE === "PRTBOOM") {
+        }  else if (GPTMODE && GPTMODE === "PRTBOOM") {
             console.log("PRTBOOM")
             PRTBOOM();
 
@@ -1131,33 +1119,9 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "CYTSEE") {
-            console.log("CYTSEE")
-            CYTSEE();
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "CHATWEB1") {
-            console.log("CHATWEB1")
-            CHATWEB1()
-
-            return;
-            //end if
         }else if (GPTMODE && GPTMODE === "GEEKR") {
             console.log("GEEKR")
             GEEKR()
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "ZHULEI") {
-            console.log("ZHULEI")
-            ZHULEI()
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "CHATDDD") {
-            console.log("CHATDDD")
-            CHATDDD()
 
             return;
             //end if
@@ -1357,21 +1321,15 @@
       <option style="display: none" value="GEEKR">GEEKR</option>
       <option value="LEMURCHAT">LEMURCHAT</option>
       <option value="OhMyGPT">OhMyGPT</option>
-      <option value="CHATWEB1">CHATWEB1</option>
-      <option value="CYTSEE">CYTSEE</option>
       <option value="WGK">WGK</option>
       <option value="NBAI">NBAI</option>
       <option value="T66">T66</option>
-      <option value="ZHULEI">ZHULEI</option>
-      <option value="CHATDDD">CHATDDD[x]</option>
       <option value="XEASY">XEASY</option>
       <option value="AILS">AILS</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
       <option value="EXTKJ">EXTKJ[国内]</option>
-      <option value="HEHANWANG">HEHANWANG[x]</option>
       <option value="XIAOWENZI">XIAOWENZI</option>
-      <option value="USESLESS">USESLESS</option>
       <option value="PRTBOOM">PRTBOOM</option>
       <option value="SUNLE">SUNLE</option>
       <option value="CLEANDX">CLEANDX</option>
@@ -1400,7 +1358,7 @@
         <a target="_blank"  href="https://chat.openai.com/chat">Open AI</a>
         <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">必应</a>
         <a target="_blank"  href="https://bard.google.com/">Google Bard</a>
-        <a target="_blank"  href="https://slack.com/apps/A04KGS7N9A8-claude">Claude</a>
+        <a target="_blank"  href="https://claude.ai/">Claude</a>
         <a target="_blank"  href="https://chatglm.cn/chat">ChatGLM</a>
         <hr>
         <a target="_blank"  href="https://chat.360.cn/">360智脑</a>
@@ -2287,75 +2245,6 @@
     }
 
 
-    //2023年5月6日
-    let parentID_chatWeb1;
-    function CHATWEB1() {
-        let ops = {};
-        if (parentID_chatWeb1) {
-            ops = {parentMessageId: parentID_chatWeb1};
-        }
-
-        console.log(ops)
-        let finalResult = [];
-       GM_fetch({
-            method: "POST",
-            url: "https://b6bot1.skybyte.me/api/chat-process",//https://bots.skybyte.me/
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://b6bot1.skybyte.me/",
-                "origin": "https://b6bot1.skybyte.me",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "prompt": your_qus,
-                "options": ops,
-                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                "temperature": 0.8,
-                "top_p": 1
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let d = decoder.decode(byteArray);
-
-                        let dd = d.split("\n");
-                        console.log(dd[dd.length - 1])
-                        let nowResult = JSON.parse(dd[dd.length - 1])
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_chatWeb1 = nowResult.id;
-                        }
-
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            (reason)=>{
-                console.log(reason)
-                Toast.error("未知异常!")
-            }
-        ).catch(ex => {
-            console.log(ex)
-        })
-    }
-
-
 
     //2023年5月18日 http://home.cutim.top/ https://gpt.gogpt.site/#/chat/1002
     let parentID_gptplus;
@@ -2712,43 +2601,6 @@
         });
     }
 
-    let messageChain_zhulei = [];
-    let zhulei_count = 0;
-    function ZHULEI() {
-        addMessageChain(messageChain_zhulei, {role: "user", content: your_qus})//连续话
-        zhulei_count++;
-        GM_fetch({
-            method: "POST",
-            url: "https://chathub.zhulei.xyz/api",
-            headers: {
-                "Content-Type": "application/json",
-                "cookie": `BBBBB=${zhulei_count}`,
-                "Referer": "https://chathub.zhulei.xyz/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                messages: messageChain_zhulei,
-                model: "gpt-3.5-turbo",
-                password: "",
-                temperature: 0.6
-            }),
-        }).then((r) => {
-            if (r.status === 200) {
-                console.log(r);
-                if(messageChain_zhulei.length > 0){
-                    messageChain_zhulei[messageChain_zhulei.length - 1].id = Date.now();
-                }
-                addMessageChain(messageChain_zhulei,{"role":"assistant","content":r.responseText,"id":Date.now()})
-                showAnserAndHighlightCodeStr(r.responseText)
-            }
-        },(reason)=>{
-            Toast.error("未知错误!")
-            console.log(reason)
-        }).catch((ex)=>{
-            Toast.error("未知错误!")
-            console.log(ex)
-        });
-    }
 
 
     async function delay(ms) {
@@ -2991,73 +2843,6 @@
 
     }
 
-
-    //2023年5月4日 https://chatgpt.cytsee.com/ https://chatgpt01.peo.icu/
-    let messageChain_cytsee = []
-    function CYTSEE() {
-
-        let baseURL = "https://www.cytsee.com/";
-        addMessageChain(messageChain_cytsee, {role: "user", content: your_qus})//连续话
-        let sendData = JSON.stringify({
-            messages: messageChain_cytsee,
-            justStream: true,
-            stream: true,
-            model: "gpt-3.5-turbo",
-            temperature: 1,
-            presence_penalty: 0
-        });
-        let hmac = CryptoJS.HmacSHA256(sendData, "981028");
-        let signature = hmac.toString(CryptoJS.enc.Hex);
-
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/generateStream",
-            headers: {
-                "Content-Type": "application/json",
-                "accept": "*/*",
-                "sign": signature,
-                "Referer": "https://saosao.cytsee.com/",
-                "origin": "https://saosao.cytsee.com"
-            },
-            data: sendData,
-            responseType: "stream"
-        }).then((stream)=>{
-
-            const reader = stream.response.getReader();
-            let result = [];
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-
-                    addMessageChain(messageChain_cytsee, {
-                        role: "assistant",
-                        content: result.join("")
-                    });
-                    return;
-                }
-                try {
-                    // console.log(normalArray)
-                    let byteArray = new Uint8Array(value);
-                    let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    result.push(decoder.decode(byteArray))
-                    showAnserAndHighlightCodeStr(result.join(""))
-
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-
-        },function (err) {
-            console.log(err)
-            Toast.error("未知错误!")
-        }).catch((ex)=>{
-            console.log(ex)
-            Toast.error("未知错误!")
-        });
-
-    }
 
 
     let userId_wgk = "#/chat/" + Date.now();
@@ -5440,140 +5225,6 @@
 
     }
 
-    let parentID_hhw;
-    function HEHANWANG() {
-        let ops = {};
-        if (parentID_hhw) {
-            ops = {parentMessageId: parentID_hhw};
-        }
-        console.log(ops)
-        GM_fetch({
-            method: "POST",
-            url: "https://chat1.hehanwang.com/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://chat1.hehanwang.com/",
-                "Authorization": "Bearer 293426",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                top_p: 1,
-                prompt: your_qus,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                temperature: 0.8,
-                options: ops
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = "";
-            const reader = stream.response.getReader();
-            //     console.log(reader.read)
-            let finalResult;
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    return;
-                }
-
-                const chunk = value;
-                result += chunk;
-                try {
-                    // console.log(normalArray)
-                    let byteArray = new Uint8Array(chunk);
-                    let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    let jsonLines = decoder.decode(byteArray).split("\n");
-                    let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-
-                    if (nowResult.text) {
-                        console.log(nowResult)
-                        finalResult = nowResult.text
-                        showAnserAndHighlightCodeStr(finalResult)
-                    }
-                    if (nowResult.id) {
-                        parentID_hhw = nowResult.id;
-                    }
-
-                } catch (e) {
-
-                }
-
-                return reader.read().then(processText);
-            });
-        },(reason)=>{
-            console.log(reason)
-            Toast.error("未知错误!")
-        }).catch((ex)=>{
-            console.log(ex)
-            Toast.error("未知错误!")
-        });
-
-    }
-
-
-
-    let messageChain7 = [];//CHATDDD
-    function CHATDDD() {
-
-        let baseURL = "https://chatgptdddd.com/";
-        addMessageChain(messageChain7, {role: "user", content: your_qus})//连续话
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/chat",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": baseURL
-            },
-            data: JSON.stringify({
-                messages: messageChain7,
-                model: {
-                    "id": "gpt-3.5-turbo-16k",
-                    "name": "GPT-3.5",
-                    "maxLength": 12000,
-                    "tokenLimit": 4000
-                },
-                temperature: 1,
-                prompt: "你是 ChatGPT，一个由 OpenAI 训练的大型语言模型。你可以回答各种问题，帮助人们解决问题。 please think in english and answer by chinese",
-                key: null
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    let finalResult = result.join("")
-                    try {
-                        console.log(finalResult)
-                        addMessageChain(messageChain7, {
-                            role: "assistant",
-                            content: finalResult
-                        })
-                        showAnserAndHighlightCodeStr(finalResult)
-                    } catch (e) {
-                        console.log(e)
-                    }
-                    return;
-                }
-                try {
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    result.push(d)
-                    showAnserAndHighlightCodeStr(result.join(""))
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            },function (reason) {
-                console.log(reason)
-                Toast.error("未知错误!")
-            }).catch((ex)=>{
-                console.log(ex)
-                Toast.error("未知错误!")
-            });
-        });
-
-    }
-
     //https://gpt.esojourn.org/api/chat-stream https://0505.betai55.uk/api/chat-stream
     let eso_access_code;
     function ESO() {
@@ -5894,7 +5545,7 @@
     function BNU120() {
 
         let now = Date.now();
-        let Baseurl = `https://chat.${bnuInt}.bnu120.space/`
+        let Baseurl = bnuList[bnuInt].url
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
@@ -6121,85 +5772,6 @@
                 Toast.error("未知错误!" + err.message)
             }
         });
-
-    }
-
-
-    let parentID_usesless;
-    let referer_uesless = "https://ai.usesless.com/chat/1002";
-    setTimeout(()=>{
-            GM_fetch({
-                method: "GET",
-                url: `https://ai.usesless.com/chat/1002`,
-                headers: {
-                    "Referer": referer_uesless,
-                    "origin": "https://ai.usesless.com",
-                }
-            })
-    })
-    function USESLESS() {
-        let ops = {
-            systemMessage: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: 2023-05-${new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()}`,
-            completionParams:{presence_penalty: 0.8, temperature: 1}
-        };
-        if (parentID_usesless) {
-            ops.parentMessageId = parentID_usesless;
-        }
-        console.log(ops)
-        abortXml = GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://ai.usesless.com/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": referer_uesless,
-                "origin": "https://ai.usesless.com",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                openaiKey: "",
-                prompt: your_qus,
-                options: ops
-            }),
-            onloadstart: (stream) => {
-                let result = "";
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-
-                        return;
-                    }
-
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
-
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_usesless = nowResult.id;
-                        }
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                Toast.error("未知错误!" + err.message)
-            }
-        })
 
     }
 

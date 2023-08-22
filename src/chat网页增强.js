@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.72
+// @version      4.73
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -76,7 +76,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.72"
+    const JSVer = "v4.73"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -882,66 +882,6 @@
     }
 
 
-    var userId_wgk = "#/chat/" + Date.now();
-    function WGK(question) {
-        let your_qus = question;//你的问题
-        console.log(userId_wgk)
-        GM_handleUserInput(null)
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://chat2.wuguokai.cn/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
-                "Referer": "https://chat.wuguokai.cn/",
-                //"Host":"www.aiai.zone",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                userId: userId_wgk,
-                options: {}
-            }),
-            onloadstart: (stream) => {
-                let finalResult = []
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-
-                        try {
-                            console.log(finalResult.join(""))
-                            GM_saveHistory(your_qus, finalResult.join(""));
-                        } catch (e) {
-                            console.error(e)
-                        } finally {
-                            GM_fillBotResponse(finalResult.join(""))
-                        }
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = decoder.decode(byteArray)
-                        finalResult.push(nowResult.replace(/fxopenai\.win/gi,""))
-                        GM_fillBotResponse(finalResult.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                GM_fillBotResponse("erro:",err)
-            }
-        })
-
-    }
-
     function generateRandomString(length) {
         var result = '';
         var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -1642,71 +1582,6 @@
             }
         })
     }
-
-
-
-    var parentID_nbai;
-
-    function NBAI(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let ops = {};
-        if (parentID_nbai) {
-            ops = {parentMessageId: parentID_nbai};
-        }
-        console.log(ops)
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://154.40.59.105:3006/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://f1.nbai.live/",
-                "accept": "application/json, text/plain, */*",
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                let finalResult = "";
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_saveHistory(your_qus, finalResult);
-                        return;
-                    }
-
-                    try {
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let dstr = decoder.decode(byteArray)
-                        if(dstr.includes("role")){
-                            parentID_nbai =  /\"parentMessageId\":\"(.*?)\"/gi.exec(dstr)[1]
-                        }else{
-                            console.log(dstr)
-                            result.push(dstr)
-                            finalResult = result.join("")
-                            GM_fillBotResponse(finalResult)
-                        }
-
-
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        })
-
-    }
-
 
 
 
@@ -2674,70 +2549,7 @@
 
     }
 
-    let messageChain_cytsee = []
-    function CYTSEE(question) {
-        let your_qus = question;
-        GM_handleUserInput(null)
-        let baseURL = "https://www.cytsee.com/";
-        addMessageChain(messageChain_cytsee, {role: "user", content: your_qus})//连续话
-        let sendData = JSON.stringify({
-            messages: messageChain_cytsee,
-            justStream: true,
-            stream: true,
-            model: "gpt-3.5-turbo",
-            temperature: 1,
-            presence_penalty: 0
-        });
-        let hmac = CryptoJS.HmacSHA256(sendData, "981028");
-        let signature = hmac.toString(CryptoJS.enc.Hex);
 
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/generateStream",
-            headers: {
-                "Content-Type": "application/json",
-                "accept": "*/*",
-                "sign": signature,
-                "Referer": "https://saosao.cytsee.com/",
-                "origin": "https://saosao.cytsee.com"
-            },
-            data: sendData,
-            responseType: "stream"
-        }).then((stream)=>{
-            GM_simulateBotResponse("。。。")
-            const reader = stream.response.getReader();
-            let result = [];
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    addMessageChain(messageChain_cytsee, {
-                        role: "assistant",
-                        content: result.join("")
-                    });
-                    GM_fillBotResponseAndSave(your_qus,result.join(""))
-                    return;
-                }
-                try {
-                    // console.log(normalArray)
-                    let byteArray = new Uint8Array(value);
-                    let decoder = new TextDecoder('utf-8');
-                    console.log(decoder.decode(byteArray))
-                    result.push(decoder.decode(byteArray))
-                    GM_fillBotResponse(result.join(""))
-
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-
-        },function (err) {
-            console.log(err)
-        }).catch((ex)=>{
-            console.log(ex)
-        });
-
-    }
 
 
 
@@ -2927,9 +2739,6 @@
                 case "QDYMYS":
                     QDYMYS(qus);
                     break;
-                case "wgk":
-                    WGK(qus);
-                    break;
                 case "XCBL":
                     XCBL(qus);
                     break;
@@ -2953,9 +2762,6 @@
                     break;
                 case "LBB":
                     LBB(qus);
-                    break;
-                case "NBAI":
-                    NBAI(qus);
                     break;
                case "SUNLE":
                    SUNLE(qus);
@@ -3003,10 +2809,6 @@
                     console.log("YUXIN")
                    YUXIN(qus);
                     break;
-             case "CYTSEE":
-                    console.log("CYTSEE")
-                    CYTSEE(qus);
-                    break;
              case "ChatGO":
                     console.log("ChatGO")
                     ChatGO(qus);
@@ -3033,16 +2835,12 @@
  <option value="YUXIN">YUXIN</option>
  <option value="ChatGO">ChatGO</option>
  <option value="MixerBox">MixerBox</option>
- <option value="CYTSEE">CYTSEE</option>
  <option value="QDYMYS">QDYMYS</option>
- <option value="wgk">wgk</option>
  <option value="WOBCW">WOBCW</option>
  <option value="T66">T66</option>
  <option value="ANZZ">ANZZ</option>
-
  <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
- <option value="NBAI">NBAI</option>
  <option value="PRTBOOM">PRTBOOM</option>
  <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
