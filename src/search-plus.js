@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.0.7
+// @version      3.0.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -159,7 +159,7 @@
     'use strict';
 
 
-    const JSver = '3.0.7';
+    const JSver = '3.0.8';
 
 
     function getGPTMode() {
@@ -1362,6 +1362,7 @@
         <a target="_blank"  href="https://chatglm.cn/chat">ChatGLM</a>
         <hr>
         <a target="_blank"  href="https://chat.360.cn/">360智脑</a>
+        <a target="_blank"  href="https://chat.sensetime.com/">商量</a>
         <a target="_blank"  href="https://poe.com/">Poe</a>
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新</a>
         <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">爱发电</a>
@@ -2404,7 +2405,7 @@
                     "accept": "application/json"
                 },
                 data: JSON.stringify({
-                    model: "gpt-3.5-turbo-16k",
+                    model: "gpt-3.5-turbo",
                     messages: messageChain2,
                     stream: true,
                     t: `${now}`,
