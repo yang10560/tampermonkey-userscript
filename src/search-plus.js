@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.0.8
+// @version      3.0.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -159,7 +159,7 @@
     'use strict';
 
 
-    const JSver = '3.0.8';
+    const JSver = '3.0.9';
 
 
     function getGPTMode() {
@@ -2399,10 +2399,11 @@
                     "authorization": "Bearer free",
                     "client-id": uuidv4(),
                     "client-v": ails_clientv,
-                    "Referer": Baseurl,
+                    "Referer": "https://ai.ls/",
+                    "from-url": "https://ai.ls/?chat=1",
                     "origin": "https://ai.ls",
                     "X-Forwarded-For": generateRandomIP(),
-                    "accept": "application/json"
+                    "accept": "*/*"
                 },
                 data: JSON.stringify({
                     model: "gpt-3.5-turbo",
