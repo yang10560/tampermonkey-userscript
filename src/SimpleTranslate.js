@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.6.3
+// @version      1.6.4
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -219,7 +219,7 @@
     let isDoubleShow = true //是否双显 true/false
     let isHighlight = true //是否译文高亮 true/false
     let englishAutoTranslate = false //英文自动翻译 true/false
-    let highlightColor = '#00FF00' //高亮颜色
+    let highlightColor = '#d8551f' //高亮颜色
     let selectTolang = currentAPI.ChineseLang // 选词翻译目标语言
     let selectMode = false //右键选词模式开关 true/false 默认关
     let leftSelectMode = false //左键选词模式开关 true/false 默认关
@@ -1277,18 +1277,18 @@
 
             /*node.innerText = text + "=>" + yiwen*/
             const outersp = document.createElement("span")
-            outersp.innerText = text + " " //src text
+            outersp.innerHTML = text + " " //src text
             const sp = document.createElement("span")
             sp.setAttribute("class",
                 isDoubleShow && isHighlight ? `translate-span light-color lang-${lang}` : `translate-span lang-${lang}`)
-            sp.innerText = yiwen
+            sp.innerHTML = yiwen
 
             if (!isDoubleShow) {
                 //单
                 const srcSpan = document.createElement("span")
                 srcSpan.setAttribute("class", `translate-src hide lang-${lang}`)
-                srcSpan.innerText = text //src text
-                outersp.innerText = '' // clear src text
+                srcSpan.innerHTML = text //src text
+                outersp.innerHTML = '' // clear src text
                 outersp.append(srcSpan)
                 outersp.append(sp)
             } else {
