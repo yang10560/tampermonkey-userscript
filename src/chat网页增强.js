@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.73
+// @version      4.74
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -76,7 +76,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.73"
+    const JSVer = "v4.74"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -226,7 +226,6 @@
     var messageChain1 = [] //eso
     var messageChain2 = []//ails
     var messageChain3 = []//XCBL
-    var messageChain6 = []//HZIT
 
 
     function uuidv4() {
@@ -261,153 +260,6 @@
     }
 
 
-    //通用秘钥获取
-    function getKeyFromURL(url,callback) {
-        console.log(`getKeyFromURL:${url}`)
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: url + "/?" + Math.random(),
-            onload: function(response) {
-                let resp = response.responseText;
-                let regex = /component-url="(.*?)"/i;
-                let match = resp.match(regex);
-                let jsurl = match[1];
-                console.log("js url:" + jsurl);
-                if (!jsurl) {
-                    //错误
-                    console.log("秘钥地址获取失败")
-                    return
-                }
-                GM_xmlhttpRequest({
-                    method: "GET",
-                    url: url + jsurl + "?" + Math.random(),
-                    onload: function(response) {
-                        let resp = response.responseText;
-                        let regex = /\`\$\{e\}:\$\{r\}:(.*?)\`/;
-                        let match = resp.match(regex);
-                        let mykey = match[1];
-                        if (!mykey) {
-                            console.log("秘钥获取失败")
-                            return
-                        }
-                        console.log(mykey);
-                        try{
-                            callback(mykey);
-                        }catch (e) {
-                            console.log(e)
-                        }
-
-                    }
-                });
-            }
-        });
-    }
-
-
-
-
-
-    // function setChataiKey() {
-    //
-    //     GM_fetch({
-    //         method: "GET",
-    //         url: "https://chatai.to/?" + Math.random()
-    //     }).then((response)=> {
-    //         let resp = response.responseText;
-    //         let regex = /component-url="(.*?)"/i;
-    //         let match = resp.match(regex);
-    //         let jsurl = match[1];
-    //         console.log("js url:" + jsurl);
-    //         if (jsurl) {
-    //             GM_fetch({
-    //                 method: "GET",
-    //                 url: "https://chatai.to" + jsurl + "?" + Math.random()
-    //             }).then((response)=> {
-    //                 let resp = response.responseText;
-    //                 let regex = /\`\$\{e\}:\$\{r\}:(.*?)\`/;
-    //                 let match = resp.match(regex);
-    //                 console.log("chataikey:",match[1]);
-    //                 chataiKey = match[1];
-    //             })
-    //         }
-    //
-    //     })
-    //
-    // }
-    // setTimeout(setChataiKey)
-    // var chataiKey;
-    // function kill(question) {
-    //     let aikey = localStorage.getItem("myAIkey") ? localStorage.getItem("myAIkey") : "";
-    //     console.log("aikey:" + aikey)
-    //     let your_qus = question;//你的问题
-    //     let now = Date.now();
-    //     let pk = chataiKey || "FjyXA27v77";//查看js的generateSignature函数中的key FjyXA27v77
-    //     let Baseurl = "https://chatai.to/";
-    //     console.log(pk)
-    //     addMessageChain(messageChain0, {role: "user", content: your_qus})//连续话
-    //     generateSignatureWithPkey({
-    //         t: now,
-    //         m: your_qus || "",
-    //         pkey: pk
-    //     }).then(sign => {
-    //         GM_handleUserInput(3)
-    //         console.log(sign)
-    //         GM_xmlhttpRequest({
-    //             method: "POST",
-    //             url: Baseurl + "api/generate",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 // "Authorization": "Bearer null",
-    //                 "Referer": Baseurl,
-    //                 "X-Forwarded-For": generateRandomIP(),
-    //                 "accept": "application/json, text/plain, */*"
-    //             },
-    //             data: JSON.stringify({
-    //                 messages: messageChain0,
-    //                 time: now,
-    //                 pass: null,
-    //                 sign: sign,
-    //                 key: aikey
-    //             }),
-    //             onloadstart: (stream) => {
-    //                 let result = [];
-    //                 GM_simulateBotResponse("...")
-    //                 const reader = stream.response.getReader();
-    //                 reader.read().then(function processText({done, value}) {
-    //                     if (done) {
-    //                         let finalResult = result.join("")
-    //                         try {
-    //                             GM_saveHistory(your_qus, finalResult)
-    //                             addMessageChain(messageChain0, {
-    //                                 role: "assistant",
-    //                                 content: finalResult
-    //                             })//连续对话
-    //                         } catch (e) {
-    //
-    //                         }
-    //                         GM_fillBotResponse(finalResult)
-    //                         return;
-    //                     }
-    //                     let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-    //                     result.push(d)
-    //                     GM_fillBotResponse(result.join(""))
-    //                     return reader.read().then(processText);
-    //                 });
-    //             },
-    //             responseType: "stream",
-    //             onprogress: function (msg) {
-    //                 //console.log(msg)
-    //             },
-    //             onerror: function (err) {
-    //                 console.log(err)
-    //             },
-    //             ontimeout: function (err) {
-    //                 console.log(err)
-    //             }
-    //         });
-    //
-    //     });
-    // }
 
 
     let pizzaSecret;
@@ -560,75 +412,6 @@
         });
     }
 
-
-    var messageChain11 = []//xeasy
-    function XEASY(question) {
-        let your_qus = question
-        GM_handleUserInput(null)
-        let now = Date.now();
-        const pk = {}.PUBLIC_SECRET_KEY;//查看js的generateSignature函数中的key
-        let Baseurl = "https://chat19.xeasy.me/"
-        generateSignatureWithPkey({
-            t: now,
-            m: your_qus || "",
-            pkey: pk
-        }).then(sign => {
-            addMessageChain(messageChain11, {role: "user", content: your_qus})//连续话
-            console.log(sign)
-            GM_fetch({
-                method: "POST",
-                url: Baseurl + "api/generate",
-                headers: {
-                    "Content-Type": "application/json",
-                    // "Authorization": "Bearer null",
-                    "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
-                },
-                data: JSON.stringify({
-                    messages: messageChain11,
-                    time: now,
-                    pass: null,
-                    sign: sign,
-                    key: null
-                }),
-                responseType: "stream",
-            }).then((stream) => {
-                let result = [];
-                GM_simulateBotResponse("...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain11, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            GM_fillBotResponseAndSave(your_qus,finalResult)
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        GM_fillBotResponse(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },(reason)=>{
-                console.log(reason)
-            }).catch((ex)=>{
-                console.log(ex)
-            });
-
-        });
-    }
 
 
     function TDCHAT(question) {
@@ -1342,45 +1125,6 @@
 
 
 
-    //获取A类网站key 2023年5月3日
-    async function setNormalKey(url) {
-        let response = await GM_fetch({
-            method: "GET",
-            url: url,
-            headers: {
-                "accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                "Referer": url+"/",
-                "origin": url,
-                "cookie":"_h=_1",
-                "upgrade-insecure-requests":"1"
-            }
-        });
-        let resp = response.responseText;
-        let regex = /component-url="(.*?)"/i;
-        let match = resp.match(regex);
-        let jsurl = match[1];
-        console.log("js url:" + jsurl);
-        if (!jsurl) {
-            //错误
-            console.log(resp)
-            return
-        }
-        let rr = await GM_fetch({
-            method: "GET",
-            url: url + jsurl,
-            headers: {
-                "Referer": url,
-                "origin": url,
-                "cookie":"_h=_1"
-            }
-        });
-        resp = rr.responseText;
-        regex = /\`\$\{\w\}:\$\{\w\}:(.*?)\`/i;
-        match = resp.match(regex);
-        let key = match[1];
-        console.log(url+":key:",key)
-        return key
-    }
 
     let bnuKey;
     let bnuList;
@@ -1518,70 +1262,6 @@
     }
 
 
-    let message_extkj = [{role: 'assistant', content: '你好！有什么我可以帮助你的吗？'}];
-    let extkj_key = '';
-    let extkj_auth = ''
-    function EXTKJ(question){
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        addMessageChain(message_extkj,{role: 'user', content: your_qus}, 10)
-        let sendData = JSON.stringify({
-            auth: extkj_auth ? extkj_auth : 'chatextkj.cn.joe.fe;p2kf;e',
-            prompt: your_qus,
-            messages: message_extkj
-        });
-        let pt = CryptoJS.AES.encrypt(sendData, extkj_key ? extkj_key : '806.i4.dds764&65eyeadnf').toString()
-        console.log("aes:" + pt)
-
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://chat.extkj.cn/api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://chat.extkj.cn/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                data: pt
-            }),
-            onloadstart: (stream) => {
-                let result = "";
-                const reader = stream.response.getReader();
-                let finalResult = [];
-                GM_simulateBotResponse("请稍后...")
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_fillBotResponse(finalResult)
-                        addMessageChain(message_extkj, {role: 'assistant', content: finalResult}, 10)
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        console.warn(decoder.decode(byteArray))
-                        let nowResult = decoder.decode(byteArray)
-
-                        if (nowResult) {
-                            let jsonLine = nowResult.split("\n");
-                            let jsonObj = JSON.parse(jsonLine[jsonLine.length - 1]);
-                            finalResult = jsonObj.text;
-                            GM_fillBotResponse(finalResult)
-                        }
-
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        })
-    }
 
 
 
@@ -1677,83 +1357,6 @@
 
 
 
-    //https://chat.sunls.me/
-    function SUNLE(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let msgobj = {
-            message: your_qus,
-            stream: true,
-            clientOptions: {
-                clientToUse: "chatgpt",
-                modelOptions: {
-                    "max_tokens": 1024
-                }
-            }
-        };
-        console.log(msgobj)
-         GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://chat2.sunls.me/conversation",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://chat2.sunls.me/",
-                "origin": "https://chat2.sunls.me",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify(msgobj),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalRes;
-                GM_simulateBotResponse("请稍后")
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        if(finalRes){
-                            GM_fillBotResponseAndSave(your_qus,finalRes)
-                        }else{
-                            GM_fillBotResponseAndSave(your_qus,result.join(""))
-                        }
-
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = decoder.decode(byteArray)
-
-                        if(nowResult.indexOf("DONE") > -1){
-                            let jsonData = nowResult.replace(/event: result/,"")
-                                .replace(/data: \[DONE\]/,"")
-                                .replace(/data:/,"").trim();
-                            finalRes = JSON.parse(jsonData).response;
-                            console.log(JSON.parse(jsonData))
-                        }else{
-                            const regex = /data: "([^"]*)"/;
-                            const match = regex.exec(nowResult);
-                            console.log(nowResult); // 输出：Hello world
-                            result.push(match[1])
-                           GM_fillBotResponse(result.join(""))
-                        }
-
-
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                Toast.error("未知错误!" + err.message)
-            }
-        })
-
-    }
 
 
     // http://easyai.one
@@ -2305,84 +1908,7 @@
     async function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-    async function HZIT(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let baseURL = "https://20220508.6bbs.cn/";
-        addMessageChain(messageChain6, {role: "user", content: your_qus})//连续话
-        let res = await GM_fetch({
-            method: "POST",
-            url: baseURL + "api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "accept": "*/*",
-                "token": "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",
-                "origin": "https://20220508.6bbs.cn",
-                "path": "v1/chat/completions",
-                "Referer": baseURL
-            },
-            data: JSON.stringify({
-                messages: messageChain6,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                text: your_qus,
-                presence_penalty: 0
-            })
-        });
-        if (res.status === 200) {
-            GM_simulateBotResponse("...")
-            console.log('成功....')
-            console.log(res)
-            let rest = JSON.parse(res.responseText).data;
-            console.log(rest)
-            for (let i = 0; i < 25; i++) {
-                console.log("hzit",i)
-                let rr = await GM_fetch({
-                    method: "POST",
-                    url: baseURL + "api/getOne",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "accept": "*/*",
-                        "token": "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",
-                        "origin": "https://20220508.6bbs.cn",
-                        "path": "v1/chat/completions",
-                        "Referer": baseURL
-                    },
-                    data: JSON.stringify({
-                        id: rest
-                    })
-                });
-                if (rr.status === 200) {
-                    console.log(rr)
-                    let result = JSON.parse(rr.responseText).data;
-                    if(!result) {
-                        await delay(3000)
-                        continue;
-                    }
-                    if(!result.resTime){
-                        GM_fillBotResponse(result.res || result)
-                        await delay(3000)
-                        continue
-                    }
-                    GM_fillBotResponseAndSave(your_qus, result.res || result)
-                    addMessageChain(messageChain6, {
-                        role: "assistant",
-                        content: result.res || result
-                    })
-                    break;
-                }else {
-                    console.log(res)
-                    Toast.error('访问失败了')
-                }
-            }
 
-        } else {
-            console.log(res)
-            Toast.error('访问失败了')
-        }
-
-    }
 
 
     //4-25
@@ -2581,11 +2107,6 @@
             console.log("promptboom_url:",promptboom_url)
             console.log("promptboom_version:",promptboom_version)
 
-            //extkj
-            extkj_key = result.extkj.key
-            extkj_auth = result.extkj.auth
-            console.log("extkj_key:",extkj_key)
-            console.log("extkj_auth:",extkj_auth)
 
             //bnuList
             bnuInt = result.bnu.bnuInt
@@ -2757,14 +2278,8 @@
                case "ANSEAPP":
                    ANSEAPP(qus);
                     break;
-                case "EXTKJ":
-                    EXTKJ(qus);
-                    break;
                 case "LBB":
                     LBB(qus);
-                    break;
-               case "SUNLE":
-                   SUNLE(qus);
                     break;
                 case "EASYAI":
                     EASYAI(qus);
@@ -2781,10 +2296,6 @@
                     console.log("CVEOY")
                     CVEOY(qus);
                     break;
-                case "HZIT":
-                    console.log("HZIT")
-                    HZIT(qus);
-                    break;
                 case "TOYAML":
                     console.log("TOYAML")
                     TOYAML(qus);
@@ -2796,10 +2307,6 @@
                 case "PRTBOOM":
                     console.log("PRTBOOM")
                     PRTBOOM(qus);
-                    break;
-               case "XEASY":
-                    console.log("XEASY")
-                    XEASY(qus);
                     break;
                case "LEMURCHAT":
                     console.log("LEMURCHAT")
@@ -2839,18 +2346,14 @@
  <option value="WOBCW">WOBCW</option>
  <option value="T66">T66</option>
  <option value="ANZZ">ANZZ</option>
- <option value="EXTKJ">EXTKJ</option>
  <option value="LBB">LBB</option>
  <option value="PRTBOOM">PRTBOOM</option>
- <option value="SUNLE">SUNLE</option>
  <option value="EASYAI">EASYAI</option>
  <option value="XCBL">XCBL</option>
  <option value="CLEANDX">CLEANDX</option>
   <option value="ESO">ESO</option>
   <option value="CVEOY">CVEOY</option>
-  <option value="HZIT">HZIT</option>
   <option value="TOYAML">TOYAML</option>
-  <option value="XEASY">XEASY</option>
 `;
 
         document.getElementById('modeSelect').addEventListener('change', () => {
