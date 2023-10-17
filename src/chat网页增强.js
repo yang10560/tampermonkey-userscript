@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.74
+// @version      4.75
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -65,6 +65,7 @@
 // @connect   gptgo.ai
 // @connect   mixerbox.com
 // @connect   muspimerol.site
+// @connect   frechat.xyz
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -76,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.74"
+    const JSVer = "v4.75"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -844,87 +845,9 @@
 
     }
 
-    var parentID_68686;
-
-    function T66(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let ops = {};
-        if (parentID_68686) {
-            ops = {parentMessageId: parentID_68686};
-        }
-        console.log(ops)
-        let finalResult = [];
-         GM_fetch({
-            method: "POST",
-            url: "https://api.t-chat.cn:1500/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://t66.ltd/",
-                "origin": "https://t66.ltd",
-              //  "X-Forwarded-For": generateRandomIP(),
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "prompt": your_qus,
-                "options": ops,
-                "config": {
-                    "temperature": 0.5,
-                    "topP": 1,
-                    "apiType": 0,
-                    "model": "gpt-3.5-turbo",
-                    "maxContextCount": 5,
-                    "online": false
-                },
-                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-             GM_simulateBotResponse("请稍后...")
-             let result = []
-             const reader = stream.response.getReader();
-             reader.read().then(function processText({done, value}) {
-                 if (done) {
-                     GM_saveHistory(your_qus, finalResult);
-                     return;
-                 }
-                 try {
-
-                     let byteArray = new Uint8Array(value);
-                     let decoder = new TextDecoder('utf-8');
-                     let d = decoder.decode(byteArray);
-                     console.log(d)
-
-                     let jsonLines = d.split("\n");
-                     if(jsonLines[jsonLines.length - 1].startsWith("{")){
-                         let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-
-                         if (nowResult.text) {
-                             console.log(nowResult)
-                             finalResult = nowResult.text
-                             GM_fillBotResponse(finalResult)
-                         }
-                         if (nowResult.id) {
-                             parentID_68686 = nowResult.id;
-                         }
-                     }else{
-                         result.push(jsonLines[jsonLines.length - 1])
-                         finalResult = result.join("")
-                         GM_fillBotResponse(finalResult)
-                     }
 
 
-                 } catch (ex) {
-                     console.log(ex)
-                 }
 
-                 return reader.read().then(processText);
-             });
-         }).catch(ex=>{
-             console.log(ex)
-         })
-
-    }
 
     var parentID_anzz;
     function authAnzz(){
@@ -1490,67 +1413,7 @@
 
     }
 
-    //https://gpt.esojourn.org/api/chat-stream
-    let eso_access_code;
-    function ESO(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let baseURL = "https://gpt.esojourn.org/";
-        addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: baseURL + "api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "access-code": eso_access_code ? eso_access_code: "586-484-535D",
-                "path": "v1/chat/completions",
-                "Referer": baseURL
-            },
-            data: JSON.stringify({
-                messages: messageChain1,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                max_tokens: 2000,
-                presence_penalty: 0
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain1, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            GM_fillBotResponseAndSave(your_qus, finalResult);
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        GM_fillBotResponse(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
 
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        });
-
-    }
 
     function XCBL(question) {
         //同LBB
@@ -2094,9 +1957,6 @@
             console.log("ails_clientv:",ails_clientv)
             console.log("ails_signKey:",ails_signKey)
 
-            //eso
-            eso_access_code = result.eso.accesscode
-            console.log("eso_access_code:",eso_access_code)
 
             //ptrboom
             promptboom_did = result.ptrboom.did
@@ -2266,9 +2126,6 @@
                 case "WOBCW":
                     WOBCW(qus);
                     break;
-                case "T66":
-                    T66(qus);
-                    break;
                  case "ANZZ":
                      ANZZ(qus);
                     break;
@@ -2287,10 +2144,6 @@
                 case "CLEANDX":
                     console.log("CLEANDX")
                     CLEANDX(qus);
-                    break;
-                case "ESO":
-                    console.log("ESO")
-                    ESO(qus);
                     break;
                 case "CVEOY":
                     console.log("CVEOY")
@@ -2344,14 +2197,12 @@
  <option value="MixerBox">MixerBox</option>
  <option value="QDYMYS">QDYMYS</option>
  <option value="WOBCW">WOBCW</option>
- <option value="T66">T66</option>
  <option value="ANZZ">ANZZ</option>
  <option value="LBB">LBB</option>
  <option value="PRTBOOM">PRTBOOM</option>
  <option value="EASYAI">EASYAI</option>
  <option value="XCBL">XCBL</option>
  <option value="CLEANDX">CLEANDX</option>
-  <option value="ESO">ESO</option>
   <option value="CVEOY">CVEOY</option>
   <option value="TOYAML">TOYAML</option>
 `;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.0
+// @version      3.1.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -146,6 +146,7 @@
 // @connect   mixerbox.com
 // @connect   ohmygpt.com
 // @connect   muspimerol.site
+// @connect   frechat.xyz
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -159,7 +160,7 @@
     'use strict';
 
 
-    const JSver = '3.1.0';
+    const JSver = '3.1.1';
 
 
     function getGPTMode() {
@@ -995,21 +996,7 @@
             TDCHAT()
             //end if
             return;
-        }  else if (GPTMODE && GPTMODE === "WGK") {
-            console.log("当前模式WGK")
-
-            WGK();
-
-            //end if
-            return;
-        } else if (GPTMODE && GPTMODE === "T66") {
-
-            console.log("T66")
-            T66()
-
-            return;
-            //end if
-        } else if (GPTMODE && GPTMODE === "AILS") {
+        }   else if (GPTMODE && GPTMODE === "AILS") {
 
             console.log("AILS")
             AILS()
@@ -1029,13 +1016,7 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE === "XIAOWENZI") {
-            console.log("XIAOWENZI")
-            XIAOWENZI();
-
-            return;
-            //end if
-        }  else if (GPTMODE && GPTMODE === "PRTBOOM") {
+        }   else if (GPTMODE && GPTMODE === "PRTBOOM") {
             console.log("PRTBOOM")
             PRTBOOM();
 
@@ -1044,12 +1025,6 @@
         }else if (GPTMODE && GPTMODE === "CLEANDX") {
             console.log("CLEANDX")
             CLEANDX();
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "ESO") {
-            console.log("ESO")
-            ESO();
 
             return;
             //end if
@@ -1062,12 +1037,6 @@
         }else if (GPTMODE && GPTMODE === "TOYAML") {
             console.log("TOYAML")
             TOYAML();
-
-            return;
-            //end if
-        }else if (GPTMODE && GPTMODE === "NBAI") {
-            console.log("NBAI")
-            NBAI();
 
             return;
             //end if
@@ -1290,16 +1259,11 @@
       <option style="display: none" value="GEEKR">GEEKR</option>
       <option value="LEMURCHAT">LEMURCHAT</option>
       <option value="OhMyGPT">OhMyGPT</option>
-      <option value="WGK">WGK</option>
-      <option value="NBAI">NBAI</option>
-      <option value="T66">T66</option>
       <option value="AILS">AILS</option>
       <option value="PHIND">PHIND</option>
       <option value="WOBCW">WOBCW</option>
-      <option value="XIAOWENZI">XIAOWENZI</option>
       <option value="PRTBOOM">PRTBOOM</option>
       <option value="CLEANDX">CLEANDX</option>
-      <option value="ESO">ESO</option>
       <option value="CVEOY">CVEOY</option>
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
@@ -2125,90 +2089,7 @@
     }
 
 
-    let parentID_68686;
 
-    //https://t66.ltd/#/chat/1002
-    function T66() {
-        let ops = {};
-        if (parentID_68686) {
-            ops = {parentMessageId: parentID_68686};
-        }
-        console.log(ops)
-        let finalResult = [];
-        GM_fetch({
-            method: "POST",
-            url: "https://api.t-chat.cn:1500/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://t66.ltd/",
-                "origin": "https://t66.ltd",
-                "X-Forwarded-For": generateRandomIP(),
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "prompt": your_qus,
-                "options": ops,
-                "config": {
-                    "temperature": 0.5,
-                    "topP": 1,
-                    "apiType": 0,
-                    "model": "gpt-3.5-turbo-16k",
-                    "maxContextCount": 5,
-                    "online": false
-                },
-                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown."
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-                const reader = stream.response.getReader();
-                let result = []
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let d = decoder.decode(byteArray);
-                        console.log(d)
-
-                        let jsonLines = d.split("\n");
-                        if(jsonLines[jsonLines.length - 1].startsWith("{")){
-                            let nowResult = JSON.parse(jsonLines[jsonLines.length - 1])
-
-                            if (nowResult.text) {
-                                console.log(nowResult)
-                                finalResult = nowResult.text
-                                showAnserAndHighlightCodeStr(finalResult)
-                            }
-                            if (nowResult.id) {
-                                parentID_68686 = nowResult.id;
-                            }
-                        }else{
-                            result.push(jsonLines[jsonLines.length - 1])
-                            finalResult = result.join("")
-                            showAnserAndHighlightCodeStr(finalResult)
-                        }
-
-
-
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            (reason)=>{
-                console.log(reason)
-                Toast.error("未知异常!")
-            }
-        ).catch(ex => {
-            console.log(ex)
-        })
-    }
 
 
 
@@ -2299,8 +2180,6 @@
 
 
     let messageChain2 = [];//AILS
-    let messageChain4 = [];//ESO
-    let messageChain8 = [];//XIAOWENZI
     let messageChain9 = [];//bnu120
     let messageChain10 = [];//PRTBOOM
     let messageChain1 = [
@@ -2592,58 +2471,6 @@
 
 
 
-    let userId_wgk = "#/chat/" + Date.now();
-
-    function WGK() {
-        console.log(userId_wgk)
-        abortXml = GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://chat2.wuguokai.cn/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                // "Authorization": "Bearer null",
-                "Referer": "https://chat.wuguokai.cn/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                userId: userId_wgk,
-                options: {}
-            }),
-            onloadstart: (stream) => {
-                let finalResult = []
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        showAnserAndHighlightCodeStr(finalResult.join("").replace(/fx.*?ai/gi,""))
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = decoder.decode(byteArray)
-
-                        finalResult.push(nowResult.replace(/fxopenai/gi,""))
-                        showAnserAndHighlightCodeStr(finalResult.join(""))
-
-
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                Toast.error("未知错误!")
-            }
-        })
-
-    }
-
 
     let userId_yqcloud = "#/chat/" + Date.now();
 
@@ -2779,9 +2606,6 @@
             console.log("ails_clientv:",ails_clientv)
             console.log("ails_signKey:",ails_signKey)
 
-            //eso
-            eso_access_code = result.eso.accesscode
-            console.log("eso_access_code:",eso_access_code)
 
             //ptrboom
             promptboom_did = result.ptrboom.did
@@ -2806,11 +2630,6 @@
             pizzaSecret = result.pizza.secret
             console.log("pizzaSecret:",pizzaSecret)
 
-            //xiaowenzi
-            xwz_token = result.xiaowenzi.token
-            xwz_url = result.xiaowenzi.url
-            console.log("xwz_token:",xwz_token)
-            console.log("xwz_url:",xwz_url)
 
             //ohmygpt_token
             ohmygpt_token = result.ohmygpt.token
@@ -2916,68 +2735,6 @@
 
 
 
-    let parentID_nbai;
-
-    //XIAJIE https://f6.xjai.cc/#/chat/1002
-    function NBAI() {
-        let ops = {};
-        if (parentID_nbai) {
-            ops = {parentMessageId: parentID_nbai};
-        }
-        console.log(ops)
-        GM_fetch({
-            method: "POST",
-            url: "https://154.40.59.105:3006/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://f1.nbai.live/",
-                "accept": "application/json, text/plain, */*",
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops
-             }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            const reader = stream.response.getReader();
-            //     console.log(reader.read)
-            let finalResult = "";
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-
-                    return;
-                }
-
-                try {
-                    let byteArray = new Uint8Array(value);
-                    let decoder = new TextDecoder('utf-8');
-                    let dstr = decoder.decode(byteArray)
-                    if(dstr.includes("role")){
-                        parentID_nbai =  /\"parentMessageId\":\"(.*?)\"/gi.exec(dstr)[1]
-                    }else{
-                        console.log(dstr)
-                        result.push(dstr)
-                        finalResult = result.join("")
-                        showAnserAndHighlightCodeStr(finalResult)
-                    }
-
-
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            },(err)=> {
-                console.log(err)
-                Toast.error("未知错误!")
-            }).catch((ex)=>{
-                console.log(ex)
-                Toast.error("未知错误!")
-            })
-        })
-
-    }
 
 
 
@@ -4967,66 +4724,7 @@
 
     }
 
-    //https://gpt.esojourn.org/api/chat-stream https://0505.betai55.uk/api/chat-stream
-    let eso_access_code;
-    function ESO() {
 
-        let baseURL = "https://gpt.esojourn.org/";
-        addMessageChain(messageChain4, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: baseURL + "api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "access-code": eso_access_code ? eso_access_code: "586-484-535D",
-                "path": "v1/chat/completions",
-                "Referer": baseURL
-            },
-            data: JSON.stringify({
-                messages: messageChain4,
-                stream: true,
-                model: "gpt-3.5-turbo-16k",
-                temperature: 1,
-                max_tokens: 2000,
-                presence_penalty: 0
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain4, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            showAnserAndHighlightCodeStr(finalResult)
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        showAnserAndHighlightCodeStr(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                Toast.error("未知错误!")
-            }
-        });
-
-    }
 
     //https://ai1.chagpt.fun/
     function CVEOY() {
@@ -5082,83 +4780,6 @@
         });
 
     }
-
-
-
-    //6.15 fix update https://gpt.lovebaby.today/
-    let xwz_token = 'ak-oneperfect520'
-    let xwz_url = 'https://fasd131fssoi7896agou79ip6.lovebaby.today/'
-    function XIAOWENZI() {
-        let baseURL = xwz_url;
-        addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/openai/v1/chat/completions",
-            headers: {
-                "Content-Type": "application/json",
-                "accept": "text/event-stream",
-                "origin": "https://fasdsgdfsg97986agagyk656.lovebaby.today",
-                "Referer": baseURL,
-                "authorization": `Bearer ${xwz_token}`,
-                "x-requested-with": "XMLHttpRequest"
-            },
-            data: JSON.stringify({
-                messages: messageChain8,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 0.5,
-                presence_penalty: 0
-            }),
-            responseType: "stream"
-        }).then((stream)=>{
-            let result = [];
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    let finalResult = result.join("")
-                    try {
-                        console.log(finalResult)
-                        addMessageChain(messageChain8, {
-                            role: "assistant",
-                            content: finalResult
-                        })
-                        showAnserAndHighlightCodeStr(finalResult)
-                    } catch (e) {
-                        console.log(e)
-                        Toast.error("未知错误!")
-                    }
-                    return;
-                }
-                try {
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    d.split("\n").forEach(item=>{
-                        try {
-                            let chunk = JSON.parse(item.replace(/data:/,"").trim())
-                                .choices[0].delta.content;
-                            result.push(chunk)
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        }catch (ex){
-
-                        }
-                    })
-
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-        },reason => {
-            console.log(reason)
-            Toast.error("未知错误!")
-        }).catch((ex)=>{
-            console.log(ex)
-            Toast.error("未知错误!")
-        })
-
-    }
-
-
 
 
 
