@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         QQ链接自动打开
 // @namespace    http://yeyu1024.xyz
-// @version      1.9
+// @version      2.0
 // @description  PC上使用QQ、QQ邮箱点开链接，浏览器提示非QQ官方链接页面时自动打开对应的链接。另外支持贴吧，微博，酷安，知乎
 // @author       夜雨
 // @match        *://c.pc.qq.com/*
 // @match        *://link.zhihu.com/*
 // @match        *://mail.qq.com/cgi-bin/*
-// @match        *://jump.bdimg.com/safecheck/*
+// @match        *://*.bdimg.com/safecheck/*
 // @match        *://t.cn/*
 // @match        *://*.coolapk.com/*
 // @icon         https://mat1.gtimg.com/www/icon/favicon2.ico
@@ -36,7 +36,7 @@
         }
     }
 
-    if(location.href.includes('jump.bdimg.com')){
+    if(location.href.includes('bdimg.com')){
         document.querySelector("a.btn.btn-next").click()
     }
 
