@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.6.6
+// @version      1.6.7
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -542,7 +542,7 @@
 
 
         GM_registerMenuCommand("高亮颜色选择", function (event) {
-           $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;left: 100px;width: 300px;top: 50px;height: 350px;border: 1px salmon solid;position: fixed;" id="MyColorSelector">
+           $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;left: 100px;width: 300px;top: 50px;height: 350px;border: 1px salmon solid;position: fixed;background-color: white;" id="MyColorSelector">
         <div>
           <label for="redRange">红/Red:</label>
           <input type="range" id="redRange" min="0" max="255" value="0">
@@ -560,6 +560,7 @@
           <div style="font-size: 30px;" id="colorPreview">文字预览</div>
         </div>
         <button style="font-size: 14px;width: 60px; height: 60px;margin-top: 10px;" id="selectColorBtn">确定</button>
+        <button style="font-size: 14px;width: 60px; height: 60px;margin-top: 10px;" id="selectColorCancelBtn">取消</button>
         </div>
         `);
             const MyColorSelector = document.getElementById("MyColorSelector");
@@ -569,6 +570,7 @@
             const colorDisplay = document.getElementById("colorDisplay");
             const colorPreview = document.getElementById("colorPreview");
             const selectColorBtn = document.getElementById("selectColorBtn");
+            const selectColorCancelBtn = document.getElementById("selectColorCancelBtn");
 
             // 更新颜色显示区域的颜色
             function updateColorDisplay() {
@@ -592,6 +594,11 @@
                 const selectedColor = `rgb(${redValue},${greenValue},${blueValue})`;
                 GM_setValue("highlightColor", selectedColor)
                 Toast.success("请重新刷新页面生效!")
+                MyColorSelector.remove()
+            });
+
+            selectColorCancelBtn.addEventListener("click", (ev)=>{
+
                 MyColorSelector.remove()
             });
 
