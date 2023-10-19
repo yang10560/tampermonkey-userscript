@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.6.5
+// @version      1.6.6
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -205,8 +205,8 @@
             ChineseLang: "cn",
             EnglishLang: "en",
             APPID: '535ee726',//讯飞翻译 appid 修改成自己的 详见https://console.xfyun.cn/services/its
-            APISecret: 'ZjExNzg3ZDcyYTNmNzIyMzk5YjE3NDFm',//讯飞翻译 APISecret 修改成自己的 详见https://console.xfyun.cn/services/its
-            APIKey: 'bb0425b8315242bb208b91d22a2fbd3a'//讯飞翻译 APIKey 修改成自己的 详见https://console.xfyun.cn/services/its
+            APISecret: 'xxx',//讯飞翻译 APISecret 修改成自己的 详见https://console.xfyun.cn/services/its
+            APIKey: 'xxx'//讯飞翻译 APIKey 修改成自己的 详见https://console.xfyun.cn/services/its
         },
         WPSKuaiyiWebAPI: {
             name: 'WPSKuaiyiWeb',
@@ -815,9 +815,9 @@
                     Toast.success('已经切换词霸翻译')
                     break
                 case 5:
-                    currentAPI = APIConst.HujiangWebAPI
-                    Toast.success('已经切换沪江翻译')
-                    break
+                    // currentAPI = APIConst.HujiangWebAPI
+                    // Toast.success('已经切换沪江翻译')
+                    // break
                 case 6:
                     currentAPI = APIConst.YoudaoAPI
                     Toast.success('已经切换有道翻译，未配置api key 需要到源码中修改秘钥.建议申请自己的秘钥 进行修改，详见：https://ai.youdao.com/console/#/service-singleton/text-translation')
