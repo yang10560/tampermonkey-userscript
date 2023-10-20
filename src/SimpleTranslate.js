@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.6.7
+// @version      1.6.8
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -231,6 +231,19 @@
     let enableCache = true; //是否启用缓存 true/false 默认启用
     let maxCacheCount = 1500; //最大缓存数量
 
+    function isMobile() {
+        let userAgentInfo = navigator.userAgent.toLowerCase();
+        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod","Mobile"];
+        let mobile_flag = false;
+        //根据userAgent判断是否是手机
+        for (let v = 0; v < mobileAgents.length; v++) {
+            if (userAgentInfo.indexOf(mobileAgents[v].toLowerCase()) > -1) {
+                mobile_flag = true;
+                break;
+            }
+        }
+        return mobile_flag;
+    }
 
     try {
         highlightColor = GM_getValue("highlightColor", highlightColor)
@@ -534,77 +547,124 @@
         }
     }
 
-    //注册菜单
-    setTimeout(() => {
-        GM_registerMenuCommand("更新脚本", function (event) {
-            GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
-        }, "updateTranslateJS");
 
-
-        GM_registerMenuCommand("高亮颜色选择", function (event) {
-           $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;left: 100px;width: 300px;top: 50px;height: 350px;border: 1px salmon solid;position: fixed;background-color: white;" id="MyColorSelector">
+    function colorSelectAndSettings(event) {
+        $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;left: 50px;width: 300px;top: 50px;/*height: 350px;*/border: 1px salmon solid;position: fixed;background-color: white;border-radius: 10px" id="MyColorSelector">
         <div>
           <label for="redRange">红/Red:</label>
-          <input type="range" id="redRange" min="0" max="255" value="0">
+          <input type="range" id="redRange" min="0" max="255" value="0" onchange="document.getElementById('redval').innerHTML = value">
+          <span style="color: red" id="redval">0</span>
         </div>
         <div>
           <label for="greenRange">绿/Green:</label>
-          <input type="range" id="greenRange" min="0" max="255" value="0">
+          <input type="range" id="greenRange" min="0" max="255" value="0" onchange="document.getElementById('greenval').innerHTML = value">
+           <span style="color: green" id="greenval">0</span>
         </div>
         <div>
           <label for="blueRange">蓝/Blue:</label>
-          <input type="range" id="blueRange" min="0" max="255" value="0">
+          <input type="range" id="blueRange" min="0" max="255" value="0" onchange="document.getElementById('blueval').innerHTML = value">
+           <span style="color: blue" id="blueval">0</span>
         </div>
         <div>
-          <div style=" width: 100px; height: 100px; margin-top: 10px;margin-bottom: 10px;" id="colorDisplay"></div>
+          <div style=" width: 50px; height: 50px; margin-top: 10px;margin-bottom: 10px;margin-left: 20px" id="colorDisplay"></div>
           <div style="font-size: 30px;" id="colorPreview">文字预览</div>
         </div>
-        <button style="font-size: 14px;width: 60px; height: 60px;margin-top: 10px;" id="selectColorBtn">确定</button>
-        <button style="font-size: 14px;width: 60px; height: 60px;margin-top: 10px;" id="selectColorCancelBtn">取消</button>
+        <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectColorBtn">确定</button>
+        <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectColorCancelBtn">退出</button>
+         <div><span style="margin-top: 10px">温馨提示：在输入框时,连续按三下空格键即可翻译输入框的内容.</span></div>
+            <div><span>翻译引擎:</span>
+              <select id="selectAPI">
+                  <option value="999">微软[推荐]</option>
+                  <option value="0">百度[需key]</option>
+                  <option value="1">谷歌[推荐]</option>
+                  <option value="2">搜狗</option>
+                  <option value="3">词霸</option>
+                  <option value="5">有道[需key]</option>
+                  <option value="6">彩云</option>
+                  <option value="7">腾讯交互[推荐]</option>
+                  <option value="8">Alibaba</option>
+                  <option value="9">Papago</option>
+                  <option value="10">有道手机[推荐]</option>
+                  <option value="11">worldlinGO</option>
+                  <option value="12">DeepL[限制]</option>
+                  <option value="13">百度手机</option>
+                  <option value="14">易翻通</option>
+                  <option value="15">Yandex</option>
+                  <option value="16">福昕</option>
+                  <option value="17">CNKI</option>
+                  <option style="display: none" value="18">讯飞[需key]</option>
+                  <option value="19">金山快译</option>
+              </select>
+               <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectAPIBtn">选择</button>
+            </div>
         </div>
         `);
-            const MyColorSelector = document.getElementById("MyColorSelector");
-            const redRange = document.getElementById("redRange");
-            const greenRange = document.getElementById("greenRange");
-            const blueRange = document.getElementById("blueRange");
-            const colorDisplay = document.getElementById("colorDisplay");
-            const colorPreview = document.getElementById("colorPreview");
-            const selectColorBtn = document.getElementById("selectColorBtn");
-            const selectColorCancelBtn = document.getElementById("selectColorCancelBtn");
+        const MyColorSelector = document.getElementById("MyColorSelector");
+        const redRange = document.getElementById("redRange");
+        const greenRange = document.getElementById("greenRange");
+        const blueRange = document.getElementById("blueRange");
+        const colorDisplay = document.getElementById("colorDisplay");
+        const colorPreview = document.getElementById("colorPreview");
+        const selectColorBtn = document.getElementById("selectColorBtn");
+        const selectColorCancelBtn = document.getElementById("selectColorCancelBtn");
+        const selectAPIBtn = document.getElementById("selectAPIBtn");
 
-            // 更新颜色显示区域的颜色
-            function updateColorDisplay() {
-                const redValue = redRange.value;
-                const greenValue = greenRange.value;
-                const blueValue = blueRange.value;
+        // 更新颜色显示区域的颜色
+        function updateColorDisplay() {
+            const redValue = redRange.value;
+            const greenValue = greenRange.value;
+            const blueValue = blueRange.value;
 
-                const selectedColor = `rgb(${redValue},${greenValue},${blueValue})`;
-                colorDisplay.style.backgroundColor = selectedColor;
-                colorPreview.style.color = selectedColor
+            const selectedColor = `rgb(${redValue},${greenValue},${blueValue})`;
+            colorDisplay.style.backgroundColor = selectedColor;
+            colorPreview.style.color = selectedColor
+        }
+
+        // 添加滑块的 input 事件处理程序
+        redRange.addEventListener("input", updateColorDisplay);
+        greenRange.addEventListener("input", updateColorDisplay);
+        blueRange.addEventListener("input", updateColorDisplay);
+        selectColorBtn.addEventListener("click", (ev)=>{
+            const redValue = redRange.value;
+            const greenValue = greenRange.value;
+            const blueValue = blueRange.value;
+            const selectedColor = `rgb(${redValue},${greenValue},${blueValue})`;
+            GM_setValue("highlightColor", selectedColor)
+            Toast.success("请重新刷新页面生效!")
+            MyColorSelector.remove()
+        });
+
+        selectColorCancelBtn.addEventListener("click", (ev)=>{
+
+            MyColorSelector.remove()
+        });
+
+        //选择引擎
+        selectAPIBtn.addEventListener('click', () => {
+            const selectEl = document.getElementById('selectAPI');
+            const selectedValue = selectEl.options[selectEl.selectedIndex].value;
+            switchIndex = selectedValue
+            switchAPI()
+
+        });
+
+        // 初始化颜色显示
+        updateColorDisplay();
+    }
+
+    //注册菜单
+    setTimeout(() => {
+        GM_registerMenuCommand("更新脚本", function (event) {
+            if(isMobile()){
+                location.href = "https://greasyfork.org/zh-CN/scripts/469073"
+            }else {
+                GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
             }
 
-            // 添加滑块的 input 事件处理程序
-            redRange.addEventListener("input", updateColorDisplay);
-            greenRange.addEventListener("input", updateColorDisplay);
-            blueRange.addEventListener("input", updateColorDisplay);
-            selectColorBtn.addEventListener("click", (ev)=>{
-                const redValue = redRange.value;
-                const greenValue = greenRange.value;
-                const blueValue = blueRange.value;
-                const selectedColor = `rgb(${redValue},${greenValue},${blueValue})`;
-                GM_setValue("highlightColor", selectedColor)
-                Toast.success("请重新刷新页面生效!")
-                MyColorSelector.remove()
-            });
+        }, "updateTranslateJS");
 
-            selectColorCancelBtn.addEventListener("click", (ev)=>{
 
-                MyColorSelector.remove()
-            });
-
-            // 初始化颜色显示
-            updateColorDisplay();
-        }, "HeightLightColor");
+        GM_registerMenuCommand("颜色/设置", colorSelectAndSettings, "HeightLightColor");
 
 
         GM_registerMenuCommand("排除/放行该站", function (event) {
@@ -1155,7 +1215,7 @@
         <span>选词</span>
        </a>
        <a id="switchAPI" href="javascript:void(0)">
-        <span>切换</span>
+        <span>引擎</span>
        </a>
       </li>
       <li>
@@ -3232,7 +3292,9 @@ ${ali_uuid}\r
     const switchAPIBtn = document.querySelector("#switchAPI")
     switchAPIBtn.addEventListener("click", (event) => {
         event.stopPropagation()
-        switchAPI()
+        //switchAPI()
+        colorSelectAndSettings()
+
     })
 
     //自动翻译
@@ -3260,7 +3322,11 @@ ${ali_uuid}\r
     const updateScriptBtn = document.querySelector("#updateScript")
     updateScriptBtn.addEventListener("click", (event) => {
         event.stopPropagation()
-        GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
+        if(isMobile()){
+            location.href = "https://greasyfork.org/zh-CN/scripts/469073"
+        }else {
+            GM_openInTab("https://greasyfork.org/zh-CN/scripts/469073")
+        }
     })
 
 
