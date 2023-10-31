@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.1
+// @version      3.1.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -160,7 +160,7 @@
     'use strict';
 
 
-    const JSver = '3.1.1';
+    const JSver = '3.1.2';
 
 
     function getGPTMode() {
@@ -1257,7 +1257,7 @@
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
       <option style="display: none" value="GEEKR">GEEKR</option>
-      <option value="LEMURCHAT">LEMURCHAT</option>
+      <option value="LEMURCHAT">LEMURCHAT[停用]</option>
       <option value="OhMyGPT">OhMyGPT</option>
       <option value="AILS">AILS</option>
       <option value="PHIND">PHIND</option>
@@ -2633,7 +2633,7 @@
 
             //ohmygpt_token
             ohmygpt_token = result.ohmygpt.token
-            console.log("ohmygpt_token:",xwz_token)
+            console.log("ohmygpt_token:",ohmygpt_token)
 
         } else {
             console.error(rr)
@@ -2669,24 +2669,26 @@
     // 2023年8月14日 https://www.ai-yuxin.space/chat/gpt3.5.html?InvitationCode=uTEdfRwk
 
     let message_yuxin = []
+    let yuxin_newid = generateRandomString(21)
     function YUXIN() {
         message_yuxin.push({
-            "role": "user",
-            "content": your_qus
+            "content": your_qus,
+            "role": "user"
         })
         GM_httpRequest({
             method: "POST",
-            url: "https://www.ai-yuxin.space/fastapi/api/chat/chatgpt_free",
+            url: "https://www.ai-yuxin.space/fastapi/api/chat",
             headers: {
-                "Content-Type": "application/json;charset=UTF-8",
-                "Referer": "https://www.ai-yuxin.space/chat/chatgpt.html",
+                "accept": "*/*",
+                "Content-Type": "application/json",
+                "Referer": `https://www.ai-yuxin.space/chat/new?id=${yuxin_newid}`,
                 "origin": "https://www.ai-yuxin.space"
             },
             data: JSON.stringify({
-                "user_id": 0,
-                "token": 0,
+                "model": "gpt-3.5-turbo",
                 "msg": message_yuxin,
-                "model": "gpt-3.5-turbo"
+                "token": 0,
+                "user_id": 0
             }),
             responseType: "stream"
         },(stream) => {
@@ -2695,8 +2697,8 @@
             reader.read().then(function processText({done, value}) {
                 if (done) {
                     message_yuxin.push({
-                        "role": "assistant",
-                        "content": result.join("")
+                        "content": result.join(""),
+                        "role": "assistant"
                     })
                     return;
                 }
@@ -3975,7 +3977,7 @@
         addMessageChain(zhipuPrompt, {"role": "user", "content": your_qus} , 10)
         GM_fetch({
             method: "POST",
-            url: `https://open.bigmodel.cn/api/paas/v3/model-api/chatglm_130b/sse-invoke`,
+            url: `https://open.bigmodel.cn/api/paas/v3/model-api/chatglm_std/sse-invoke`,
             headers: {
                 "accept": "text/event-stream",
                 "Content-Type":"application/json",
@@ -3983,7 +3985,7 @@
                 // "Authorization": 'eyJhbGciOiJIUzI1NiIsInNpZ25fdHlwZSI6IlNJR04iLCJ0eXAiOiJKV1QifQ.eyJhcGlfa2V5IjoiZjM3ZDVlMjFhZDk1NGJhOTM0NmYyOTgwMTgzNDJiMjciLCJleHAiOjE2ODc4Nzg1NTM1NjcsInRpbWVzdGFtcCI6MTY4Nzg3NzU1MzU2N30.e8SMjA0vBaUxXB-WrViFa0-C0qVLechNV5L5s2WoF8c'
             },
             data:JSON.stringify({
-                model:"chatglm_130b",
+                model:"chatglm_std",
                 prompt : zhipuPrompt,
                 temperature: 0.95,
                 top_p: 0.7,
@@ -4187,14 +4189,14 @@
                     }
                 ],
                 "lang": "zh",
-                "maxToken": 512,
-                "model": 3.5,
-                "webVersion": "0.2.0",
-                "userAgent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0",
-                "isExtension": false,
+                "model": "gpt-3.5-turbo",
+                "plugins": [],
+                "pluginSets": [],
+                "getRecommendQuestions": true,
                 "isSummarize": false,
-                "initialMessages": null,
-                "baseUrl": ""
+                "webVersion": "1.4.5",
+                "userAgent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0",
+                "isExtension": false
             }),
             responseType:"stream"
         }).then((stream)=>{
@@ -4562,11 +4564,13 @@
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                top_p: 1,
-                prompt: your_qus,
-                systemMessage: "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-                temperature: 0.8,
-                options: ops
+                "prompt": your_qus,
+                "options": ops,
+                "model": "gpt-3.5-turbo",
+                "OPENAI_API_KEY": "sk-AItianhuFreeForEveryone",
+                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                "temperature": 0.8,
+                "top_p": 1
             }),
             onloadstart: (stream) => {
                 let result = "";

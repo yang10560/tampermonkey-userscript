@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.75
+// @version      4.76
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.75"
+    const JSVer = "v4.76"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1660,14 +1660,14 @@
                     }
                 ],
                 "lang": "zh",
-                "maxToken": 512,
-                "model": 3.5,
-                "webVersion": "0.2.0",
-                "userAgent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0",
-                "isExtension": false,
+                "model": "gpt-3.5-turbo",
+                "plugins": [],
+                "pluginSets": [],
+                "getRecommendQuestions": true,
                 "isSummarize": false,
-                "initialMessages": null,
-                "baseUrl": ""
+                "webVersion": "1.4.5",
+                "userAgent": "Mozilla/5.0 (Android 12; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0",
+                "isExtension": false
             }),
             responseType:"stream"
         }).then((stream)=>{
@@ -2012,6 +2012,7 @@
 
 
     let message_yuxin = []
+    let yuxin_newid = generateRandomString(21)
     function YUXIN(question) {
 
         let your_qus = question;
@@ -2023,10 +2024,10 @@
 
         GM_httpRequest({
             method: "POST",
-            url: "https://www.ai-yuxin.space/fastapi/api/chat/chatgpt_free",
+            url: "https://www.ai-yuxin.space/fastapi/api/chat",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
-                "Referer": "https://www.ai-yuxin.space/chat/chatgpt.html",
+                "Referer": `https://www.ai-yuxin.space/chat/new?id=${yuxin_newid}`,
                 "origin": "https://www.ai-yuxin.space"
             },
             data: JSON.stringify({
@@ -2189,7 +2190,7 @@
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
- <option value="LEMURCHAT">Lemur内置</option>
+ <option value="LEMURCHAT">Lemur[停用]</option>
  <option value="ANSEAPP">ANSEAPP</option>
  <option value="BNU120">BNU120</option>
  <option value="YUXIN">YUXIN</option>
