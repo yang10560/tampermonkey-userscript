@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.2
+// @version      3.1.3
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
+// @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
 // @match      https://cn.bing.com/*
@@ -160,7 +161,7 @@
     'use strict';
 
 
-    const JSver = '3.1.2';
+    const JSver = '3.1.3';
 
 
     function getGPTMode() {
@@ -1279,16 +1280,20 @@
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
 	    <hr>
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
-        <a target="_blank"  href="https://yiyan.baidu.com/">文心一言</a>
-        <a target="_blank"  href="https://qianwen.aliyun.com/">通义千问</a>
-        <a target="_blank"  href="https://www.tiangong.cn/">天工AI</a>
-        <a target="_blank"  href="https://xinghuo.xfyun.cn/">讯飞星火</a>
+        <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>
+        <a target="_blank"  href="https://qianwen.aliyun.com/">通义</a>
+        <a target="_blank"  href="https://www.tiangong.cn/">天工</a>
+        <a target="_blank"  href="https://xinghuo.xfyun.cn/">讯飞</a>
+        <a target="_blank"  href="https://hunyuan.tencent.com/">混元</a>
+        <a target="_blank"  href="https://www.doubao.com/chat/">豆包</a>
         <hr>
-        <a target="_blank"  href="https://chat.openai.com/chat">Open AI</a>
-        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">必应</a>
-        <a target="_blank"  href="https://bard.google.com/">Google Bard</a>
+        <a target="_blank"  href="https://chat.openai.com/chat">OpenAI</a>
+        <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">Bing</a>
+        <a target="_blank"  href="https://bard.google.com/">Bard</a>
         <a target="_blank"  href="https://claude.ai/">Claude</a>
-        <a target="_blank"  href="https://chatglm.cn/chat">ChatGLM</a>
+        <a target="_blank"  href="https://chatglm.cn/chat">GLM</a>
+        <a target="_blank"  href="https://www.baichuan-ai.com/">百川</a>
+        <a target="_blank"  href="https://kimi.moonshot.cn/">Kimi</a>
         <hr>
         <a target="_blank"  href="https://chat.360.cn/">360智脑</a>
         <a target="_blank"  href="https://chat.sensetime.com/">商量</a>
@@ -1346,7 +1351,7 @@
 
         try {
             if (append_case === 11) {//手机google
-                search_content = document.querySelector("#tsf input").value
+                search_content = document.querySelector("#tsf textarea").value
             }
             if (append_case === 10) {//手机sogou
                 search_content = document.querySelector("input#keyword").value
