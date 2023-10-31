@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.6.8
+// @version      1.6.9
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -246,7 +246,7 @@
     }
 
     try {
-        highlightColor = GM_getValue("highlightColor", highlightColor)
+        highlightColor = await GM_getValue("highlightColor", highlightColor)
     }catch (e) { }
 
     function getCookieValue(cookies, cookieName) {
@@ -645,11 +645,21 @@
             const selectedValue = selectEl.options[selectEl.selectedIndex].value;
             switchIndex = selectedValue
             switchAPI()
+            MyColorSelector.remove() //退出
 
         });
 
         // 初始化颜色显示
         updateColorDisplay();
+
+        //加载预览色
+        colorDisplay.style.backgroundColor = highlightColor;
+        colorPreview.style.color = highlightColor
+
+        //提示当前引擎
+        try {
+            Toast.info(`当前API:${currentAPI.name}`)
+        } catch (e) {}
     }
 
     //注册菜单
