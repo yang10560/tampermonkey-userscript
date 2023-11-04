@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.6.9
+// @version      1.7.0
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -579,6 +579,7 @@
                   <option value="1">谷歌[推荐]</option>
                   <option value="2">搜狗</option>
                   <option value="3">词霸</option>
+                  <option value="4">沪江小D</option>
                   <option value="5">有道[需key]</option>
                   <option value="6">彩云</option>
                   <option value="7">腾讯交互[推荐]</option>
@@ -644,7 +645,7 @@
             const selectEl = document.getElementById('selectAPI');
             const selectedValue = selectEl.options[selectEl.selectedIndex].value;
             switchIndex = selectedValue
-            switchAPI()
+            switchAPI(true)
             MyColorSelector.remove() //退出
 
         });
@@ -720,7 +721,7 @@
         try {
             switchIndex = await GM_getValue("switchIndex", 0) - 1
             console.warn("switchIndex", switchIndex)
-            switchAPI()
+            switchAPI(false)
         } catch (ex) {
             switchIndex = 0;
             console.error("switchIndex ex:", switchIndex, ex)
@@ -871,7 +872,7 @@
     }
 
 
-    function switchAPI() {
+    function switchAPI(openWeb) {
         switchIndex++;
         try {
             switch (switchIndex) {
@@ -892,9 +893,14 @@
                     Toast.success('已经切换词霸翻译')
                     break
                 case 5:
-                    // currentAPI = APIConst.HujiangWebAPI
-                    // Toast.success('已经切换沪江翻译')
-                    // break
+                    currentAPI = APIConst.HujiangWebAPI
+                    Toast.success('已经切换沪江翻译')
+                    if(openWeb){
+                        try {
+                            GM_openInTab("https://dict.hjenglish.com/app/trans")
+                        }catch (e) { }
+                    }
+                    break
                 case 6:
                     currentAPI = APIConst.YoudaoAPI
                     Toast.success('已经切换有道翻译，未配置api key 需要到源码中修改秘钥.建议申请自己的秘钥 进行修改，详见：https://ai.youdao.com/console/#/service-singleton/text-translation')
@@ -938,6 +944,11 @@
                 case 16:
                     currentAPI = APIConst.YandexWebAPI
                     Toast.success('已经切换Yandex web  https://translate.yandex.com/')
+                    if(openWeb){
+                        try {
+                            GM_openInTab("https://translate.yandex.com/")
+                        }catch (e) { }
+                    }
                     break
                 case 17:
                     currentAPI = APIConst.FuxiWebAPI
@@ -946,6 +957,11 @@
                 case 18:
                     currentAPI = APIConst.CNKIWebAPI
                     Toast.success('已经切换CNKI web .频繁不出结果需要到官网刷新验证码.https://dict.cnki.net/index')
+                    if(openWeb){
+                        try {
+                            GM_openInTab("https://dict.cnki.net/index")
+                        }catch (e) { }
+                    }
                     break
                 case 19:
                     currentAPI = APIConst.XunfeiAPI
@@ -954,6 +970,11 @@
                 case 20:
                     currentAPI = APIConst.WPSKuaiyiWebAPI
                     Toast.success('已经切换金山快译 需要到https://kuaiyi.wps.cn获取token')
+                    if(openWeb){
+                        try {
+                            GM_openInTab("https://kuaiyi.wps.cn")
+                        }catch (e) { }
+                    }
                     break
                 default:
                     currentAPI = APIConst.MicrosoftAPI
