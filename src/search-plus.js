@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.3
+// @version      3.1.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -161,7 +161,7 @@
     'use strict';
 
 
-    const JSver = '3.1.3';
+    const JSver = '3.1.4';
 
 
     function getGPTMode() {
@@ -3093,6 +3093,8 @@
                    "origin":"https://qianwen.aliyun.com/",
                    "referer":"https://qianwen.aliyun.com/chat",
                    "Content-Type": "application/json",
+                   "Bx-V": "2.5.3",
+                   "x-platform": "pc_tongyi",
                    "x-xsrf-token": csrfToken
                },
                data:JSON.stringify({
@@ -3135,6 +3137,8 @@
                "referer":"https://qianwen.aliyun.com/chat",
                "Content-Type": "application/json",
                "accept": "text/event-stream",
+               "Bx-V": "2.5.3",
+               "x-platform": "pc_tongyi",
                "x-xsrf-token": csrfToken
            },
            responseType: "stream",
