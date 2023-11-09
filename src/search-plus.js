@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.4
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
+// @version      3.1.5
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -34,6 +34,7 @@
 // @match      *://www.bilibili.com/video/*
 // @match      *://blog.csdn.net/*/article/details/*
 // @match      *://chatglm.cn/*
+// @match      *://hunyuan.tencent.com/*
 // @icon64      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAZlBMVEUAAAD///+hoaFoaGhsbGy7u7vd3d2+vr76+vra2tr29va2trYrKyvg4ODs7OxXV1dgYGCtra0xMTGXl5fExMQ6OjqOjo7R0dEVFRWnp6dSUlIiIiIcHBwLCwt4eHhycnKEhIRHR0f14+hfAAADN0lEQVRYhe1WyZajMAyEsMQshgABEwIJ+f+fbC02W0yHnjnNvNYFDFbZKpUlO86v/e/Wpve/8M4TFckwSvI/cx8z11g2/tw9vZKrEIKe159GUkvwipPxVb4eQQzvYV12XX3Y/x6BT5LqUZkgWixEHF/9/hAAeozz0I8nOtzoccDfg8CbaZQrYkOGYUaEFO2RDUTT4MZefjkMpVcQo5/Wr2DSi9/bhlYPhukvZqf41l3hiiFv8xJR2CslIT+XXfc+YapojY60kG1ZA0rknj+lL4YtnGCQ4lbESSczf5R6Ugc5ee4AoL9KAwbwYXDWXJTXhaDhf2L3R44rxzkbgFgHn55Y0JJjzyeONpYLDn4CCPn7A46VaggjwIB6eEltAOConCUAcZVDXBKIHHgbp9IZ4KW0AZj8LAHaQEzaY0lmHk60AXiQ8XYFEDoVrRpXOmSfdQFfbMe7MuTOJMLU6IJqkh7PuTMVrhosAJCp2xrApA6Lk+p4VllMQjsAcNNkpzeQlKkPHhQb0VkAEgO8TSMaVqhMH/EyW57W2R7moNoBCjwDPg1QzM07QAk7o+wUrIcNwAVZ1ktAROE7gBMaEq4kaW8NgHlQOsrULiUoHjGT40PIqngHOIGYzRK22ggJz3TpbrCt7AMU9gPZwc4y5slJC7FO4woAxmcLgMMi0dF1ymSOtnMEYFDczxqtdJRM6HlAbhSvARIqHG+G5BJGqONoK2opooIMLQFaYMvWs0EJruNRV1b8vy+wqDtbEj2caAcQg5NWdIQL6IJPjIGg1gDKhLINARyxed4DpgLFq+vvKoRiEszGWmlCy0OmcyrqSxKr/eaUzFvDGnDWCX2d5zQmNdJsO4xoz8XeyqcpIdRexZ0BBOYl2r2wyHfwB2WFO0zBjS/Zv2Vc8Pey3l3kor0iR65Q+61Vr6GmttNSOtxRf+jgvfnW3eFa4CZ+3fb1k1q1uC0D3GmKC2s5zkxKvieqWbKQPvFpfbRnNF+pYn/+3ny6m0zW+9eYDIMxlQsbvKuO3zfrV5fWKMc4GLu6G+m2KY/fNNnu6/vu2drTv7fFjVuOP3dHy5MolJEqrKfvoPXp57vpr/3r9gUxwiW4OiuC3wAAAABJRU5ErkJggg==
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
@@ -53,7 +54,7 @@
 // @resource toastCss  https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css
 // @resource katexCss  https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.6/katex.css
 // @connect    api.forchange.cn
-// @connect    gpt008.com
+// @connect    hunyuan.tencent.com
 // @connect    chatforai.cc
 // @connect    api.aigcfun.com
 // @connect    chatbot.theb.ai
@@ -161,7 +162,7 @@
     'use strict';
 
 
-    const JSver = '3.1.4';
+    const JSver = '3.1.5';
 
 
     function getGPTMode() {
@@ -1095,6 +1096,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "Hunyuan") {
+            console.log("Hunyuan")
+            Hunyuan()
+
+            return;
+            //end if
         }else if (GPTMODE && GPTMODE === "YIYAN") {
             console.log("YIYAN")
             YIYAN()
@@ -1242,6 +1249,7 @@
       <option value="YIYAN">百度文心</option>
       <option value="SPARK">讯飞星火</option>
       <option value="TIANGONG">天工AI</option>
+      <option value="Hunyuan">腾讯混元</option>
       <option value="ChatGLM">ChatGLM</option>
       <option value="ZhipuAI">智谱AI</option>
       <option value="Zhinao360">360智脑</option>
@@ -3792,6 +3800,131 @@
     }
     //问心一言 ----end---
 
+
+    //腾讯混元 ----start-----
+    let hunyuan_tUserId = '';
+
+    async function initHunyuanID() {
+        if (location.href.includes("hunyuan.tencent.com")) {
+            hunyuan_tUserId = getCookieValue(document.cookie,"hy_user");
+            GM_setValue("hunyuan_tUserId", hunyuan_tUserId)
+            if(hunyuan_tUserId){
+                 Toast.info(`hunyuan_tUserId获取成功:${hunyuan_tUserId}`)
+            }else{
+                setTimeout(initHunyuanID, 2500)
+                Toast.info(`hunyuan_tUserId获取失败，请再次刷新!`)
+            }
+
+        } else {
+            hunyuan_tUserId =  GM_getValue("hunyuan_tUserId")
+        }
+    }
+    setTimeout(initHunyuanID)
+
+
+    let hunyuan_isfirst = true;
+    let hunyuan_chatId ;
+    async function initHunyuan(){
+
+        let req1 = await GM_fetch({
+            method: "POST",
+            url: `https://hunyuan.tencent.com/api/generate/id`,
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "origin":"https://hunyuan.tencent.com",
+                "referer":`https://hunyuan.tencent.com/bot/chat`,
+                "t-userid": hunyuan_tUserId,
+                "x-requested-with": "XMLHttpRequest",
+                "x-source": "web"
+            },
+            data:null
+        })
+        let r = req1.responseText;
+        hunyuan_chatId = r;
+        if(hunyuan_chatId) hunyuan_isfirst = false;
+        console.error("hunyuan_chatId:",r)
+    }
+
+    async function Hunyuan() {
+
+        showAnserAndHighlightCodeStr("该线路为官网线路，请确保登录[混元](https://hunyuan.tencent.com/bot/chat)并成功获得tuserid")
+
+        if(!hunyuan_tUserId){
+           showAnserAndHighlightCodeStr("hunyuan_tUserId为空，请登录[混元](https://hunyuan.tencent.com/bot/chat)获取，再刷新页面")
+           return
+        }
+
+        if(hunyuan_isfirst && !hunyuan_chatId){
+           await initHunyuan()
+        }
+
+
+        GM_fetch({
+            method: 'POST',
+            url: `https://hunyuan.tencent.com/api/chat/${hunyuan_chatId}`,
+            headers: {
+                "origin":"https://hunyuan.tencent.com",
+                "referer":`https://hunyuan.tencent.com/bot/chat`,
+                "chat_version": "v1",
+                "content-type": "text/plain;charset=UTF-8",
+                "accept": "*/*",
+                "t-userid": hunyuan_tUserId,
+                "x-requested-with": "XMLHttpRequest",
+                "x-source": "web"
+            },
+            responseType: "stream",
+            data: JSON.stringify({
+                "model": "gpt_175B_0404",
+                "prompt": your_qus,
+                "displayPrompt": your_qus,
+                "displayPromptType": 1,
+                "plugin": "Adaptive",
+                "isSkipHistory": false
+            })
+        }).then((stream)=> {
+            let reader = stream.response.getReader()
+            let ans = []
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+                    console.log("===done==")
+                    //console.log(de)
+                    let result = ans.join("");
+                    showAnserAndHighlightCodeStr(result)
+
+                    return
+                }
+                let responseItem = new TextDecoder("utf-8").decode(value)
+                console.log(responseItem)
+                responseItem.split("\n").forEach(item=>{
+                    try {
+                        let ii = item.replace(/data:/gi,"").trim();
+                        if(ii && ii !==""){
+                            let chunk = JSON.parse(ii).msg
+                            //de.push(item.replace(/data:/gi,"").trim())
+                            ans.push(chunk)
+                            showAnserAndHighlightCodeStr(ans.join(""))
+
+                        }
+                    }catch (ex){
+                        console.error(item)
+                    }
+                })
+
+                return reader.read().then(processText)
+            },function (reason) {
+                Toast.error("未知错误!")
+                console.log(reason)
+            }).catch((ex)=>{
+                Toast.error("未知错误!")
+                console.log(ex)
+            })
+        })
+
+    }
+
+
+
+    //腾讯混元 ----end-----
 
 
     //ChatGLM相关 ----start-----
