@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         百度文心一言去水印
 // @namespace    http://tampermonkey.net/
-// @version      3.1
-// @description  去文心一言水印、去星火水印。去天工水印。去chatGLM水印。去通义千问水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。
+// @version      3.2
+// @description  去文心一言水印、去星火水印。去天工水印。去混元水印。去chatGLM水印。去通义千问水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。
 // @author       夜雨
 // @match        *://yiyan.baidu.com/*
 // @match        *://so.csdn.net/so/search*
@@ -17,6 +17,7 @@
 // @match        *://chat.360.cn/*
 // @match        *://kimi.moonshot.cn/*
 // @match        *://www.baichuan-ai.com/*
+// @match      *://hunyuan.tencent.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=baidu.com
 // @grant        none
 // @license      MIT
@@ -40,6 +41,10 @@
             divMask =  document.querySelector("#wm_div_id")
         }
 
+        if (location.href.includes("div.__water_mark__")){
+            divMask =  document.querySelector("div.__water_mark__")
+        }
+
         if (location.href.includes("360.cn")){
             divMask = document.querySelector(".water-mark")? document.querySelector(".water-mark") :divMask
             divMask && divMask.remove()
@@ -59,6 +64,7 @@
             if (location.href.includes("chatglm")) hideMask.innerHTML = `#wm_div_id {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
             if (location.href.includes("sensetime")) hideMask.innerHTML = `div[style*='background-repeat: repeat']{height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
             if (location.href.includes("kimi")) hideMask.innerHTML = `#watermark-container > div:last-child{height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
+            if (location.href.includes("hunyuan")) hideMask.innerHTML = `div.__water_mark__ {height:0 !important;width:0 !important;transform: rotate(90deg);overflow: hidden;}`
 
 
 
