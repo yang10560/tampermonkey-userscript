@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.5
+// @version      3.1.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -74,7 +74,7 @@
 // @connect   gpt66.cn
 // @connect   ai.ls
 // @connect   letsearches.com
-// @connect   zhulei.xyz
+// @connect   powerchat.top
 // @connect   wobcw.com
 // @connect   chat.68686.ltd
 // @connect   t66.ltd
@@ -162,7 +162,7 @@
     'use strict';
 
 
-    const JSver = '3.1.5';
+    const JSver = '3.1.6';
 
 
     function getGPTMode() {
@@ -1242,7 +1242,7 @@
    <select id="modeSelect">
       <option value="Default">默认线路[兼容]</option>
       <option value="YeYu">自定义key</option>
-      <option value="newBing">New Bing</option>
+      <option style="display: none" value="newBing">New Bing</option>
       <option value="OPENAI-3.5">OPENAI-3.5</option>
       <option value="OPENAI-4.0">OPENAI-4.0</option>
       <option value="TONGYI">通义千问</option>
@@ -3803,6 +3803,7 @@
 
     //腾讯混元 ----start-----
     let hunyuan_tUserId = '';
+    let hunyuan_count = 0;
 
     async function initHunyuanID() {
         if (location.href.includes("hunyuan.tencent.com")) {
@@ -3811,8 +3812,11 @@
             if(hunyuan_tUserId){
                  Toast.info(`hunyuan_tUserId获取成功:${hunyuan_tUserId}`)
             }else{
-                setTimeout(initHunyuanID, 2500)
-                Toast.info(`hunyuan_tUserId获取失败，请再次刷新!`)
+                setTimeout(initHunyuanID, 5000)
+                if(hunyuan_count < 3){
+                    Toast.info(`hunyuan_tUserId获取失败，请再次刷新!`)
+                }
+                hunyuan_count++;
             }
 
         } else {
@@ -5243,8 +5247,8 @@
             'special': {
                 'time': t,
                 'sign': sign,
-                'referer':'https://www.promptboom.com/',
-                'path':'https://www.promptboom.com/'
+                'referer': "no-referer",
+                'path': "https://powerchat.top/chat/PowerChat"
             }
         };
         let raw_requst_json = {
@@ -5259,9 +5263,9 @@
             headers: {
                 "Content-Type": "application/json",
                 "version": promptboom_version,
-                "origin": "https://www.promptboom.com",
-                "Referer": "https://www.promptboom.com/",
-                "accept": "*/*"
+                "origin": "https://powerchat.top",
+                "Referer": "https://powerchat.top/",
+                "accept": "*/*",
             },
             data: JSON.stringify(raw_requst_json),
             responseType: "stream"
