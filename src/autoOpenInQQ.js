@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         QQ链接自动打开
 // @namespace    http://yeyu1024.xyz
-// @version      2.1
-// @description  PC上使用QQ、QQ邮箱点开链接，浏览器提示非QQ官方链接页面时自动打开对应的链接。另外支持CSDN，简书，贴吧，微博，酷安，知乎
+// @version      2.2
+// @description  PC上使用QQ、QQ邮箱，微云文档点开链接，浏览器提示非QQ官方链接页面时自动打开对应的链接。另外支持CSDN，简书，贴吧，微博，酷安，知乎
 // @author       夜雨
 // @match        *://c.pc.qq.com/*
 // @match        *://link.zhihu.com/*
@@ -12,6 +12,7 @@
 // @match        *://*.coolapk.com/*
 // @match        *://*.jianshu.com/go-wild*
 // @match        *://link.csdn.net/*
+// @match        *://google.urlshare.cn/umirror_url_check*
 // @icon         https://mat1.gtimg.com/www/icon/favicon2.ico
 // @grant        none
 // @license      MIT
@@ -65,6 +66,11 @@
     //csdn
     if(location.href.includes('link.csdn.net')){
         linkUrl = getParams('target');
+    }
+
+    //微云文档
+    if(location.href.includes('google.urlshare.cn')){
+        linkUrl = getParams('url');
     }
 
     if(location.href.includes('mail.qq.com')){
