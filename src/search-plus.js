@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.6
-// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑。即刻体验AI，无需翻墙，无需注册，无需等待！
+// @version      3.1.7
+// @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
 // @author       夜雨
@@ -124,7 +124,7 @@
 // @connect   51mskd.com
 // @connect   forwardminded.xyz
 // @connect   1chat.cc
-// @connect   a3r.fun
+// @connect   api.minimax.chat
 // @connect   cytsee.com
 // @connect   skybyte.me
 // @connect   alllinkai1.com
@@ -162,7 +162,7 @@
     'use strict';
 
 
-    const JSver = '3.1.6';
+    const JSver = '3.1.7';
 
 
     function getGPTMode() {
@@ -431,6 +431,26 @@
                 let ZhipuapiKey = prompt("请输入您的智谱apikey", "");
                 if (ZhipuapiKey) localStorage.setItem("ZhipuapiKey", ZhipuapiKey)
             }
+        }else if(GPTMODE === "miniMax"){
+
+            localStorage.removeItem("minimax_group_id")
+            let minimax_group_id_input = prompt("请输入您的minimax_group_id", "");
+            if (minimax_group_id_input) {
+                localStorage.setItem("minimax_group_id", minimax_group_id_input)
+                minimax_group_id = minimax_group_id_input;
+            }
+
+            localStorage.removeItem("minimax_api_key")
+            let minimax_api_key_input = prompt("请输入您的minimax_api_key", "");
+            if (minimax_api_key_input){
+                localStorage.setItem("minimax_api_key",minimax_api_key_input)
+                minimax_api_key = minimax_api_key_input;
+            }
+
+
+
+
+
         }else {
             Toast.error("该线路不适用")
         }
@@ -1156,6 +1176,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "miniMax") {
+            console.log("miniMax")
+            miniMax()
+
+            return;
+            //end if
         }
 
         console.log("默认线路:")
@@ -1253,6 +1279,7 @@
       <option value="ChatGLM">ChatGLM</option>
       <option value="ZhipuAI">智谱AI</option>
       <option value="Zhinao360">360智脑</option>
+      <option value="miniMax">miniMax</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="ChatGO">ChatGO</option>
       <option value="MixerBox">MixerBox</option>
@@ -4428,6 +4455,91 @@
                     let d = new TextDecoder("utf8").decode(new Uint8Array(value));
                     console.warn(d)
                     result.push(d)
+                    showAnserAndHighlightCodeStr(result.join(""))
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+                return reader.read().then(processText);
+            });
+        },reason => {
+            console.log(reason)
+            Toast.error("未知错误!")
+        }).catch((ex)=>{
+            console.log(ex)
+            Toast.error("未知错误!")
+        })
+
+
+    }
+
+
+
+
+    let minimax_group_id = localStorage.getItem("minimax_group_id")//"1725312458689614000";
+    let minimax_api_key = localStorage.getItem("minimax_api_key")// "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiLmnajlhYjnlJ8iLCJVc2VyTmFtZSI6IuadqOWFiOeUnyIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxNzI1MzEyNDU4Njk4MDAyNjA4IiwiUGhvbmUiOiIxNTEyNDUyNzA0MSIsIkdyb3VwSUQiOiIxNzI1MzEyNDU4Njg5NjE0MDAwIiwiUGFnZU5hbWUiOiIiLCJNYWlsIjoiIiwiQ3JlYXRlVGltZSI6IjIwMjMtMTEtMjAgMTA6NDg6MDQiLCJpc3MiOiJtaW5pbWF4In0.dRahPhiACeS83wqbXy5SneQZ5T0KV-IIdLT2y1IwhhrXfQ5ofRT0fXjFkLZHPTDGucJ44MIeQYJFS7bbI6F_i8--aUJvzN4TK78Lm4PW_FEQ4zytuF9UwttUdqiqa4_wsOHicXJS7bhbK-wlr61PXjUn_la_dHk-8QH-4U6V43Ic8AYvsx4nbRiC5_H9WtSYtq0_ISIlS2DUr_zuu9umzMdSehjNP4n-dSXEUwK3ajPSF8JBSLcPMnnLiWkNNPQRGiRw4rIXzrVH0eY4yC8lILgKIGHk_tykBiBQXEEjdx3SwyZ-ahUNT8kifiO3B2MwcnsxteaY8JuQxMnKtFRA_g";
+    let minimax_messageChain = [];
+    async function miniMax() {
+
+        if(!minimax_group_id || !minimax_api_key){
+            showAnserAndHighlightCodeStr("group_id或api_key不存在，请到[https://api.minimax.chat/](https://api.minimax.chat/)注册，申请。然后点击 设置-》更新秘钥")
+        }
+
+        addMessageChain(minimax_messageChain, {
+            "sender_type": "USER",
+            "sender_name": "用户",
+            "text": your_qus
+        },10)
+
+        let sendData =  {
+            "model": "abab5.5-chat",
+            "tokens_to_generate": 1024,
+            "temperature": 0.9,
+            "top_p": 0.95,
+            "stream": false,
+            "reply_constraints": {
+                "sender_type": "BOT",
+                "sender_name": "MM智能助理"
+            },
+            "sample_messages": [],
+            "plugins": [],
+            "messages": minimax_messageChain,
+            "bot_setting": [
+                {
+                    "bot_name": "MM智能助理",
+                    "content": "MM智能助理是一款由MiniMax自研的，没有调用其他产品的接口的大型语言模型。MiniMax是一家中国科技公司，一直致力于进行大模型相关的研究。"
+                }
+            ]
+        }
+
+
+        GM_fetch({
+            method: "POST",
+            url:`https://api.minimax.chat/v1/text/chatcompletion_pro?GroupId=${minimax_group_id}`,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${minimax_api_key}`,
+            },
+            data: JSON.stringify(sendData),
+            responseType:"stream"
+        }).then((stream)=>{
+            let result = []
+            const reader = stream.response.getReader();
+            reader.read().then(function processText({done, value}) {
+                if (done) {
+
+                    addMessageChain(minimax_messageChain,{
+                        "sender_type": "BOT",
+                        "sender_name": "MM智能助理",
+                        "text": result.join("")
+                    },10)
+                    return;
+                }
+                try {
+                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                    console.warn(d)
+                    result.push(JSON.parse(d).reply)
                     showAnserAndHighlightCodeStr(result.join(""))
 
                 } catch (e) {
