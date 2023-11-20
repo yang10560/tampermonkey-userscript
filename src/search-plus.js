@@ -4477,8 +4477,8 @@
 
 
 
-    let minimax_group_id = localStorage.getItem("minimax_group_id")//"1725312458689614000";
-    let minimax_api_key = localStorage.getItem("minimax_api_key")// "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiLmnajlhYjnlJ8iLCJVc2VyTmFtZSI6IuadqOWFiOeUnyIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxNzI1MzEyNDU4Njk4MDAyNjA4IiwiUGhvbmUiOiIxNTEyNDUyNzA0MSIsIkdyb3VwSUQiOiIxNzI1MzEyNDU4Njg5NjE0MDAwIiwiUGFnZU5hbWUiOiIiLCJNYWlsIjoiIiwiQ3JlYXRlVGltZSI6IjIwMjMtMTEtMjAgMTA6NDg6MDQiLCJpc3MiOiJtaW5pbWF4In0.dRahPhiACeS83wqbXy5SneQZ5T0KV-IIdLT2y1IwhhrXfQ5ofRT0fXjFkLZHPTDGucJ44MIeQYJFS7bbI6F_i8--aUJvzN4TK78Lm4PW_FEQ4zytuF9UwttUdqiqa4_wsOHicXJS7bhbK-wlr61PXjUn_la_dHk-8QH-4U6V43Ic8AYvsx4nbRiC5_H9WtSYtq0_ISIlS2DUr_zuu9umzMdSehjNP4n-dSXEUwK3ajPSF8JBSLcPMnnLiWkNNPQRGiRw4rIXzrVH0eY4yC8lILgKIGHk_tykBiBQXEEjdx3SwyZ-ahUNT8kifiO3B2MwcnsxteaY8JuQxMnKtFRA_g";
+    let minimax_group_id = localStorage.getItem("minimax_group_id")//"172531245...";
+    let minimax_api_key = localStorage.getItem("minimax_api_key")// "eyJhbGciOi.....
     let minimax_messageChain = [];
     async function miniMax() {
 
