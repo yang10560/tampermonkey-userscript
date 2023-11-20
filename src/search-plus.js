@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.7
+// @version      3.1.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -162,7 +162,7 @@
     'use strict';
 
 
-    const JSver = '3.1.7';
+    const JSver = '3.1.8';
 
 
     function getGPTMode() {
@@ -1562,7 +1562,7 @@
 
                let f = JSON.stringify({
                    curTime: Date.now(),
-                   rate: "0.8",
+                   rate: "1",
                    spokenDialect: "zh-CHS",
                    text: speakText
                })
@@ -2673,7 +2673,9 @@
 
             //ohmygpt_token
             ohmygpt_token = result.ohmygpt.token
+            ohmygpt_session_id = result.ohmygpt.sessionId
             console.log("ohmygpt_token:",ohmygpt_token)
+            console.log("ohmygpt_session_id:",ohmygpt_session_id)
 
         } else {
             console.error(rr)
@@ -4415,17 +4417,17 @@
     }
 
 
-    let ohmygpt_session_id = '53793dce-7805-45ac-a226-7bc62bc4aef4';
+    let ohmygpt_session_id = 'e0df5f92-0973-4465-93e1-dcb7cf482d7d';
     let ohmygpt_token = '';
     let ohmygpt_messageChain = [{"role":"system","content":"You are ChatGPT, a large language model trained by OpenAI."}]
     async function OhMyGPT() {
         addMessageChain(ohmygpt_messageChain, {"role":"user","content":your_qus},10)
         const params = new URLSearchParams();
         let sendData = {
-            session_id: ohmygpt_session_id,
+            session_id: ohmygpt_session_id ? ohmygpt_session_id:'e0df5f92-0973-4465-93e1-dcb7cf482d7d',
             content: JSON.stringify(ohmygpt_messageChain),
             max_context_length: '5',
-            params: '{"model":"gpt-3.5-turbo-16k","temperature":1,"max_tokens":2048,"presence_penalty":0,"frequency_penalty":0,"max_context_length":5,"voiceShortName":"zh-CN-XiaoxiaoNeural","rate":1,"pitch":1}'
+            params: '{"model":"gpt-3.5-turbo","temperature":1,"max_tokens":2048,"presence_penalty":0,"frequency_penalty":0,"max_context_length":5,"voiceShortName":"zh-CN-XiaoxiaoNeural","rate":1,"pitch":1}'
         }
         for (const key in sendData) {
             params.append(key, sendData[key]);
