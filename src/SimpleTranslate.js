@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.0
+// @version      1.7.1
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -3189,7 +3189,10 @@ ${ali_uuid}\r
         }
 
         console.log(`translate to....${lang} : ${currentAPI.name}`)
-        const root = document.body;
+        let root = document.body;
+        if(location.href.includes("twitter.com")){
+            root = document.querySelector('div[data-testid="primaryColumn"]')
+        }
         traversePlus(rootNode || root, lang)
     }
 
