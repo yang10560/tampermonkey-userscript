@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.1
+// @version      1.7.2
 // @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en Translation between Chinese and English on web pages.
 // @author       夜雨
@@ -225,6 +225,8 @@
     let leftSelectMode = false //左键选词模式开关 true/false 默认关
     let excludeSites = ['www.qq.com', 'yeyu1024.xyz'] //排除不运行的网站 exclude web host
     let noTranslateWords = ['SpringBoot', 'ChatGPT', 'YouTube', 'Twitter'] //仅当单个词不会被翻译,是组合或句子时失效
+
+    let scrollTranslate = !!localStorage.getItem("scrollTranslate"); //是否滚动翻译 true/false
 
     let switchIndex = 0;
 
@@ -570,6 +572,7 @@
           <div style="font-size: 30px;" id="colorPreview">文字预览</div>
         </div>
         <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectColorBtn">确定</button>
+        <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="scrollBtn">滚动</button>
         <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectColorCancelBtn">退出</button>
          <div><span style="margin-top: 10px">温馨提示：在输入框时,连续按三下空格键即可翻译输入框的内容.</span></div>
             <div><span>翻译引擎:</span>
@@ -609,6 +612,7 @@
         const selectColorBtn = document.getElementById("selectColorBtn");
         const selectColorCancelBtn = document.getElementById("selectColorCancelBtn");
         const selectAPIBtn = document.getElementById("selectAPIBtn");
+        const scrollBtn = document.getElementById("scrollBtn");
 
         // 更新颜色显示区域的颜色
         function updateColorDisplay() {
@@ -639,6 +643,21 @@
 
             MyColorSelector.remove()
         });
+
+        //本站滚动
+        scrollBtn.addEventListener("click", (ev)=>{
+            if(scrollTranslate){
+                localStorage.removeItem("scrollTranslate")
+                scrollTranslate = false
+                Toast.error("本站滚动翻译已关！")
+                window.removeEventListener('scroll', handleScroll);
+            }else {
+                localStorage.setItem("scrollTranslate", "open")
+                scrollTranslate = true
+                Toast.info("本站滚动翻译已开，如需要切换语言请点侧边的语言按钮！")
+                window.addEventListener('scroll', handleScroll);
+            }
+        })
 
         //选择引擎
         selectAPIBtn.addEventListener('click', () => {
@@ -3191,7 +3210,7 @@ ${ali_uuid}\r
         console.log(`translate to....${lang} : ${currentAPI.name}`)
         let root = document.body;
         if(location.href.includes("twitter.com")){
-            root = document.querySelector('div[data-testid="primaryColumn"]')
+            root = document.querySelector('div[data-testid="primaryColumn"]') || root
         }
         traversePlus(rootNode || root, lang)
     }
@@ -3415,6 +3434,26 @@ ${ali_uuid}\r
         });
     }, 2000)
 
+
+    //window滚动事件
+    let documentHeight = document.documentElement.scrollHeight;
+    function handleScroll() {
+        const currentDocumentHeight = document.documentElement.scrollHeight;
+
+        if(currentDocumentHeight > documentHeight){
+            console.log("滚动事件：页面变长。", currentDocumentHeight, documentHeight)
+            documentHeight = currentDocumentHeight;
+            translateTo(selectTolang)
+        }
+        console.log('总文档距离：', documentHeight);
+    }
+
+    setTimeout(()=>{
+
+        if(scrollTranslate){
+            window.addEventListener('scroll', handleScroll);
+        }
+    })
 
 })();
 
