@@ -2,9 +2,16 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.2
-// @description  中英互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
-// @description:en Translation between Chinese and English on web pages.
+// @version      1.7.3
+// @description  中-英-外互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
+// @description:en  Web pages translated into Chinese, English and foreign languages
+// @description:de  Webseite in Chinesisch, Englisch, Fremdsprachen
+// @description:ru  Перевод страницы на китайский, английский и иностранные языки
+// @description:ar  صفحة الإنترنت الصينية و الإنجليزية و اللغات الأجنبية
+// @description:ja ホームページ中国語、英語、外国語の翻訳
+// @description:ko  WEB 중국어, 영어, 외국어 상호 번역
+// @description:fr  Traduction de pages Web en chinois, anglais, langues étrangères vers et depuis
+// @description:pt  Tradução de páginas da Web para chinês, inglês e língua estrangeira
 // @author       夜雨
 // @match        *://*/*
 // @exclude      *://*.baidu.com/*
@@ -550,6 +557,11 @@
     }
 
 
+    //是否支持多语种的引擎
+    function isSupportMultiLang(){
+        return currentAPI.name === APIConst.TransmartWeb || currentAPI.name === APIConst.Microsoft || currentAPI.name === APIConst.Google
+    }
+
     function colorSelectAndSettings(event) {
         $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;left: 50px;width: 300px;top: 50px;/*height: 350px;*/border: 1px salmon solid;position: fixed;background-color: white;border-radius: 10px" id="MyColorSelector">
         <div>
@@ -601,6 +613,23 @@
               </select>
                <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectAPIBtn">选择</button>
             </div>
+         <div><span style="margin-top: 10px">注意:外语目前仅适用腾讯交互，谷歌，微软翻译，语言代码可能会存在差异(未测),其他默认英语.</span></div>
+            <div><span>外语语言:</span>
+              <select id="selectForeign">
+                  <option value="en">英语(en)</option>
+                  <option value="ja">日语(ja)</option>
+                  <option value="ko">韩语(ko)</option>
+                  <option value="ru">俄语(ru)</option>
+                  <option value="de">徳语(de)</option>
+                  <option value="fr">法语(fr)</option>
+                  <option value="th">泰语(th)</option>
+                  <option value="hi">印地(hi)</option>
+                  <option value="it">意大利(it)</option>
+                  <option value="pt">葡萄牙(pt)</option>
+                  <option value="ar">阿拉伯(ar)</option>
+              </select>
+               <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectForeignBtn">选择</button>
+            </div>
         </div>
         `);
         const MyColorSelector = document.getElementById("MyColorSelector");
@@ -613,6 +642,7 @@
         const selectColorCancelBtn = document.getElementById("selectColorCancelBtn");
         const selectAPIBtn = document.getElementById("selectAPIBtn");
         const scrollBtn = document.getElementById("scrollBtn");
+        const selectForeignBtn = document.getElementById("selectForeignBtn");
 
         // 更新颜色显示区域的颜色
         function updateColorDisplay() {
@@ -669,6 +699,23 @@
 
         });
 
+        //选择外语语种
+        selectForeignBtn.addEventListener('click', () => {
+
+            const selectEl = document.getElementById('selectForeign');
+            const selectedValue = selectEl.options[selectEl.selectedIndex].value;
+            if(isSupportMultiLang()){
+                Reflect.set(currentAPI,"EnglishLang",selectedValue)
+                Toast.success("设置成功！" + selectedValue)
+                localStorage.removeItem(`${currentAPI.name}wordCache`)//清空缓存
+                GM_setValue("selectForeignLang", selectedValue)
+                MyColorSelector.remove() //退出
+            }else{
+                Toast.error("暂时仅支持腾讯交互，谷歌，微软翻译。请切换引擎后设置")
+            }
+
+        });
+
         // 初始化颜色显示
         updateColorDisplay();
 
@@ -714,7 +761,7 @@
             console.log(excludeSites)
         }, "excludeWeb");
 
-       // GM_registerMenuCommand("鼠标右击选词开关", rightSelectMode, "selectMode");
+        // GM_registerMenuCommand("鼠标右击选词开关", rightSelectMode, "selectMode");
 
 
     })
@@ -744,6 +791,19 @@
         } catch (ex) {
             switchIndex = 0;
             console.error("switchIndex ex:", switchIndex, ex)
+        }
+
+        //载入外语语种
+        try {
+            if(isSupportMultiLang()){
+                let selectForeignLang = await GM_getValue("selectForeignLang")
+                if(selectForeignLang){
+                    Reflect.set(currentAPI, "EnglishLang", selectForeignLang)
+                }
+            }
+            console.warn("selectForeignLang load:", selectForeignLang)
+        } catch (ex) {
+            console.error("selectForeignLang load ex:", switchIndex, ex)
         }
 
         console.warn("isDoubleShow", isDoubleShow)
@@ -857,7 +917,7 @@
                         <div id="qs_searchIconOuter"><span id="qs_searchIconInner"><svg id="copyTranslatedText" width="24" height="24" data-v-13fede38="" t="1679666016648" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6241" class="icon"><path data-v-13fede38="" d="M661.333333 234.666667A64 64 0 0 1 725.333333 298.666667v597.333333a64 64 0 0 1-64 64h-469.333333A64 64 0 0 1 128 896V298.666667a64 64 0 0 1 64-64z m-21.333333 85.333333H213.333333v554.666667h426.666667v-554.666667z m191.829333-256a64 64 0 0 1 63.744 57.856l0.256 6.144v575.701333a42.666667 42.666667 0 0 1-85.034666 4.992l-0.298667-4.992V149.333333H384a42.666667 42.666667 0 0 1-42.368-37.674666L341.333333 106.666667a42.666667 42.666667 0 0 1 37.674667-42.368L384 64h447.829333z" fill="#909399" p-id="6242"></path></svg></span></div>
                     </a>
                 </div>
-                
+
         `))
         const old_isDoubleShow = isDoubleShow;
         isDoubleShow = false;
@@ -1135,7 +1195,7 @@
             padding: 0;
             margin: 0;
         }
-        
+
     .translate-main li{
             margin-top:6px !important;
             white-space: normal !important;
@@ -1157,19 +1217,19 @@
     .translate-span {
          display: inline;
      }
-     
+
      .translate-span.hide {
          display: none !important;
      }
-     
+
      .translate-src.hide {
          display: none !important;
      }
-     
+
      .translate-span.light-color {
          color: ${highlightColor} !important;
      }
-     
+
      /*选词css*/
      #qs_searchBox {
                 background-color: #fff;
@@ -1202,12 +1262,12 @@
                 white-space: normal;
                 max-width: 258px;
             }
-            
+
 
             #qs_searchIconInner {
                 display: inline-flex;
             }
-     
+
         `)
 
     //add box
@@ -1218,19 +1278,19 @@
    <div class="translate-main-body">
     <div class="translate-main-header">
       <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-     <span>中英互译</span>
+     <span>中外互译</span>
      <span class="translate-arrow">&gt;</span>
     </div>
     <div class="translate-main-body">
      <ul>
       <li>
        <a id="en2zh" href="javascript:void(0)">
-        <span>英转中</span>
+        <span>外转中</span>
        </a>
       </li>
       <li>
        <a id="zh2en" href="javascript:void(0)">
-        <span>中转英</span>
+        <span>中转外</span>
        </a>
       </li>
       <li style="display: flex; justify-content: center ">
@@ -1241,7 +1301,7 @@
         <span>高亮</span>
        </a>
       </li>
-      
+
       <li style="display: flex; justify-content: center ">
        <a id="autoTranslateSwitch" href="javascript:void(0)">
         <span>自动</span>
@@ -1250,7 +1310,7 @@
         <span>语言</span>
        </a>
       </li>
-      
+
       <li style="display: flex; justify-content: center ">
        <a id="rightSelectMode" href="javascript:void(0)">
         <span>右击</span>
@@ -1259,7 +1319,7 @@
         <span>更新</span>
        </a>
       </li>
-      
+
       <li style="display: flex; justify-content: center ">
        <a id="leftSelectMode" href="javascript:void(0)">
         <span>选词</span>
@@ -1275,7 +1335,7 @@
       </li>
      </ul>
     </div>
-    
+
    </div>
   </div>`))
 
@@ -1293,6 +1353,12 @@
         if (!sentence) return false;
         const pattern = /[a-zA-Z]/;
         return pattern.test(sentence);
+    }
+
+    function isAllChinese(str) {
+        if (!str) return false;
+        const reg = /^[\u4e00-\u9fa5]+$/;
+        return reg.test(str);
     }
 
 
@@ -2902,15 +2968,25 @@ ${ali_uuid}\r
 
             // 特殊标签文本处理
             if (!/^(INPUT|textarea)$/i.test(node.nodeName)) {
-                if (lang === currentAPI.EnglishLang && !hasChinese(node.textContent)) {
-                    //不含中文
-                    return;
+
+                if(isSupportMultiLang()){
+                    if (lang === currentAPI.ChineseLang && isAllChinese(node.textContent)) {
+                        //不含英文，外文
+                        return;
+                    }
+                }else {
+                    if (lang === currentAPI.EnglishLang && !hasChinese(node.textContent)) {
+                        //不含中文
+                        return;
+                    }
+                    if (lang === currentAPI.ChineseLang && !hasEnglish(node.textContent)) {
+                        //if (lang === currentAPI.ChineseLang && isAllChinese(node.textContent)) {
+                        //不含英文，外文
+                        return;
+                    }
                 }
 
-                if (lang === currentAPI.ChineseLang && !hasEnglish(node.textContent)) {
-                    //不含英文
-                    return;
-                }
+
             }
 
             if (node.textContent) {
