@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页URL二维码生成
 // @namespace    http://yeyu1024.xyz
-// @version      1.1
+// @version      1.2
 // @description  生成当前网页的地址(url)的二维码，方便手机扫描
 // @description:en Generate the QR code of the address of the current webpage (URL), which is convenient for mobile phone scanning
 // @author       夜雨
@@ -10,6 +10,8 @@
 // @require      https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
 // @grant        GM_registerMenuCommand
+// @homepageURL  https://greasyfork.org/zh-CN/scripts/480612
+// @supportURL   https://greasyfork.org/zh-CN/scripts/480612
 // @license      MIT
 // ==/UserScript==
 
