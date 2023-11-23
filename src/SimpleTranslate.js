@@ -2,8 +2,8 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.3
-// @description  中-英-外互转，双语显示。为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
+// @version      1.7.4
+// @description  中-英-外互转，双语显示。支持谷歌，微软等API，为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en  Web pages translated into Chinese, English and foreign languages
 // @description:de  Webseite in Chinesisch, Englisch, Fremdsprachen
 // @description:ru  Перевод страницы на китайский, английский и иностранные языки
@@ -510,8 +510,8 @@
     function changeSelectLang() {
         if (selectTolang === currentAPI.ChineseLang) {
             selectTolang = currentAPI.EnglishLang;
-            console.log('当前目标语言为英语')
-            Toast.success('当前目标语言为英语')
+            console.log('当前目标语言为外语')
+            Toast.success('当前目标语言为外语')
             GM_setValue("selectTolang","EnglishLang")
         } else {
             selectTolang = currentAPI.ChineseLang;
@@ -526,11 +526,11 @@
         if (englishAutoTranslate) {
             englishAutoTranslate = false;
             GM_setValue("englishAutoTranslate", false)
-            Toast.error('英语自动翻译已关闭! 请重新刷新页面.')
+            Toast.error('外语自动翻译已关闭! 请重新刷新页面.')
         } else {
             englishAutoTranslate = true;
             GM_setValue("englishAutoTranslate", true)
-            Toast.success('英语自动翻译已打开! 请重新刷新页面.')
+            Toast.success('外语自动翻译已打开! 请重新刷新页面.')
         }
     }
 
@@ -608,7 +608,7 @@
                   <option value="15">Yandex</option>
                   <option value="16">福昕</option>
                   <option value="17">CNKI</option>
-                  <option style="display: none" value="18">讯飞[需key]</option>
+                  <option  value="18">讯飞[需key]</option>
                   <option value="19">金山快译</option>
               </select>
                <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectAPIBtn">选择</button>
@@ -627,6 +627,16 @@
                   <option value="it">意大利(it)</option>
                   <option value="pt">葡萄牙(pt)</option>
                   <option value="ar">阿拉伯(ar)</option>
+                  <option value="vi">越南语(vi)</option>
+                  <option value="tr">土耳其(tr)</option>
+                  <option value="id">印尼(id)</option>
+                  <option value="zh">中文(zh)</option>
+                  <option value="zh-Hans">中文(zh-Hans)</option>
+                  <option value="zh-CN">中文(zh-CN)</option>
+                  <option value="zh_cn">中文(zh_cn)</option>
+                  <option value="zh-CHS">中文(zh-CHS)</option>
+                  <option value="cn">中文(cn)</option>
+                  <option value="zh-TW">中文繁体(zh-TW)</option>
               </select>
                <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectForeignBtn">选择</button>
             </div>
@@ -3471,7 +3481,7 @@ ${ali_uuid}\r
     setTimeout(async () => {
         if (englishAutoTranslate && !isChinesePage()) {
             console.log('自动翻译')
-            Toast.success('检测到英文, 正在自动翻译. 若你的网络过慢可能会出现未翻译完整，请手动翻译。关闭自动翻译请到菜单!', '', {timeOut: 10000})
+            Toast.success('检测到外文, 正在自动翻译...', '', {timeOut: 3000})
             translateTo(currentAPI.ChineseLang)
 
         }
