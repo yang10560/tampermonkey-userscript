@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.8
+// @version      3.1.9
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -162,7 +162,7 @@
     'use strict';
 
 
-    const JSver = '3.1.8';
+    const JSver = '3.1.9';
 
 
     function getGPTMode() {
@@ -1074,12 +1074,6 @@
 
             return;
             //end if
-        }else if (GPTMODE && GPTMODE === "LEMURCHAT") {
-            console.log("LEMURCHAT")
-            LEMURCHAT();
-
-            return;
-            //end if
         }else if (GPTMODE && GPTMODE === "GEEKR") {
             console.log("GEEKR")
             GEEKR()
@@ -1293,7 +1287,6 @@
       <option value="AITIANHU">AITIANHU</option>
       <option value="TDCHAT">TDCHAT</option>
       <option style="display: none" value="GEEKR">GEEKR</option>
-      <option value="LEMURCHAT">LEMURCHAT[停用]</option>
       <option value="OhMyGPT">OhMyGPT</option>
       <option value="AILS">AILS</option>
       <option value="PHIND">PHIND</option>
@@ -1559,11 +1552,18 @@
                let speakText = ans.innerText;
 
                //new sogou api
+               // 弹出对话框询问用户是否同意
+               const result = confirm("是否启用外国口音朗读? 默认为中文口音。");
+               let dialect = "zh-CHS"
+               if (result) {
+                   dialect = "en"
+                   console.log("英文朗读！");
+               }
 
                let f = JSON.stringify({
                    curTime: Date.now(),
                    rate: "1",
-                   spokenDialect: "zh-CHS",
+                   spokenDialect: dialect,
                    text: speakText
                })
 
@@ -2453,62 +2453,6 @@
         })
         return "";
     }
-
-
-    //狐猴内置 2023年5月12日
-    function LEMURCHAT() {
-
-        let baseURL = "http://lemurchat.anfans.cn/";
-
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/chat/conversation-trial",
-            headers: {
-                "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0 (Linux; Android 9; Redmi 4 Prime) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36"
-            },
-            data: `{"messages":"[{\\"content\\":\\"\\",\\"id\\":\\"LEMUR_AI_SYSTEM_SETTING\\",\\"isSensitive\\":false,\\"needCheck\\":false,\\"role\\":\\"system\\"},{\\"content\\":\\"${your_qus}\\",\\"isSensitive\\":false,\\"needCheck\\":true,\\"role\\":\\"user\\"}]"}`,
-            //data: `{"messages":"[{\\"content\\":\\"\\",\\"id\\":\\"LEMUR_AI_SYSTEM_SETTING\\",\\"isSensitive\\":false,\\"needCheck\\":false,\\"role\\":\\"system\\"},{\\"content\\":\\"你好\\",\\"isSensitive\\":false,\\"needCheck\\":true,\\"role\\":\\"user\\"}]"}`,
-            responseType: "stream"
-        }).then((stream)=>{
-            const reader = stream.response.getReader();
-            let result = [];
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-
-                    return;
-                }
-                try {
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    console.log("raw:",d)
-                    let dd = d.replace(/data: /g, "").split("\n\n")
-                    console.log("dd:",dd)
-                    dd.forEach(item=>{
-                        try {
-                            let delta = /content\\":\\"(.*?)\\"/gi.exec(item)[1]
-                            result.push(delta.replace(/\\\\n/g,"\n"))
-                            showAnserAndHighlightCodeStr(result.join(""))
-                        }catch (e) {
-
-                        }
-                    })
-
-                } catch (e) {
-                    console.log(e)
-                }
-
-                return reader.read().then(processText);
-            });
-        },function (err) {
-            console.log(err)
-            Toast.error("未知错误!")
-        }).catch((ex)=>{
-            console.log(ex)
-            Toast.error("未知错误!")
-        });
-
-    }
-
 
 
 
