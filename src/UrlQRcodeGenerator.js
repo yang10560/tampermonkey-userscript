@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页URL二维码生成
 // @namespace    http://yeyu1024.xyz
-// @version      1.0
+// @version      1.1
 // @description  生成当前网页的地址(url)的二维码，方便手机扫描
 // @description:en Generate the QR code of the address of the current webpage (URL), which is convenient for mobile phone scanning
 // @author       夜雨
@@ -17,7 +17,7 @@
     'use strict';
 
     function urlQRCode(){
-        $("body").append(`<div class="qrcodeDiv" style="z-index: 9999 !important;left: 50%;top: 50px;/*height: 350px;*/position: fixed;background-color: white;border-radius: 10px" >
+        $("body").append(`<div id="QRContainer" class="qrcodeDiv" style="z-index: 9999 !important;left: 50px;top: 50px;/*height: 350px;*/position: fixed;background-color: white;border-radius: 10px" >
       <div id="qrcodeDiv"></div>
       <div>
           <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="closeQRCodebtn">关闭</button>
@@ -26,6 +26,7 @@
     </div>`);
 
         let qrcodeDiv = document.getElementById("qrcodeDiv")
+        let QRContainer = document.getElementById("QRContainer")
         let qrcode = new QRCode(qrcodeDiv, {
             text: location.href,
             width: 256,
@@ -36,7 +37,7 @@
         });
         const closeQRCodebtn = document.getElementById("closeQRCodebtn");
         closeQRCodebtn.addEventListener("click",()=>{
-            qrcodeDiv.remove();
+            QRContainer.remove();
         })
 
         const reQRCodebtn = document.getElementById("reQRCodebtn");
@@ -47,9 +48,9 @@
     }
 
     GM_registerMenuCommand("生成二维码", function (event) {
-        let qrcodeDiv = document.getElementById("qrcodeDiv")
-        if(qrcodeDiv){
-            qrcodeDiv.remove()
+        let QRContainer = document.getElementById("QRContainer")
+        if(QRContainer){
+            QRContainer.remove()
         }
         urlQRCode()
     }, "qrcodeGenerate");
