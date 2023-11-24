@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页URL二维码生成
 // @namespace    http://yeyu1024.xyz
-// @version      1.5
+// @version      1.6
 // @description  生成当前网页的地址(url)的二维码，方便手机扫描.支持二维码图片解析
 // @description:en Generate the QR code of the address of the current webpage (URL), which is convenient for mobile phone scanning
 // @author       夜雨
@@ -31,6 +31,18 @@
     setTimeout(addjs)
     setInterval(addjs,3000)
 
+
+    function isURL(str) {
+        // 使用正则表达式检查是否符合网址格式
+        var pattern = new RegExp('^(https?:\\/\\/)?' + // 协议部分，可选
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // 域名部分
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // 或者IP地址形式
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // 端口号和路径部分
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // 查询字符串
+            '(\\#[-a-z\\d_]*)?$', 'i'); // 锚点部分
+
+        return pattern.test(str);
+    }
 
     function urlQRCode(){
         $("body").append(`<div id="QRContainer" class="qrcodeDiv" style="z-index: 9999 !important;left: 50px;top: 50px;/*height: 350px;*/position: fixed;background-color: white;border-radius: 10px" >
@@ -76,14 +88,23 @@
         if (code) {
             console.log("解析结果",'二维码内容：' + code.data)
             $("body").append(`<div id="QRContainer" class="qrcodeDiv" style="z-index: 9999 !important;left: 50px;top: 50px;/*height: 350px;*/position: fixed;background-color: white;border-radius: 10px" >
-                <textarea rows="5" style="margin: 20px" id="decodeResult"></textarea>
-                <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="closeQRresultbtn">关闭</button>
+                <div><textarea rows="5" style="margin: 20px" id="decodeResult"></textarea></div>
+                <div>
+                    <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="closeQRresultbtn">关闭</button>
+                    <a target="_blank" href="javascript:void(0)"  style="display: none" id="openURL">打开</a>
+                </div>
             </div>
         </div>`);
 
             let decodeResult = document.getElementById("decodeResult")
             let QRContainer = document.getElementById("QRContainer")
             decodeResult.innerHTML = code.data
+
+            if(isURL(code.data)){
+                let openURL = document.getElementById("openURL");
+                openURL.removeAttribute("style")
+                openURL.setAttribute("href",code.data)
+            }
             const closeQRresultbtn = document.getElementById("closeQRresultbtn");
             closeQRresultbtn.addEventListener("click",()=>{
                 QRContainer.remove();
