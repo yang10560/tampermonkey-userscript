@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.77
+// @version      4.78
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -20,7 +20,7 @@
 // @connect    chat.aidutu.cn
 // @connect    xjai.cc
 // @connect    wobcw.com
-// @connect    chat.68686.ltd
+// @connect    aifree.site
 // @connect    t66.ltd
 // @connect    t-chat.cn
 // @connect    ai.ls
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.77"
+    const JSVer = "v4.78"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1743,7 +1743,9 @@
                 reader.read().then(function processText({done, value}) {
                     if (done) {
                         GM_saveHistory(result.join("").replace(/x-code.fun/gi,"")
-                            .replace(/bilibili/gi,""))
+                            .replace(/bilibili/gi,"")
+                            .replace(/xjai/gi,"")
+                        )
                         return;
                     }
                     try {
@@ -1759,7 +1761,7 @@
                         console.log(d)
                         result.push(d)
                         GM_fillBotResponse(result.join("").replace(/x-code.fun/gi,"")
-                            .replace(/bilibili/gi,""))
+                            .replace(/bilibili/gi,"").replace(/xjai/gi,""))
 
 
                     } catch (e) {
@@ -1776,6 +1778,80 @@
             }
         })
     }
+
+
+    //https://s.aifree.site/
+    let messageChain_aifree = []
+    function AIFREE(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let now = Date.now();
+        let Baseurl = `https://s.aifree.site/`
+        generateSignatureWithPkey({
+            t:now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY || ""
+        }).then(sign => {
+            addMessageChain(messageChain_aifree, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_fetch({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+                    messages: messageChain_aifree,
+                    time: now,
+                    pass: null,
+                    sign: sign
+                }),
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                GM_simulateBotResponse("...")
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain_aifree, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            GM_fillBotResponseAndSave(your_qus,finalResult)
+
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        GM_fillBotResponse(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },function (reason) {
+                console.log(reason)
+                Toast.error("未知错误!" + reason.message)
+
+            }).catch((ex)=>{
+                console.log(ex)
+                Toast.error("未知错误!" + ex.message)
+            });
+
+        });
+    }
+
+
 
 
     //https://ai1.chagpt.fun/
@@ -2248,6 +2324,10 @@
                     console.log("MixerBox")
                     XJAI(qus);
                     break;
+            case "AIFREE":
+                    console.log("AIFREE")
+                    AIFREE(qus);
+                    break;
              default:
                     ANSEAPP(qus);
             }
@@ -2257,6 +2337,7 @@
         document.getElementById("modeSelect").innerHTML = `<option selected value="Defalut">默认</option>
  <option value="PIZZA">PIZZA</option>
  <option value="XJAI">XJAI</option>
+ <option value="AIFREE">AIFREE</option>
  <option value="YQCLOUD">YQCLOUD</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
