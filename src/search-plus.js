@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.2.0
+// @version      3.2.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -66,7 +66,7 @@
 // @connect    xjai.cc
 // @connect    zw7.lol
 // @connect    xeasy.me
-// @connect   chat.wuguokai.cn
+// @connect   aifree.site
 // @connect   ai5.wuguokai.top
 // @connect   chat.aidutu.cn
 // @connect   aichat.leiluan.cc
@@ -162,7 +162,7 @@
     'use strict';
 
 
-    const JSver = '3.2.0';
+    const JSver = '3.2.1';
 
 
     function getGPTMode() {
@@ -1074,6 +1074,12 @@
 
             return;
             //end if
+        }else if (GPTMODE && GPTMODE === "AIFREE") {
+            console.log("AIFREE")
+            AIFREE();
+
+            return;
+            //end if
         }else if (GPTMODE && GPTMODE === "GEEKR") {
             console.log("GEEKR")
             GEEKR()
@@ -1274,6 +1280,7 @@
       <option value="ZhipuAI">智谱AI</option>
       <option value="Zhinao360">360智脑</option>
       <option value="miniMax">miniMax</option>
+      <option value="AIFREE">AIFREE</option>
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="ChatGO">ChatGO</option>
       <option value="MixerBox">MixerBox</option>
@@ -5157,6 +5164,77 @@
                         try {
                             console.log(finalResult)
                             addMessageChain(messageChain_yeyu, {
+                                role: "assistant",
+                                content: finalResult
+                            })
+                            showAnserAndHighlightCodeStr(finalResult)
+                            if(finalResult.includes("Invalid signature") || finalResult.includes("exceeded your current")){
+                                Toast.error(`无效或过期，请到设置更新key`)
+                            }
+                        } catch (e) {
+                            console.log(e)
+                        }
+                        return;
+                    }
+                    try {
+                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join(""))
+                    } catch (e) {
+                        console.log(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },function (reason) {
+                console.log(reason)
+                Toast.error("未知错误!" + reason.message)
+
+            }).catch((ex)=>{
+                console.log(ex)
+                Toast.error("未知错误!" + ex.message)
+            });
+
+        });
+    }
+
+    //https://s.aifree.site/
+    let messageChain_aifree = []
+    function AIFREE() {
+
+        let now = Date.now();
+        let Baseurl = `https://s.aifree.site/`
+        generateSignatureWithPkey({
+            t:now,
+            m: your_qus || "",
+            pkey: {}.PUBLIC_SECRET_KEY || ""
+        }).then(sign => {
+            addMessageChain(messageChain_aifree, {role: "user", content: your_qus})//连续话
+            console.log(sign)
+            GM_fetch({
+                method: "POST",
+                url: Baseurl + "api/generate",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Referer": Baseurl,
+                    "accept": "application/json, text/plain, */*"
+                },
+                data: JSON.stringify({
+                    messages: messageChain_aifree,
+                    time: now,
+                    pass: null,
+                    sign: sign
+                }),
+                responseType: "stream"
+            }).then((stream) => {
+                let result = [];
+                const reader = stream.response.getReader();
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        let finalResult = result.join("")
+                        try {
+                            console.log(finalResult)
+                            addMessageChain(messageChain_aifree, {
                                 role: "assistant",
                                 content: finalResult
                             })
