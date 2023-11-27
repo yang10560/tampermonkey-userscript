@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.76
+// @version      4.77
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -18,7 +18,7 @@
 // @connect    api.aigcfun.com
 // @connect    ai5.wuguokai.top
 // @connect    chat.aidutu.cn
-// @connect    chat86.cn
+// @connect    xjai.cc
 // @connect    wobcw.com
 // @connect    chat.68686.ltd
 // @connect    t66.ltd
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.76"
+    const JSVer = "v4.77"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -1711,6 +1711,72 @@
     }
 
 
+    let parentID_thebai;
+
+    function XJAI(question) {
+        let your_qus = question;//你的问题
+        GM_handleUserInput(null)
+        let ops = {};
+        if (parentID_thebai) {
+            ops = {parentMessageId: parentID_thebai};
+        }
+        console.log(ops)
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "http://w3.xjai.cc/api/chat-process",
+            headers: {
+                "Content-Type": "application/json",
+                "Referer": "http://w3.xjai.cc/",
+                "accept": "application/json, text/plain, */*"
+            },
+            data: JSON.stringify({
+                "prompt": your_qus,
+                "options": ops,
+                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                "temperature": 0.8,
+                "top_p": 1
+            }),
+            onloadstart: (stream) => {
+                GM_simulateBotResponse("...")
+                const reader = stream.response.getReader();
+                let result = []
+                reader.read().then(function processText({done, value}) {
+                    if (done) {
+                        GM_saveHistory(result.join("").replace(/x-code.fun/gi,"")
+                            .replace(/bilibili/gi,""))
+                        return;
+                    }
+                    try {
+                        let byteArray = new Uint8Array(value);
+                        let decoder = new TextDecoder('utf-8');
+                        let d = decoder.decode(byteArray);
+                        try {
+                            let jsonObj = JSON.parse(d.trim())
+                            if (jsonObj.id) {
+                                parentID_thebai = jsonObj.id;
+                            }
+                        }catch (e) {  }
+                        console.log(d)
+                        result.push(d)
+                        GM_fillBotResponse(result.join("").replace(/x-code.fun/gi,"")
+                            .replace(/bilibili/gi,""))
+
+
+                    } catch (e) {
+                        console.error(e)
+                    }
+
+                    return reader.read().then(processText);
+                });
+            },
+            responseType: "stream",
+            onerror: function (err) {
+                console.log(err)
+                Toast.error("未知错误!")
+            }
+        })
+    }
+
 
     //https://ai1.chagpt.fun/
     function CVEOY(question) {
@@ -2178,6 +2244,10 @@
                     console.log("MixerBox")
                     MixerBox(qus);
                     break;
+           case "XJAI":
+                    console.log("MixerBox")
+                    XJAI(qus);
+                    break;
              default:
                     ANSEAPP(qus);
             }
@@ -2186,6 +2256,7 @@
 
         document.getElementById("modeSelect").innerHTML = `<option selected value="Defalut">默认</option>
  <option value="PIZZA">PIZZA</option>
+ <option value="XJAI">XJAI</option>
  <option value="YQCLOUD">YQCLOUD</option>
  <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
