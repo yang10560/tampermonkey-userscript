@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.4
+// @version      1.7.5
 // @description  中-英-外互转，双语显示。支持谷歌，微软等API，为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en  Web pages translated into Chinese, English and foreign languages
 // @description:de  Webseite in Chinesisch, Englisch, Fremdsprachen
@@ -560,6 +560,7 @@
     //是否支持多语种的引擎
     function isSupportMultiLang(){
         return currentAPI.name === APIConst.TransmartWeb || currentAPI.name === APIConst.Microsoft || currentAPI.name === APIConst.Google
+            || currentAPI.name === APIConst.BaiduMobileWeb || currentAPI.name === APIConst.AlibabaWeb
     }
 
     function colorSelectAndSettings(event) {
@@ -613,7 +614,7 @@
               </select>
                <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectAPIBtn">选择</button>
             </div>
-         <div><span style="margin-top: 10px">注意:外语目前仅适用腾讯交互，谷歌，微软翻译，语言代码可能会存在差异(未测),其他默认英语.</span></div>
+         <div><span style="margin-top: 10px">注意:外语目前仅适用腾讯交互，谷歌，微软等翻译，语言代码可能会存在差异,其他默认英语.</span></div>
             <div><span>外语语言:</span>
               <select id="selectForeign">
                   <option value="en">英语(en)</option>
@@ -721,7 +722,7 @@
                 GM_setValue("selectForeignLang", selectedValue)
                 MyColorSelector.remove() //退出
             }else{
-                Toast.error("暂时仅支持腾讯交互，谷歌，微软翻译。请切换引擎后设置")
+                Toast.error("暂时仅支持腾讯交互，谷歌，微软, 手机有道,阿里翻译。请切换引擎后设置")
             }
 
         });
@@ -1295,12 +1296,12 @@
      <ul>
       <li>
        <a id="en2zh" href="javascript:void(0)">
-        <span>外转中</span>
+        <span>转中文</span>
        </a>
       </li>
       <li>
        <a id="zh2en" href="javascript:void(0)">
-        <span>中转外</span>
+        <span>转外文</span>
        </a>
       </li>
       <li style="display: flex; justify-content: center ">
@@ -3481,7 +3482,7 @@ ${ali_uuid}\r
     setTimeout(async () => {
         if (englishAutoTranslate && !isChinesePage()) {
             console.log('自动翻译')
-            Toast.success('检测到外文, 正在自动翻译...', '', {timeOut: 3000})
+            Toast.success('检测到外文, 正在自动翻译...', '', {timeOut: 600})
             translateTo(currentAPI.ChineseLang)
 
         }
