@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.1.9
+// @version      3.2.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -63,7 +63,7 @@
 // @connect    luntianxia.uk
 // @connect    chat.51buygpt.com
 // @connect    extkj.cn
-// @connect    tdchat0.com
+// @connect    xjai.cc
 // @connect    zw7.lol
 // @connect    xeasy.me
 // @connect   chat.wuguokai.cn
@@ -162,7 +162,7 @@
     'use strict';
 
 
-    const JSver = '3.1.9';
+    const JSver = '3.2.0';
 
 
     function getGPTMode() {
@@ -987,7 +987,7 @@
             //end if
             return;
         } else if (GPTMODE && GPTMODE === "THEBAI") {
-            console.log("当前模式THEBAI")
+            console.log("当前模式XJAI")
             THEBAI()
             //end if
             return;
@@ -1278,7 +1278,7 @@
       <option value="ChatGO">ChatGO</option>
       <option value="MixerBox">MixerBox</option>
       <option value="ANZZ">ANZZ</option>
-      <option style="display: none" value="THEBAI">THEBAI[科学]</option>
+      <option  value="THEBAI">XJAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="YUXIN">YUXIN</option>
       <option value="BNU120">BNU120</option>
@@ -2518,42 +2518,42 @@
         console.log(ops)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
-            url: "https://chatbot.theb.ai/api/chat-process",
+            url: "http://w3.xjai.cc/api/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chatbot.theb.ai/",
+                "Referer": "http://w3.xjai.cc/",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
-                prompt: your_qus,
-                options: ops
+                "prompt": your_qus,
+                "options": ops,
+                "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+                "temperature": 0.8,
+                "top_p": 1
             }),
             onloadstart: (stream) => {
                 const reader = stream.response.getReader();
+                let result = []
                 reader.read().then(function processText({done, value}) {
                     if (done) {
+
                         return;
                     }
                     try {
                         let byteArray = new Uint8Array(value);
                         let decoder = new TextDecoder('utf-8');
                         let d = decoder.decode(byteArray);
-                        console.log(d)
-
-                        d.split("\n").forEach(item=>{
-                            try {
-                                let jsonObj = JSON.parse(item.trim())
-                                if (jsonObj.text) {
-                                   // console.warn(jsonObj)
-                                    showAnserAndHighlightCodeStr(jsonObj.text)
-                                }
-                                if (jsonObj.id) {
-                                    parentID_thebai = jsonObj.id;
-                                }
-                            }catch (ex){
-
+                        try {
+                            let jsonObj = JSON.parse(d.trim())
+                            if (jsonObj.id) {
+                                parentID_thebai = jsonObj.id;
                             }
-                        })
+                        }catch (e) {  }
+                        console.log(d)
+                        result.push(d)
+                        showAnserAndHighlightCodeStr(result.join("").replace(/x-code.fun/gi,"")
+                            .replace(/bilibili/gi,""))
+
 
                     } catch (e) {
                         console.error(e)
@@ -2568,7 +2568,6 @@
                 Toast.error("未知错误!")
             }
         })
-
     }
 
 
