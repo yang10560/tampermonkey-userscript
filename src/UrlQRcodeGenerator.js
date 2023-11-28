@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页URL二维码生成
 // @namespace    http://yeyu1024.xyz
-// @version      1.6
+// @version      1.7
 // @description  生成当前网页的地址(url)的二维码，方便手机扫描.支持二维码图片解析
 // @description:en Generate the QR code of the address of the current webpage (URL), which is convenient for mobile phone scanning
 // @author       夜雨
@@ -136,6 +136,9 @@
                 // 为每个 img 元素删除事件监听器
                 images.forEach(function(img) {
                     img.removeEventListener('click', contextMenuHandler);
+                    setTimeout(()=>{
+                        img.removeAttribute("crossorigin") //还原
+                    },3000)
                 });
 
                 console.log('二维码解析---结束');
