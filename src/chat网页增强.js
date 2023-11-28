@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.78
+// @version      4.79
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -1742,7 +1742,7 @@
                 let result = []
                 reader.read().then(function processText({done, value}) {
                     if (done) {
-                        GM_saveHistory(result.join("").replace(/x-code.fun/gi,"")
+                        GM_saveHistory(your_qus, result.join("").replace(/x-code.fun/gi,"")
                             .replace(/bilibili/gi,"")
                             .replace(/xjai/gi,"")
                         )
@@ -1800,6 +1800,7 @@
                 headers: {
                     "Content-Type": "application/json",
                     "Referer": Baseurl,
+                    "X-Forwarded-For": generateRandomIP(),
                     "accept": "application/json, text/plain, */*"
                 },
                 data: JSON.stringify({
