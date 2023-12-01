@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.79
+// @version      4.80
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -77,7 +77,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.78"
+    const JSVer = "v4.80"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
 
@@ -353,6 +353,7 @@
                     "client-id": uuidv4(),
                     "client-v": ails_clientv,
                     "Referer": Baseurl,
+                    "from-url": "https://ai.ls/?chat=1",
                     "origin": "https://ai.ls",
                     "X-Forwarded-For": generateRandomIP(),
                     "accept": "application/json"
