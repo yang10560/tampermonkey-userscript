@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.80
+// @version      4.81
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
 // @match        *://yeyu1024.xyz/gptlight.html*
 // @grant      GM_xmlhttpRequest
 // @grant      GM_getResourceText
+// @grant      GM_openInTab
+// @grant      GM_registerMenuCommand
 // @icon64     data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAZlBMVEUAAAD///+hoaFoaGhsbGy7u7vd3d2+vr76+vra2tr29va2trYrKyvg4ODs7OxXV1dgYGCtra0xMTGXl5fExMQ6OjqOjo7R0dEVFRWnp6dSUlIiIiIcHBwLCwt4eHhycnKEhIRHR0f14+hfAAADN0lEQVRYhe1WyZajMAyEsMQshgABEwIJ+f+fbC02W0yHnjnNvNYFDFbZKpUlO86v/e/Wpve/8M4TFckwSvI/cx8z11g2/tw9vZKrEIKe159GUkvwipPxVb4eQQzvYV12XX3Y/x6BT5LqUZkgWixEHF/9/hAAeozz0I8nOtzoccDfg8CbaZQrYkOGYUaEFO2RDUTT4MZefjkMpVcQo5/Wr2DSi9/bhlYPhukvZqf41l3hiiFv8xJR2CslIT+XXfc+YapojY60kG1ZA0rknj+lL4YtnGCQ4lbESSczf5R6Ugc5ee4AoL9KAwbwYXDWXJTXhaDhf2L3R44rxzkbgFgHn55Y0JJjzyeONpYLDn4CCPn7A46VaggjwIB6eEltAOConCUAcZVDXBKIHHgbp9IZ4KW0AZj8LAHaQEzaY0lmHk60AXiQ8XYFEDoVrRpXOmSfdQFfbMe7MuTOJMLU6IJqkh7PuTMVrhosAJCp2xrApA6Lk+p4VllMQjsAcNNkpzeQlKkPHhQb0VkAEgO8TSMaVqhMH/EyW57W2R7moNoBCjwDPg1QzM07QAk7o+wUrIcNwAVZ1ktAROE7gBMaEq4kaW8NgHlQOsrULiUoHjGT40PIqngHOIGYzRK22ggJz3TpbrCt7AMU9gPZwc4y5slJC7FO4woAxmcLgMMi0dF1ymSOtnMEYFDczxqtdJRM6HlAbhSvARIqHG+G5BJGqONoK2opooIMLQFaYMvWs0EJruNRV1b8vy+wqDtbEj2caAcQg5NWdIQL6IJPjIGg1gDKhLINARyxed4DpgLFq+vvKoRiEszGWmlCy0OmcyrqSxKr/eaUzFvDGnDWCX2d5zQmNdJsO4xoz8XeyqcpIdRexZ0BBOYl2r2wyHfwB2WFO0zBjS/Zv2Vc8Pey3l3kor0iR65Q+61Vr6GmttNSOtxRf+jgvfnW3eFa4CZ+3fb1k1q1uC0D3GmKC2s5zkxKvieqWbKQPvFpfbRnNF+pYn/+3ny6m0zW+9eYDIMxlQsbvKuO3zfrV5fWKMc4GLu6G+m2KY/fNNnu6/vu2drTv7fFjVuOP3dHy5MolJEqrKfvoPXp57vpr/3r9gUxwiW4OiuC3wAAAABJRU5ErkJggg==
 // @connect    chatai.to
 // @connect    luntianxia.uk
@@ -77,9 +79,14 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.80"
+    const JSVer = "v4.81"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
+    try {
+        GM_registerMenuCommand("更新脚本", function (event) {
+            GM_openInTab("https://greasyfork.org/zh-CN/scripts/463138")
+        }, "updateScript");
+    }catch (e) { }
 
     function GM_simulateBotResponse(str) {
         simulateBotResponse(str)
@@ -271,9 +278,9 @@
         GM_handleUserInput(null)
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://www.pizzagpt.it/api/chat-completion",
+            url: "https://www.pizzagpt.it/api/chatx-completion",
             headers: {
-                "Content-Type": "text/plain;charset=UTF-8",
+                "content-type": "application/json",
                 "Referer": `https://www.pizzagpt.it/`,
                 "origin": `https://www.pizzagpt.it`,
                 "x-secret": pizzaSecret
@@ -2388,5 +2395,5 @@
     }, 1500)
 
 
-    Toast.success(`插件已经成功加载,版本: ${JSVer}`);
+    Toast.success(`插件已经成功加载,不能用时及时更新脚本,当前版本: ${JSVer}`);
 })();
