@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.81
+// @version      4.82
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -79,7 +79,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.81"
+    const JSVer = "v4.82"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
     try {
@@ -1077,11 +1077,12 @@
                 method: "POST",
                 url: Baseurl + "api/generate",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "text/plain;charset=UTF-8",
                     "Referer": Baseurl,
-                    "accept": "application/json, text/plain, */*"
+                    "accept":  "*/*"
                 },
                 data: JSON.stringify({
+                    model: "gpt-3.5-turbo-1106",
                     messages: messageChain9,
                     time: now,
                     pass: null,
