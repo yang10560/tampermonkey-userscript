@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.2.3
+// @version      3.2.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -31,6 +31,7 @@
 // @match      *://m.sogou.com/*
 // @match      *://wap.sogou.com/*
 // @match      *://neice.tiangong.cn/*
+// @match      *://chat.tiangong.cn/*
 // @match      *://www.bilibili.com/video/*
 // @match      *://blog.csdn.net/*/article/details/*
 // @match      *://chatglm.cn/*
@@ -140,6 +141,7 @@
 // @connect   xinghuo.xfyun.cn
 // @connect   geetest.com
 // @connect   neice.tiangong.cn
+// @connect   chat.tiangong.cn
 // @connect   yeyu1024.xyz
 // @connect   chatglm.cn
 // @connect   open.bigmodel.cn
@@ -149,6 +151,7 @@
 // @connect   ohmygpt.com
 // @connect   muspimerol.site
 // @connect   frechat.xyz
+// @compatible   Chrome, Firefox
 // @license    MIT
 // @website    https://yeyu1024.xyz/gpt.html
 
@@ -162,7 +165,7 @@
     'use strict';
 
 
-    const JSver = '3.2.3';
+    const JSver = '3.2.4';
 
 
     function getGPTMode() {
@@ -1317,7 +1320,7 @@
         <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
         <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>
         <a target="_blank"  href="https://qianwen.aliyun.com/">通义</a>
-        <a target="_blank"  href="https://www.tiangong.cn/">天工</a>
+        <a target="_blank"  href="https://chat.tiangong.cn/">天工</a>
         <a target="_blank"  href="https://xinghuo.xfyun.cn/">讯飞</a>
         <a target="_blank"  href="https://hunyuan.tencent.com/">混元</a>
         <a target="_blank"  href="https://www.doubao.com/chat/">豆包</a>
@@ -3444,11 +3447,11 @@
     let tg_invite_Token;
     let tg_token;
     async function initTGtoken() {
-        if (location.href.includes("neice.tiangong.cn")) {
-            //"invite-token": "Bearer " + c("formNatureQueueWaitToken"),
-            tg_invite_Token = localStorage.getItem("formNatureQueueWaitToken");
-            //token: "Bearer " + c("formNatureResearchToken"),
-            tg_token = localStorage.getItem("formNatureResearchToken");
+        if (location.href.includes("neice.tiangong.cn") || location.href.includes("chat.tiangong.cn")) {
+            //"invite-token": "Bearer " + c("aiChatQueueWaitToken"),
+            tg_invite_Token = localStorage.getItem("aiChatQueueWaitToken");
+            //token: "Bearer " + c("aiChatResearchToken"),
+            tg_token = localStorage.getItem("aiChatResearchToken");
             GM_setValue("tg_invite_Token", tg_invite_Token)
             GM_setValue("tg_token", tg_token)
             if(tg_invite_Token){
@@ -3465,40 +3468,6 @@
 
     setTimeout(initTGtoken)
 
-
-    //过时 {"code":60101,"code_msg":"当前使用授权已失效，请重新排队"}
-    //resp_data.invite_token
-    async function waitAccess() {
-        let req1 = await GM_fetch({
-            method: "POST",
-            url: "https://neice.tiangong.cn/api/v1/queue/waitAccess",
-            headers: {
-                "accept": "application/json, text/plain, */*",
-                "origin":"https://neice.tiangong.cn",
-                "invite-token": `Bearer null`,
-                "Content-Type":"application/json",
-                "token": `Bearer ${tg_token}`,
-                "device": "Web",
-                "referer":"https://neice.tiangong.cn/interlocutionPage"
-            },
-            data:JSON.stringify({
-                data:{
-                    token: ""
-                }
-            })
-        })
-        let r = req1.responseText;
-        console.log(r)
-        return new Promise(async (resolve, reject) => {
-            try {
-                tg_invite_Token = JSON.parse(r).resp_data.invite_token;
-                 GM_setValue("waitAccess tg_invite_Token", tg_invite_Token)
-                resolve("更新成功，请再次点击")
-            } catch (e) {
-                resolve("waitAccess 异常 请到官网获取token后刷新页面。[天工AI](https://neice.tiangong.cn/interlocutionPage)")
-            }
-        })
-    }
 
 
     let tg_session_id;
