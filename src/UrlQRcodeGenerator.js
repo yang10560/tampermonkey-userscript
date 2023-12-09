@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页URL二维码生成
 // @namespace    http://yeyu1024.xyz
-// @version      1.7
+// @version      1.8
 // @description  生成当前网页的地址(url)的二维码，方便手机扫描.支持二维码图片解析
 // @description:en Generate the QR code of the address of the current webpage (URL), which is convenient for mobile phone scanning
 // @author       夜雨
@@ -45,11 +45,18 @@
     }
 
     function urlQRCode(){
-        $("body").append(`<div id="QRContainer" class="qrcodeDiv" style="z-index: 9999 !important;left: 50px;top: 50px;/*height: 350px;*/position: fixed;background-color: white;border-radius: 10px" >
+        $("body").append(`<div id="QRContainer" class="qrcodeDiv" style="z-index: 9999 !important;border-radius: 4px; padding:16px; position: fixed;z-index: 9999999; top: 20%; left: 50%; transform: translateX(-50%); background: white; box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 5px;" >
+      <div style="display: flex; justify-content: space-between;">
+            <div>
+            </div>
+            <div id="closeQRCodebtn" style="font-size: 16px; cursor: pointer;position:relative;top: 0px; transform: scale(1.2); color: #999; right: 8px;">
+                ×
+            </div>
+        </div>
       <div style="margin: 20px" id="qrcodeDiv"></div>
       <div style="margin-left: 20px">
-          <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="closeQRCodebtn">关闭</button>
-          <button style="font-size: 14px;width: 120px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="reQRCodebtn">重新生成</button>
+          <!--<button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="closeQRCodebtn">关闭</button>-->
+          <button style="cursor: pointer; color: white;display: block; border: 0 none; outline: none; background: #4caf50; padding: 8px 0; border-radius: 4px; font-size: 14px; margin: 0 auto; margin-top: 16px; width: 180px;" id="reQRCodebtn">重新生成</button>
       </div>
     </div>`);
 
@@ -87,12 +94,25 @@
 
         if (code) {
             console.log("解析结果",'二维码内容：' + code.data)
-            $("body").append(`<div id="QRContainer" class="qrcodeDiv" style="z-index: 9999 !important;left: 50px;top: 50px;/*height: 350px;*/position: fixed;background-color: white;border-radius: 10px" >
+            $("body").append(`<div id="QRContainer" class="qrcodeDiv" style="z-index: 9999 !important;border-radius: 4px; padding:16px; position: fixed;z-index: 9999999; top: 20%; left: 50%; transform: translateX(-50%); background: white; box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 5px;" >
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                    </div>
+                    <div id="closeQRresultbtn" style="font-size: 16px; cursor: pointer;position:relative;top: 0px; transform: scale(1.2); color: #999; right: 8px;">
+                        ×
+                    </div>
+                </div>
+                
                 <div><textarea rows="5" style="margin: 20px" id="decodeResult"></textarea></div>
                 <div>
-                    <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="closeQRresultbtn">关闭</button>
-                    <a target="_blank" href="javascript:void(0)"  style="display: none" id="openURL">打开</a>
+                   <!-- <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;margin-bottom:10px;border-radius: 6px;margin-left: 3px;" id="closeQRresultbtn">关闭</button>-->
+                    <!--<a target="_blank" href="javascript:void(0)"  style="display: none" id="openURL">打开</a>-->
                 </div>
+                <div style="margin-left: 20px">
+                  <button style="cursor: pointer; color: white;display: block; border: 0 none; outline: none; background: #4caf50; padding: 8px 0; border-radius: 4px; font-size: 14px; margin: 0 auto; margin-top: 16px; width: 180px;" id="copyResultbtn">复制结果</button>
+                </div>
+                
+                <div style="font-size: 12px;color: #999;text-align: center;padding: 16px 40px;/* margin-top: 32px; */"><a target="_blank" href="javascript:void(0)"  style="display: none" id="openURL">打开网址</a></div>
             </div>
         </div>`);
 
@@ -109,6 +129,14 @@
             closeQRresultbtn.addEventListener("click",()=>{
                 QRContainer.remove();
             })
+
+            //copy result
+            const copyResultbtn = document.getElementById("copyResultbtn");
+            copyResultbtn.addEventListener("click",()=>{
+               decodeResult.select()
+               document.execCommand("copy");
+            })
+
 
         } else {
             alert('未找到二维码')
