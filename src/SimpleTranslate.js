@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.5
+// @version      1.7.6
 // @description  中-英-外互转，双语显示。支持谷歌，微软等API，为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en  Web pages translated into Chinese, English and foreign languages
 // @description:de  Webseite in Chinesisch, Englisch, Fremdsprachen
@@ -564,7 +564,7 @@
     }
 
     function colorSelectAndSettings(event) {
-        $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;left: 50px;width: 300px;top: 50px;/*height: 350px;*/border: 1px salmon solid;position: fixed;background-color: white;border-radius: 10px" id="MyColorSelector">
+        $("body").append(`<div class="MyColorSelector" style="z-index: 9999 !important;padding:16px;position: fixed;border-radius: 4px;border: 1px salmon solid;top: 10%;bottom: 10%;left: 50%;transform: translateX(-50%);background: white;box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 5px;overflow-y: scroll;" id="MyColorSelector">
         <div>
           <label for="redRange">红/Red:</label>
           <input type="range" id="redRange" min="0" max="255" value="0" onchange="document.getElementById('redval').innerHTML = value">
@@ -584,9 +584,9 @@
           <div style=" width: 50px; height: 50px; margin-top: 10px;margin-bottom: 10px;margin-left: 20px" id="colorDisplay"></div>
           <div style="font-size: 30px;" id="colorPreview">文字预览</div>
         </div>
-        <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectColorBtn">确定</button>
-        <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="scrollBtn">滚动</button>
-        <button style="font-size: 14px;width: 70px; height: 40px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectColorCancelBtn">退出</button>
+        <button style="cursor: pointer;color: white;border: 6px;outline: none;background: #4caf50;padding: 8px 0;border-radius: 6px;font-size: 14px;margin: 0 auto;margin-top: 6px;width: 70px;" id="selectColorBtn">确定</button>
+        <button style="cursor: pointer;color: white;border: 6px;outline: none;background: #4caf50;padding: 8px 0;border-radius: 6px;font-size: 14px;margin: 0 auto;margin-top: 6px;width: 70px;" id="scrollBtn">滚动</button>
+        <button style="cursor: pointer;color: white;border: 6px;outline: none;background: #4caf50;padding: 8px 0;border-radius: 6px;font-size: 14px;margin: 0 auto;margin-top: 6px;width: 70px;" id="selectColorCancelBtn">退出</button>
          <div><span style="margin-top: 10px">温馨提示：在输入框时,连续按三下空格键即可翻译输入框的内容.</span></div>
             <div><span>翻译引擎:</span>
               <select id="selectAPI">
@@ -612,9 +612,9 @@
                   <option  value="18">讯飞[需key]</option>
                   <option value="19">金山快译</option>
               </select>
-               <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectAPIBtn">选择</button>
+               <button style="cursor: pointer;color: white;border: 6px;outline: none;background: #4caf50;padding: 8px 0;border-radius: 6px;font-size: 14px;margin: 0 auto;margin-top: 6px;width: 70px;" id="selectAPIBtn">选择</button>
             </div>
-         <div><span style="margin-top: 10px">注意:外语目前仅适用腾讯交互，谷歌，微软等翻译，语言代码可能会存在差异,其他默认英语.</span></div>
+         <div><span style="margin-top: 10px">注意:外语目前仅适用部分引擎，语言代码可能会存在差异,其他默认英语.</span></div>
             <div><span>外语语言:</span>
               <select id="selectForeign">
                   <option value="en">英语(en)</option>
@@ -639,7 +639,7 @@
                   <option value="cn">中文(cn)</option>
                   <option value="zh-TW">中文繁体(zh-TW)</option>
               </select>
-               <button style="font-size: 14px;width: 70px; height: 30px;margin-top: 10px;border-radius: 6px;margin-left: 3px;" id="selectForeignBtn">选择</button>
+               <button style="cursor: pointer;color: white;border: 6px;outline: none;background: #4caf50;padding: 8px 0;border-radius: 6px;font-size: 14px;margin: 0 auto;margin-top: 6px;width: 70px;" id="selectForeignBtn">选择</button>
             </div>
         </div>
         `);
