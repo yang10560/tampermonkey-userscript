@@ -1,10 +1,9 @@
 // ==UserScript==
-// @name         百度文心一言去水印
+// @name         国内AI去水印
 // @namespace    http://tampermonkey.net/
-// @version      3.3
-// @description  去文心一言水印、去星火水印。去天工水印。去混元水印。去chatGLM水印。去通义千问水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。
+// @version      3.4
+// @description  去星火水印。去天工水印。去混元水印。去chatGLM水印。去通义千问水印、去超时弹窗、去AI画图水印。CSDN-C知道去水印,去提问限制。
 // @author       夜雨
-// @match        *://yiyan.baidu.com/*
 // @match        *://so.csdn.net/so/search*
 // @match        *://so.csdn.net/so/ai*
 // @match        *://so.csdn.net/chat*
