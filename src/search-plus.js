@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.2.4
+// @version      3.2.5
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -165,7 +165,7 @@
     'use strict';
 
 
-    const JSver = '3.2.4';
+    const JSver = '3.2.5';
 
 
     function getGPTMode() {
@@ -388,27 +388,6 @@
                 let aikey = prompt("请输入您的openAIkey", "");
                 if (aikey) localStorage.setItem("openAIkey", aikey)
             }
-        }else if(!GPTMODE || GPTMODE === "Default"){
-            GM_fetch({
-                method: "GET",
-                url: "https://api.aigcfun.com/fc/key",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Referer": `https://aigcfun.com/`,
-                    "X-Forwarded-For": generateRandomIP()
-                }
-            }).then((response)=> {
-                let resp = response.responseText;
-                let pubkey = JSON.parse(resp).data;
-                if (!pubkey) {
-                    Toast.error("获取pubkey失败")
-                    return
-                }
-                console.log("pubkey:" + pubkey);
-                //GM_setValue("pubkey", pubkey)
-                localStorage.setItem("pubkey", pubkey)
-                Toast.success("pubkey更新成功:" + pubkey)
-            })
         }else if(GPTMODE === "BNU120"){
             setTimeout(async () => {
                 bnuInt = (bnuInt + 1) > bnuList.length ? 0 : (bnuInt + 1)
@@ -465,7 +444,7 @@
         return localStorage.getItem("pubkey");
     }
 
-    //update AIGCFUN key.
+    //update  key.
     setTimeout(()=>{
         if (!getPubkey()){
             setPubkey();
@@ -1188,60 +1167,10 @@
         }
 
         console.log("默认线路:")
-        AIGCFUN();
+        YQCLOUD()
 
     }
 
-
-    //默认线路
-    function AIGCFUN() {
-        Toast.info("该线路较慢，请稍后...")
-        const now = Date.now();
-        console.log(now);
-        generateSignature({
-            t: now,
-            m: your_qus || ""
-        }).then(sign => {
-            console.log(sign)
-            addMessageChain(messageChain1, {role: "user", content: your_qus})//连续话
-            GM_fetch({
-                method: "POST",
-                url: "https://api.aigcfun.com/api/v1/text?key=" + getPubkey(),
-                headers: {
-                    "Content-Type": "application/json",
-                    "Referer": "https://aigcfun.com/",
-                    "origin": "https://aigcfun.com"
-                },
-                data: JSON.stringify({
-                    messages: messageChain1,
-                    tokensLength: your_qus.length + 10,
-                    model: "gpt-3.5-turbo-16k"
-                }),
-                responseType: "text",
-            }).then(function (res) {
-                if (res.status === 200) {
-                    try {
-                        console.log('成功....')
-                        console.log(res)
-                        let rest = JSON.parse(res.responseText).choices[0].text
-                        console.log(rest)
-                        showAnserAndHighlightCodeStr(rest);
-                        addMessageChain(messageChain1, {
-                            role: "assistant",
-                            content: rest
-                        })
-                    } catch (e) {
-                        Toast.error("未知错误!")
-                    }
-
-                } else {
-                    Toast.error('访问失败了')
-                }
-            },function (reason){
-                Toast.error(`出错了:${reason.status},${reason.statusText}`)
-            });
-        });
-    }
 
 
     function creatBox() {
@@ -1306,7 +1235,7 @@
       <option value="CVEOY">CVEOY</option>
       <option value="TOYAML">TOYAML</option>
     </select> 部分线路需要科学上网</p>
-	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于默认、自定义、BNU120、智谱</p>
+	<p class="chatHide" id="warn" style="margin: 10px"  ><a id="updatePubkey" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795Z"></path></svg>更新KEY</a>:适用于自定义、BNU120、智谱</p>
 	<p class="chatHide" id="autoClickP" style="margin: 10px"  ><a id="autoClick" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-lg iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H5v16h14V8h-4V4ZM3 2.992C3 2.444 3.447 2 3.998 2H16l5 5v13.992A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008V2.992Zm9 8.508a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5ZM7.527 17a4.5 4.5 0 0 1 8.945 0H7.527Z"></path></svg>自动点击开关</a>:用于设置搜索是否自动点击</p>
 	<p class="chatHide" id="darkThemeP" style="margin: 10px"  ><a id="darkTheme" style="color: #4e6ef2;" href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class=" iconify iconify--ri" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.997c-5.523 0-10-4.478-10-10c0-5.523 4.477-10 10-10s10 4.477 10 10c0 5.522-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16Zm0-2v-12a6 6 0 0 1 0 12Z"></path></svg>暗黑模式开关</a>:用于设置暗黑/白天</p>
 	<p class="chatHide" id="autoTipsP" style="margin: 10px"><a id="autoTips"  href="javascript:void(0)"><svg withd="15" height="15" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -2232,12 +2161,6 @@
     let messageChain2 = [];//AILS
     let messageChain9 = [];//bnu120
     let messageChain10 = [];//PRTBOOM
-    let messageChain1 = [
-        {
-            role: "system",
-            content: "请以markdown的形式返回答案"
-        }
-    ];//default AIGCFUN
 
     function addMessageChain(messageChain, element,maxLength) {
         maxLength = maxLength || 6;
