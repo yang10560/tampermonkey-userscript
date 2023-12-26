@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.82
+// @version      4.83
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -68,6 +68,8 @@
 // @connect   mixerbox.com
 // @connect   muspimerol.site
 // @connect   frechat.xyz
+// @compatible   Chrome
+// @compatible   Firefox
 // @license    MIT
 // @require    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
 // @website    https://yeyu1024.xyz/gpt.html
@@ -79,7 +81,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.82"
+    const JSVer = "v4.83"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
     try {
@@ -2236,12 +2238,12 @@
     //初始化
     setTimeout(() => {
 
-        let aigckeybtn = document.createElement("button");
-        aigckeybtn.innerText = "更新key"
-        aigckeybtn.setAttribute("id", "aigckey")
-        aigckeybtn.addEventListener("click", () => {
-            getAIgcKey();
-        });
+        // let aigckeybtn = document.createElement("button");
+        // aigckeybtn.innerText = "更新key"
+        // aigckeybtn.setAttribute("id", "aigckey")
+        // aigckeybtn.addEventListener("click", () => {
+        //     getAIgcKey();
+        // });
 
         let aiJKbtn = document.createElement("button");
         aiJKbtn.innerText = "插件接口"
@@ -2339,7 +2341,7 @@
                     AIFREE(qus);
                     break;
              default:
-                    ANSEAPP(qus);
+                    YQCLOUD(qus);
             }
 
         });
@@ -2388,7 +2390,7 @@
         }
 
 
-        document.getElementById("input-container").append(aigckeybtn);
+        //document.getElementById("input-container").append(aigckeybtn);
         document.getElementById("input-container").append(aiJKbtn);
 
 
