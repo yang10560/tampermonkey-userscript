@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.83
+// @version      4.84
 // @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -23,7 +23,7 @@
 // @connect    xjai.cc
 // @connect    wobcw.com
 // @connect    aifree.site
-// @connect    t66.ltd
+// @connect    promplate.dev
 // @connect    t-chat.cn
 // @connect    ai.ls
 // @connect    chat.ohtoai.com
@@ -81,7 +81,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.83"
+    const JSVer = "v4.84"
     //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
 
     try {
@@ -1067,7 +1067,8 @@
         let your_qus = question;//你的问题
         GM_handleUserInput(null)
         let now = Date.now();
-        let Baseurl = bnuList[bnuInt].url
+        // let Baseurl = bnuList[bnuInt].url
+        let Baseurl = "https://demo-onrender.promplate.dev/"
         generateSignatureWithPkey({
             t: now,
             m: your_qus || "",
@@ -1076,19 +1077,19 @@
             addMessageChain(messageChain9, {role: "user", content: your_qus})//连续话
             console.log(sign)
             GM_fetch({
-                method: "POST",
-                url: Baseurl + "api/generate",
+                method: "PUT",
+                url: Baseurl + "single/chat_messages",
                 headers: {
-                    "Content-Type": "text/plain;charset=UTF-8",
-                    "Referer": Baseurl,
+                    "Content-Type": "application/json",
+                    "Referer": "https://e3.frechat.xyz/",
                     "accept":  "*/*"
                 },
                 data: JSON.stringify({
                     model: "gpt-3.5-turbo-1106",
                     messages: messageChain9,
-                    time: now,
-                    pass: null,
-                    sign: sign
+                    // time: now,
+                    // pass: null,
+                    // sign: sign
                 }),
                 responseType: "stream"
             }).then((stream) => {
