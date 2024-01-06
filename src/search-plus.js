@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.2.6
+// @version      3.2.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -165,7 +165,7 @@
     'use strict';
 
 
-    const JSver = '3.2.6';
+    const JSver = '3.2.7';
 
 
     function getGPTMode() {
@@ -2079,7 +2079,7 @@
         let nn = Math.floor(new Date().getTime() / 1e3);
         const fD = e=>{
             let t = CryptoJS.enc.Utf8.parse(e)
-                , o = CryptoJS.AES.encrypt(t, '14487141bvirvvG', {
+                , o = CryptoJS.AES.encrypt(t, 'fjfsdwiuhfwf', {
                 mode: CryptoJS.mode.ECB,
                 padding: CryptoJS.pad.Pkcs7
             });
@@ -2097,11 +2097,11 @@
 
         GM_fetch({
             method: "POST",
-            url: "https://api.gptplus.one/chat-process",
+            url: "https://api1.gptplus.one/chat-process",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://gpt.gogpt.site/",
-                "origin": "https://gpt.gogpt.site",
+                "Referer": "https://ai27.gptforlove.com/",
+                "origin": "https://ai27.gptforlove.com",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -2485,7 +2485,8 @@
                         console.log(d)
                         result.push(d)
                         showAnserAndHighlightCodeStr(result.join("").replace(/x-code.fun/gi,"")
-                            .replace(/bilibili/gi,""))
+                            .replace(/bilibili/gi,"")
+                            .replace(/xjai/gi,""))
 
 
                     } catch (e) {
