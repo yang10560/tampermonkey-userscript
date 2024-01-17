@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         叔叔不约只配女
 // @namespace    yeyu
-// @version      0.3
+// @version      0.4
 // @description  叔叔不约只配女
 // @author       夜雨
 // @match        *://*.shushubuyue.net/*
@@ -30,6 +30,8 @@
 
 	'use strict';
 
+	const autoReply = '你好啊'// 这里填写匹配成功后，你要自动填充的句子
+
 	function leave() {
 		var leftButton = document.querySelector("a.button-link.chat-control");
 		if (leftButton) leftButton.click()
@@ -53,6 +55,7 @@
 
 	}
 
+	let firstAuto = true
 	function init() {
 		setInterval(() => {
 			var tab = document.querySelector("#partnerInfoText")
@@ -76,9 +79,32 @@
 				}
 				*/
 
+
+					if(firstAuto){
+						firstAuto = false
+
+						try {
+							//自动发信息
+							var msgInput = document.querySelector("#msgInput")
+							msgInput.value = autoReply;
+							msgInput.innerHTML = autoReply;
+							console.log(msgInput)
+							msgInput.focus()
+							// 创建一个新的 KeyboardEvent 对象
+							document.querySelector(".button-link.msg-send").click()
+						}catch (e) {}
+
+						setTimeout((ev)=>{
+							var msgInput = document.querySelector("#msgInput")
+							msgInput.value = autoReply;
+							msgInput.innerHTML = autoReply;
+						}, 1000)
+					}
+
 			}
 
 			if (tabText && typeof tabText == 'string' && tabText.indexOf("男生") != -1) {
+				firstAuto = true
 				//男生
 				leave()
 
