@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.84
-// @description  网页增强，使你在网页中可以用GPT, 网址已经更新 https://yeyu1024.xyz/gpt.html
+// @version      4.85
+// @description  网页增强，使你在网页中可以用GPT, 网址将于2024.2月初更新 https://yeyu2048.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
 // @match        *://yeyu1024.xyz/gptlight.html*
+// @match        *://yeyu2048.xyz/gpt.html*
+// @match        *://yeyu2048.xyz/gptlight.html*
 // @grant      GM_xmlhttpRequest
 // @grant      GM_getResourceText
 // @grant      GM_openInTab
@@ -64,6 +66,7 @@
 // @connect   ai-yuxin.space
 // @connect   cytsee.com
 // @connect   yeyu1024.xyz
+// @connect   yeyu2048.xyz
 // @connect   gptgo.ai
 // @connect   mixerbox.com
 // @connect   muspimerol.site
@@ -81,8 +84,8 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.84"
-    //已更新域名，请到：https://yeyu1024.xyz/gpt.html中使用
+    const JSVer = "v4.85"
+    //将于2024.2月初更新域名，请到：https://yeyu2048.xyz/gpt.html中使用
 
     try {
         GM_registerMenuCommand("更新脚本", function (event) {
