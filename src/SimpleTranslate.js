@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.6
+// @version      1.7.7
 // @description  中-英-外互转，双语显示。支持谷歌，微软等API，为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en  Web pages translated into Chinese, English and foreign languages
 // @description:de  Webseite in Chinesisch, Englisch, Fremdsprachen
@@ -17,7 +17,6 @@
 // @exclude      *://*.baidu.com/*
 // @exclude      *://localhost:*/*
 // @exclude      *://127.0.0.1:*/*
-// @exclude      *://cn.bing.com/*
 // @exclude      *://*.qq.com/*
 // @exclude      *://*.bilibili.com/*
 // @exclude      *://*.jd.com/*
@@ -33,6 +32,7 @@
 // @exclude      *://*.shushubuyue.net/*
 // @exclude      *://*.shushubuyue.com/*
 // @exclude      *://onfix.cn/*
+// @exclude      *://yeyu2048.xyz/*
 // @run-at       document-end
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=translate.google.com
 // @require      https://cdn.staticfile.org/jquery/3.4.0/jquery.min.js
