@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         叔叔不约只配女
 // @namespace    yeyu
-// @version      0.4
+// @version      0.5
 // @description  叔叔不约只配女
 // @author       夜雨
 // @match        *://*.shushubuyue.net/*
@@ -83,21 +83,23 @@
 					if(firstAuto){
 						firstAuto = false
 
-						try {
-							//自动发信息
-							var msgInput = document.querySelector("#msgInput")
-							msgInput.value = autoReply;
-							msgInput.innerHTML = autoReply;
-							console.log(msgInput)
-							msgInput.focus()
-							// 创建一个新的 KeyboardEvent 对象
-							document.querySelector(".button-link.msg-send").click()
-						}catch (e) {}
+						// try {
+						// 	//自动发信息
+						// 	var msgInput = document.querySelector("#msgInput")
+						// 	msgInput.value = autoReply;
+						// 	msgInput.innerHTML = autoReply;
+						// 	console.log(msgInput)
+						// 	msgInput.focus()
+						// 	// 创建一个新的 KeyboardEvent 对象
+						// 	document.querySelector(".button-link.msg-send").click()
+						// }catch (e) {}
 
 						setTimeout((ev)=>{
 							var msgInput = document.querySelector("#msgInput")
 							msgInput.value = autoReply;
-							msgInput.innerHTML = autoReply;
+							msgInput.dispatchEvent(new Event('input'))
+							msgInput.dispatchEvent(new Event('change'))
+							document.querySelector(".button-link.msg-send").click()
 						}, 1000)
 					}
 
