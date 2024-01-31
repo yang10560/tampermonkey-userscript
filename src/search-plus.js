@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.2.7
+// @version      3.2.8
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -138,11 +138,13 @@
 // @connect   tongyi.aliyun.com
 // @connect   qianwen.aliyun.com
 // @connect   ai-yuxin.space
+// @connect   yuxin-ai.com
 // @connect   xinghuo.xfyun.cn
 // @connect   geetest.com
 // @connect   neice.tiangong.cn
 // @connect   chat.tiangong.cn
 // @connect   yeyu1024.xyz
+// @connect   yeyu2048.xyz
 // @connect   chatglm.cn
 // @connect   open.bigmodel.cn
 // @connect   gptgo.ai
@@ -153,7 +155,7 @@
 // @connect   frechat.xyz
 // @compatible   Chrome, Firefox
 // @license    MIT
-// @website    https://yeyu1024.xyz/gpt.html
+// @website    https://yeyu2048.xyz/gpt.html
 
 // ==/UserScript==
 
@@ -165,7 +167,7 @@
     'use strict';
 
 
-    const JSver = '3.2.7';
+    const JSver = '3.2.8';
 
 
     function getGPTMode() {
@@ -963,11 +965,6 @@
             YeYu()
             //end if
             return;
-        } else if (GPTMODE && GPTMODE === "ANZZ") {
-            console.log("当前模式ANZZ")
-            ANZZ();
-            //end if
-            return;
         } else if (GPTMODE && GPTMODE === "THEBAI") {
             console.log("当前模式XJAI")
             THEBAI()
@@ -1013,14 +1010,7 @@
 
             return;
             //end if
-        } else if (GPTMODE && GPTMODE === "WOBCW") {
-            console.log("WOBCW")
-            WOBCW();
-
-
-            return;
-            //end if
-        }   else if (GPTMODE && GPTMODE === "PRTBOOM") {
+        } else if (GPTMODE && GPTMODE === "PRTBOOM") {
             console.log("PRTBOOM")
             PRTBOOM();
 
@@ -1198,7 +1188,7 @@
     <div id=gptCueBox>
     <p class="chatHide" id="gptStatus">
    <select id="modeSelect">
-      <option value="Default">默认线路[兼容]</option>
+      <option value="Default">默认接口</option>
       <option value="YeYu">自定义key</option>
       <option style="display: none" value="newBing">New Bing</option>
       <option value="OPENAI-3.5">OPENAI-3.5</option>
@@ -1216,7 +1206,6 @@
       <option value="GPTPLUS">GPTPLUS</option>
       <option value="ChatGO">ChatGO</option>
       <option value="MixerBox">MixerBox</option>
-      <option value="ANZZ">ANZZ</option>
       <option  value="THEBAI">XJAI</option>
       <option value="YQCLOUD">YQCLOUD</option>
       <option value="YUXIN">YUXIN</option>
@@ -1229,7 +1218,6 @@
       <option value="OhMyGPT">OhMyGPT</option>
       <option value="AILS">AILS</option>
       <option value="PHIND">PHIND</option>
-      <option value="WOBCW">WOBCW</option>
       <option value="PRTBOOM">PRTBOOM</option>
       <option value="CLEANDX">CLEANDX</option>
       <option value="CVEOY">CVEOY</option>
@@ -1246,7 +1234,7 @@
     </svg>自动提示开关</a>:用于设置是否开启提示</p>
 	<div class="chatHide" id="website" style="margin-left: 10px; ">
 	    <hr>
-        <a target="_blank"  href="https://yeyu1024.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
+        <a target="_blank"  href="https://yeyu2048.xyz/gpt.html?random=${Math.random()}&from=js&ver=${JSver}">网页版</a>
         <a target="_blank"  href="https://yiyan.baidu.com/">文心</a>
         <a target="_blank"  href="https://qianwen.aliyun.com/">通义</a>
         <a target="_blank"  href="https://chat.tiangong.cn/">天工</a>
@@ -1266,8 +1254,8 @@
         <a target="_blank"  href="https://chat.sensetime.com/">商量</a>
         <a target="_blank"  href="https://poe.com/">Poe</a>
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新</a>
-        <a target="_blank"  href="https://yeyu1024.xyz/zhichi.png?id=yeyu">爱发电</a>
-        <a target="_blank"  href="https://yeyu1024.xyz/zfb.html?from=js&ver=${JSver}">领红包</a>
+        <a target="_blank"  href="https://yeyu2048.xyz/zhichi.png?id=yeyu">爱发电</a>
+        <a target="_blank"  href="https://yeyu2048.xyz/zfb.html?from=js&ver=${JSver}">领红包</a>
         <hr>
 	</div>
    <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">版本: ${JSver} 已启动,部分线路需要科学上网,更换线路请点击"设置"。当前线路: ${getGPTMode() || "Default"};当前自动点击状态: ${localStorage.getItem("autoClick") || "关闭"}<div></article>
@@ -2511,7 +2499,7 @@
     setTimeout(async () => {
         let rr = await GM_fetch({
             method: "GET",
-            url: `https://yeyu1024.xyz/chat/haohula.json?r=${Math.random()}`
+            url: `https://yeyu2048.xyz/chat/haohula.json?r=${Math.random()}`
         });
         if (rr.status === 200) {
             console.log(rr)
@@ -2596,12 +2584,12 @@
         })
         GM_httpRequest({
             method: "POST",
-            url: "https://www.ai-yuxin.space/fastapi/api/chat",
+            url: "https://www.yuxin-ai.com/fastapi/api/chat",
             headers: {
                 "accept": "*/*",
                 "Content-Type": "application/json",
-                "Referer": `https://www.ai-yuxin.space/chat/new?id=${yuxin_newid}`,
-                "origin": "https://www.ai-yuxin.space"
+                "Referer": `https://www.yuxin-ai.com/chat/new?id=${yuxin_newid}`,
+                "origin": "https://https://www.yuxin-ai.com"
             },
             data: JSON.stringify({
                 "model": "gpt-3.5-turbo",
@@ -4559,76 +4547,6 @@
 
 
 
-    function WOBCW() {
-        GM_xmlhttpRequest({
-            url: "https://chat1.wobcw.com/chat",
-            headers: {
-                "accept": "*/*",
-                "referrer": "https://chat1.wobcw.com/",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarybrMK1QixymFcNJzK"
-            },
-            data: `------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundarybrMK1QixymFcNJzK--\r\n`,
-            method: "POST",
-            onload: (resp) => {
-                let rs = resp.responseText;
-                console.log(rs)
-                let chat_id = JSON.parse(rs).chat_id;
-                console.log(chat_id)
-                abortXml = GM_xmlhttpRequest({
-                    method: "GET",
-                    url: `https://chat1.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
-                    headers: {
-                        "Content-Type": "application/json",
-                        // "Authorization": "Bearer null",
-                        "Referer": "https://chat1.wobcw.com/",
-                        "accept": "text/event-stream"
-                    },
-                    onloadstart: (stream) => {
-                        let result = [];
-                        let finalResult = [];
-                        const reader = stream.response.getReader();
-                        reader.read().then(function processText({done, value}) {
-                            if (done) {
-                                finalResult = result.join("")
-                                showAnserAndHighlightCodeStr(finalResult)
-                                return;
-                            }
-
-                            try {
-
-                                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                                console.log("raw:",d)
-                                let dd = d.replace(/data: /g, "").split("\n\n")
-                                console.log("dd:",dd)
-                                dd.forEach(item=>{
-                                    try {
-                                        let delta = JSON.parse(item).choices[0].delta.content
-                                        result.push(delta)
-                                        showAnserAndHighlightCodeStr(result.join(""))
-                                    }catch (e) {
-
-                                    }
-                                })
-                            } catch (e) {
-                                console.log(e)
-                            }
-
-                            return reader.read().then(processText);
-                        });
-                    },
-                    responseType: "stream",
-                    onerror: function (err) {
-                        console.log(err)
-                        Toast.error("未知错误!")
-                    }
-                })
-            }//end onload
-        })
-
-
-    }
-
-
     let parentID_tianhu;
     let tianhu_first = true;
 
@@ -4723,113 +4641,6 @@
 
 
 
-
-    let parentID_anzz;
-
-    function authAnzz(){
-        console.log("authANZZ")
-        GM_fetch({
-            method: "POST",
-            url: "https://free.anzz.top/zh",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": `https://free.anzz.top/`
-            },
-            data: JSON.stringify({})
-        }).then((res)=>{
-            console.log(res)
-        }).catch((ex)=>{
-            console.log(ex)
-        })
-    }
-    setTimeout(authAnzz);
-    function ANZZ() {
-        let ops = {};
-        if (parentID_anzz) {
-            ops = {parentMessageId: parentID_anzz};
-        }
-        console.log(ops)
-
-
-        abortXml = GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://free.anzz.top/api/chat",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://free.anzz.top/",
-                "origin": "https://free.anzz.top",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "uuid": uuidv4(),
-                "model": {
-                    "id": "gpt-3.5-turbo-0613",
-                    "name": "GPT-3.5",
-                    "maxLength": 12000,
-                    "tokenLimit": 16000
-                },
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": your_qus
-                    }
-                ],
-                "key": "",
-                "prompt": "你是Hello-AI, 一个基于gpt-3.5-turbo接口的ChatGPT应用。你会仔细遵循用户的指示，使用Markdown格式进行回应。请对回应的重点或核心内容进行加粗",
-                "temperature": 0.8,
-                "deviceId":  uuidv4()
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        return;
-                    }
-
-                    try {
-
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-
-                        let d = decoder.decode(byteArray);
-                        result.push(d)
-
-                        showAnserAndHighlightCodeStr(result.join("").replace(/[anzz.top]/gi,"")
-                            .replace(/hello-ai/gi,"")
-                            .replace(/xxxily/gi,""))
-
-                        // let dd = d.split("\n");
-                        // console.log(dd[dd.length - 1])
-                        // let nowResult = JSON.parse(dd[dd.length - 1])
-                        // if (nowResult.text) {
-                        //     console.log(nowResult)
-                        //     finalResult = nowResult.text
-                        //     showAnserAndHighlightCodeStr(finalResult.replace(/[anzz.top]/gi,"")
-                        //         .replace(/hello-ai/gi,"")
-                        //         .replace(/xxxily/gi,""))
-                        // }
-                        // if (nowResult.id) {
-                        //     parentID_anzz = nowResult.id;
-                        // }
-
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                Toast.error("未知错误!")
-            }
-        })
-
-    }
 
 
 
