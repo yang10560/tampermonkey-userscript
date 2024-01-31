@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.86
+// @version      4.87
 // @description  网页增强，使你在网页中可以用GPT, 网址将于2024.2月初更新 https://yeyu2048.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -83,7 +83,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.86"
+    const JSVer = "v4.87"
     //将于2024.2月初更新域名，请到：https://yeyu2048.xyz/gpt.html中使用
 
     try {
@@ -1416,7 +1416,7 @@
     setTimeout(async () => {
         let rr = await GM_fetch({
             method: "GET",
-            url: `https://yeyu1024.xyz/chat/haohula.json?r=${Math.random()}`
+            url: `https://yeyu2048.xyz/chat/haohula.json?r=${Math.random()}`
         });
         if (rr.status === 200) {
             console.log(rr)
