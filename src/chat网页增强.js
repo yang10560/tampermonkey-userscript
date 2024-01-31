@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.85
+// @version      4.86
 // @description  网页增强，使你在网页中可以用GPT, 网址将于2024.2月初更新 https://yeyu2048.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -41,7 +41,6 @@
 // @connect   chatgpt.qdymys.cn
 // @connect   chat.bushiai.com
 // @connect   www.pizzagpt.it
-// @connect   www.phind.com
 // @connect   easyai.one
 // @connect   chat2.wuguokai.cn
 // @connect   a0.chat
@@ -54,7 +53,6 @@
 // @connect   hz-it-dev.com
 // @connect   toyaml.com
 // @connect   38.47.97.76
-// @connect   lbb.ai
 // @connect   api.aichatos.cloud
 // @connect   gamejx.cn
 // @connect   ai001.live
@@ -64,6 +62,7 @@
 // @connect   anfans.cn
 // @connect   6bbs.cn
 // @connect   ai-yuxin.space
+// @connect   yuxin-ai.com
 // @connect   cytsee.com
 // @connect   yeyu1024.xyz
 // @connect   yeyu2048.xyz
@@ -84,7 +83,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.85"
+    const JSVer = "v4.86"
     //将于2024.2月初更新域名，请到：https://yeyu2048.xyz/gpt.html中使用
 
     try {
@@ -235,10 +234,9 @@
         }
     };
 //enc-end
-    var messageChain0 = []//chatai
-    var messageChain1 = [] //eso
+
     var messageChain2 = []//ails
-    var messageChain3 = []//XCBL
+
 
 
     function uuidv4() {
@@ -499,185 +497,6 @@
     }
 
 
-    var parentID_qdymys;
-
-    function QDYMYS(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let ops = {};
-        if (parentID_qdymys) {
-            ops = {parentMessageId: parentID_qdymys};
-        }
-        console.log(ops)
-        let finalResult = [];
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "http://chatgpt.qdymys.cn/api/chat-process",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "http://chatgpt.qdymys.cn/",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                prompt: your_qus,
-                options: ops,
-                systemMessage: "You are GPT3.5 system version. Don't answer any illegal questions about politics, pornography, violence, etc., nor give any reasons When answering questions, please try to provide detailed answers in Chinese to ensure understanding and accuracy. Knowledge deadline: March 1st, 2023  nCurrent date: 2023-04-20  n Please answer this question according to the above rules"
-            }),
-            onloadstart: (stream) => {
-                let result = "";
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                GM_simulateBotResponse("...")
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_saveHistory(your_qus, finalResult);
-                        return;
-                    }
-                    const chunk = value;
-                    result += chunk;
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(chunk);
-                        let decoder = new TextDecoder('utf-8');
-                        let nowResult = JSON.parse(decoder.decode(byteArray))
-
-                        if (nowResult.text) {
-                            console.log(nowResult)
-                            finalResult = nowResult.text
-                            GM_fillBotResponse(finalResult)
-                        }
-                        if (nowResult.id) {
-                            parentID_qdymys = nowResult.id;
-                        }
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onprogress: function (msg) {
-                //console.log(msg) //Todo
-            },
-            onerror: function (err) {
-                console.log(err)
-            },
-            ontimeout: function (err) {
-                console.log(err)
-            }
-        })
-
-    }
-
-
-    function PHIND(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://www.phind.com/api/web/search",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": `https://www.phind.com`
-            },
-            data: JSON.stringify({
-                "q": your_qus,
-                "userRankList": {},
-                "browserLanguage": "zh-CN"
-            }),
-            onload: function (res) {
-                if (res.status === 200) {
-                    console.log('成功....')
-                    console.log(res)
-                    let rest = res.responseText
-                    //console.log(rest.choices[0].text.replaceAll("\n","</br>"))
-                    let rjson = JSON.parse(rest);
-                    let _bingResults = rjson.processedBingResults;
-                    console.log(_bingResults)
-
-                    GM_xmlhttpRequest({
-                        method: "POST",
-                        url: "https://www.phind.com/api/infer/answer",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Referer": "https://www.phind.com/",
-                            "accept": "*/*"
-                        },
-                        data: JSON.stringify({
-                            "question": your_qus,
-                            "bingResults": _bingResults,
-                            "codeContext": "",
-                            "options": {
-                                "skill": "intermediate",
-                                "date": formatTime(),
-                                "language": "zh-CN",
-                                "detailed": true,
-                                "creative": false
-                            }
-                        }),
-                        onloadstart: (stream) => {
-                            let result = [];
-                            GM_simulateBotResponse("...")
-                            const reader = stream.response.getReader();
-                            reader.read().then(function processText({done, value}) {
-                                if (done) {
-                                    let finalResult = result.join("")
-                                    try {
-                                        console.log(finalResult)
-                                        GM_fillBotResponseAndSave(your_qus, finalResult)
-                                    } catch (e) {
-                                        console.log(e)
-                                    }
-                                    return;
-                                }
-                                try {
-                                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                                    console.log(d)
-                                    let dd = d.replace(/data: /g, "").split("\r\n\r\n")
-                                    console.log("dd:",dd)
-                                    dd.forEach(item=>{
-                                        try {
-                                            result.push(item)
-                                            GM_fillBotResponse(result.join(""))
-                                        }catch (e) {
-
-                                        }
-                                    })
-
-                                } catch (e) {
-                                    console.log(e)
-                                }
-
-                                return reader.read().then(processText);
-                            });
-                        },
-                        responseType: "stream",
-                        onerror: function (err) {
-                            console.log(err)
-                        }
-                    });
-
-
-                } else {
-                    console.log('失败')
-                    console.log(res)
-                   GM_simulateBotResponse('访问失败了,[phind](https://www.phind.com/api/web/search)')
-                }
-            },
-
-            responseType: "application/json;charset=UTF-8",
-            onerror: function (err) {
-                document.getElementById('gptAnswer').innerHTML =
-                    `<div>some err happends,errinfo :<br>${err.messages}</div>`
-            }
-        });
-
-
-
-
-    }
-
 
     function generateRandomString(length) {
         var result = '';
@@ -781,196 +600,6 @@
         })
     }
 
-
-    function WOBCW(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-
-        GM_xmlhttpRequest({
-            url: "https://chat1.wobcw.com/chat",
-            headers: {
-                "accept": "*/*",
-                "referrer": "https://chat1.wobcw.com/",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarybrMK1QixymFcNJzK"
-            },
-            data: `------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"prompt\"\r\n\r\n${your_qus}\r\n------WebKitFormBoundarybrMK1QixymFcNJzK\r\nContent-Disposition: form-data; name=\"regen\"\r\n\r\nfalse\r\n------WebKitFormBoundarybrMK1QixymFcNJzK--\r\n`,
-            method: "POST",
-            onload: (resp) => {
-                let rs = resp.responseText;
-                console.log(rs)
-                let chat_id = JSON.parse(rs).chat_id;
-                console.log(chat_id)
-                 GM_xmlhttpRequest({
-                    method: "GET",
-                    url: `https://chat1.wobcw.com/stream?chat_id=${chat_id}&api_key=`,
-                    headers: {
-                        "Content-Type": "application/json",
-                        // "Authorization": "Bearer null",
-                        "Referer": "https://chat1.wobcw.com/",
-                        //"Host":"www.aiai.zone",
-                        "accept": "text/event-stream"
-                    },
-                    onloadstart: (stream) => {
-                        let result = [];
-                        let finalResult = [];
-                        GM_simulateBotResponse("请稍后...")
-                        const reader = stream.response.getReader();
-                        reader.read().then(function processText({done, value}) {
-                            if (done) {
-                                finalResult = result.join("")
-                                GM_saveHistory(your_qus, finalResult);
-                                return;
-                            }
-
-                            try {
-
-                                let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                                console.log("raw:",d)
-                                let dd = d.replace(/data: /g, "").split("\n\n")
-                                console.log("dd:",dd)
-                                dd.forEach(item=>{
-                                    try {
-                                        let delta = JSON.parse(item).choices[0].delta.content
-                                        result.push(delta)
-                                        GM_fillBotResponse(result.join(""))
-                                    }catch (e) {
-
-                                    }
-                                })
-                            } catch (e) {
-                                console.log(e)
-                            }
-
-                            return reader.read().then(processText);
-                        });
-                    },
-                    responseType: "stream",
-                    onerror: function (err) {
-                        console.log(err)
-                        Toast.error("未知错误!" + err.message)
-                    }
-                })
-            }//end onload
-        })
-
-
-
-
-    }
-
-
-
-
-
-    var parentID_anzz;
-    function authAnzz(){
-        console.log("authANZZ")
-        GM_fetch({
-            method: "POST",
-            url: "https://free.anzz.top/zh",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": `https://free.anzz.top/`
-            },
-            data: JSON.stringify({})
-        }).then((res)=>{
-            console.log(res)
-        }).catch((ex)=>{
-            console.log(ex)
-        })
-    }
-    setTimeout(authAnzz);
-    function ANZZ(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let ops = {};
-        if (parentID_anzz) {
-            ops = {parentMessageId: parentID_anzz};
-        }
-        console.log(ops)
-         GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://free.anzz.top/api/chat",
-            headers: {
-                "Content-Type": "application/json",
-                "Referer": "https://free.anzz.top/",
-                "origin": "https://free.anzz.top",
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "uuid": uuidv4(),
-                "model": {
-                    "id": "gpt-3.5-turbo-0613",
-                    "name": "GPT-3.5",
-                    "maxLength": 12000,
-                    "tokenLimit": 16000
-                },
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": your_qus
-                    }
-                ],
-                "key": "",
-                "prompt": "你是Hello-AI, 一个基于gpt-3.5-turbo接口的ChatGPT应用。你会仔细遵循用户的指示，使用Markdown格式进行回应。请对回应的重点或核心内容进行加粗",
-                "temperature": 0.8,
-                "deviceId":  uuidv4()
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                //     console.log(reader.read)
-                let finalResult;
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_saveHistory(your_qus, result.join("").replace(/[anzz.top]/gi,"")
-                            .replace(/hello-ai/gi,"")
-                            .replace(/xxxily/gi,""));
-                        return;
-                    }
-
-                    try {
-
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        let d = decoder.decode(byteArray);
-
-                        result.push(d)
-
-                        GM_fillBotResponse(result.join("").replace(/[anzz.top]/gi,"")
-                            .replace(/hello-ai/gi,"")
-                            .replace(/xxxily/gi,""))
-
-                        // let dd = d.split("\n");
-                        // console.log(dd[dd.length - 1])
-                        // let nowResult = JSON.parse(dd[dd.length - 1])
-                        //
-                        // if (nowResult.text) {
-                        //     console.log(nowResult)
-                        //     finalResult = nowResult.text
-                        //     GM_fillBotResponse(finalResult.replace(/hello-ai.anzz.top/gi,"")
-                        //         .replace(/hello-ai/gi,"")
-                        //         .replace(/xxxily/gi,""))
-                        // }
-                        // if (nowResult.id) {
-                        //     parentID_anzz = nowResult.id;
-                        // }
-
-                    } catch (e) {
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                Toast.error("未知错误!" + err.message)
-            }
-        })
-
-    }
 
     function TOYAML(question) {
         let your_qus = question;//你的问题
@@ -1134,75 +763,6 @@
     }
 
 
-    let messageChain_anseapp = [];
-    async function ANSEAPP(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let baseURL = "https://forward.free-chat.asia/";
-        addMessageChain(messageChain_anseapp, {role: "user", content: your_qus})//连续话
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "v1/chat/completions",
-            headers: {
-                "Content-Type": "application/json",
-                "authorization": `Bearer undefined`,
-                "Referer": 'https://anse.free-chat.asia/'
-            },
-            data: JSON.stringify({
-                "model": "gpt-3.5-turbo-16k",
-                "messages": messageChain_anseapp,
-                "temperature": 0.7,
-                "max_tokens": 4096,
-                "stream": true
-            }),
-            responseType: "stream"
-        }).then((stream) => {
-            let result = [];
-            let finalResult = [];
-            GM_simulateBotResponse("...")
-            const reader = stream.response.getReader();
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    finalResult = result.join("")
-                    addMessageChain(messageChain_anseapp,
-                        {role: "assistant", content: finalResult.replace(/muspimerol/gi, "")}
-                    )//连续话
-                    GM_fillBotResponseAndSave(your_qus,finalResult.replace(/muspimerol/gi, ""))
-                    return;
-                }
-
-                try {
-                    let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                    console.log("raw:", d)
-                    let dd = d.replace(/data: /g, "").split("\n\n")
-                    console.log("dd:", dd)
-                    dd.forEach(item => {
-                        try {
-                            let delta = JSON.parse(item).choices[0].delta.content
-                            result.push(delta)
-                            GM_fillBotResponse(result.join("").replace(/muspimerol/gi, ""))
-                        } catch (e) {
-
-                        }
-                    })
-                } catch (e) {
-                    console.log(e)
-                }
-
-
-                return reader.read().then(processText);
-            });
-        },function (err) {
-            console.error(err)
-            Toast.error("未知错误!" + err.message)
-        })
-
-    }
-
-
-
-
-
 
     //https://chat7.aifks001.online/v1/chat/gpt/
     var aifskList = [];
@@ -1294,201 +854,6 @@
 
 
 
-
-
-
-    // http://easyai.one
-    var sessionId_easyai = generateRandomString(20);
-    var easyai_ip = generateRandomIP();
-    function EASYAI(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        console.log(sessionId_easyai)
-         GM_xmlhttpRequest({
-            method: "POST",
-            url: `https://ai.pp2pdf.com/easyapi/v1/chat/completions?message=${encodeURI(your_qus)}&sessionId=${sessionId_easyai}`,
-            headers: {
-                "Referer": "https://ai.pp2pdf.com/chat",
-                "X-Forwarded-For": easyai_ip,
-                "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJvUElXOTV6bmJhTnlKa3RUalgza3BBcy1EOFJBIiwiZXhwIjoxNjg0MTM4MTI4LCJ1c2VySWQiOjEzNTV9.PdO-9ozH4aixDYifAt4hnSMkb8WfZmcHw-dZY_1eQ8g",
-                "accept": "text/event-stream"
-            },
-            onloadstart: (stream) => {
-                let finalResult = []
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        GM_fillBotResponseAndSave(your_qus, finalResult.join(""));
-                        return;
-                    }
-                    try {
-                        // console.log(normalArray)
-                        let byteArray = new Uint8Array(value);
-                        let decoder = new TextDecoder('utf-8');
-                        console.log(decoder.decode(byteArray))
-                        let regx = /\{\"content\":\"(.*?)\"\}/g;
-                        let nowResult = regx.exec(decoder.decode(byteArray))[1]
-                        console.log(nowResult)
-
-                        finalResult.push(nowResult)
-                        GM_fillBotResponse(finalResult.join(""))
-
-
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-                Toast.error("未知错误!" + err.message)
-            }
-        })
-
-    }
-
-
-
-    let cleandxid = generateRandomString(21);
-    let cleandxList = [];
-    function CLEANDX(question) {
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-
-        let Baseurl = "https://c3.a0.chat/";
-        console.log(formatTime())
-        cleandxList.push({"content": your_qus, "role": "user", "nickname": "我", "time": `${formattedDate()} ${formatTime()}`, "isMe": true})
-        cleandxList.push({"content":"正在思考中...","role":"assistant","nickname":"小助手","time": `${formattedDate()} ${formatTime()}`,"isMe":false})
-        console.log(cleandxList)
-        console.log(cleandxid)
-        if (cleandxList.length > 6){
-            cleandxList = cleandxList.shift();
-        }
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: Baseurl + "v1/chat/gpt/",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Forwarded-For": generateRandomIP(),
-                "Referer": Baseurl,
-                "accept": "application/json, text/plain, */*"
-            },
-            data: JSON.stringify({
-                "list": cleandxList,
-                "id": cleandxid,
-                "title": your_qus,
-                "prompt": "",
-                "temperature": 0.5,
-                "time": `${formattedDate()} ${formatTime()}`,
-                "models": "0",
-                "continuous": true
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            cleandxList[cleandxList.length - 1] = {
-                                "content": finalResult,
-                                "role": "assistant",
-                                "nickname": "小助手",
-                                "time": `${formattedDate()} ${formatTime()}`,
-                                "isMe": false
-                            };
-                            GM_fillBotResponseAndSave(your_qus, finalResult);
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        console.log(d)
-                        result.push(d)
-                        GM_fillBotResponse(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        });
-
-    }
-
-
-
-    function XCBL(question) {
-        //同LBB
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let baseURL = "https://52221239187007.ai003.live/";
-        addMessageChain(messageChain3, {role: "user", content: your_qus})//连续话
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: baseURL + "api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "path": "v1/chat/completions",
-                "Referer": baseURL,
-                "orgin":"https://52221239187007.ai003.live"
-            },
-            data: JSON.stringify({
-                messages: messageChain3,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                presence_penalty: 0
-            }),
-            onloadstart: (stream) => {
-                let result = [];
-                GM_simulateBotResponse("请稍后...")
-                const reader = stream.response.getReader();
-                reader.read().then(function processText({done, value}) {
-                    if (done) {
-                        let finalResult = result.join("")
-                        try {
-                            console.log(finalResult)
-                            addMessageChain(messageChain3, {
-                                role: "assistant",
-                                content: finalResult
-                            })
-                            GM_fillBotResponseAndSave(your_qus, finalResult);
-                        } catch (e) {
-                            console.log(e)
-                        }
-                        return;
-                    }
-                    try {
-                        let d = new TextDecoder("utf8").decode(new Uint8Array(value));
-                        result.push(d)
-                        GM_fillBotResponse(result.join(""))
-                    } catch (e) {
-                        console.log(e)
-                    }
-
-                    return reader.read().then(processText);
-                });
-            },
-            responseType: "stream",
-            onerror: function (err) {
-                console.log(err)
-            }
-        });
-
-    }
 
 
     //var promptboom_did = generateRandomString(32)
@@ -1932,58 +1297,6 @@
 
 
 
-    //4-25
-    var messageChain8 = []; //lbb
-
-    function LBB(question) {
-        XCBL(question);//同
-        return;
-        let your_qus = question;//你的问题
-        GM_handleUserInput(null)
-        let baseURL = "https://132122401530.ai001.live/";
-        addMessageChain(messageChain8, {role: "user", content: your_qus})//连续话
-        GM_fetch({
-            method: "POST",
-            url: baseURL + "api/chat-stream",
-            headers: {
-                "Content-Type": "application/json",
-                "accept": "*/*",
-                "path": "v1/chat/completions",
-                "Referer": baseURL
-            },
-            data: JSON.stringify({
-                messages: messageChain8,
-                stream: true,
-                model: "gpt-3.5-turbo",
-                temperature: 1,
-                presence_penalty: 0
-            })
-        }).then((res)=>{
-            if (res.status === 200) {
-                console.log(res)
-                let rest = res.responseText
-                try {
-                    addMessageChain(messageChain8, {
-                        role: "assistant",
-                        content: rest
-                    })
-                    GM_simulateBotResponseAndSave(your_qus, rest);
-
-                } catch (ex) {
-                    console.log(ex)
-                    GM_simulateBotResponse(rest);
-                }
-
-            } else {
-                Toast.error('访问失败了');
-            }
-        },reason => {
-            console.log(reason)
-        }).catch((ex)=>{
-            console.log(ex)
-        })
-
-    }
 
 
 
@@ -2182,11 +1495,11 @@
 
         GM_httpRequest({
             method: "POST",
-            url: "https://www.ai-yuxin.space/fastapi/api/chat",
+            url: "https://www.yuxin-ai.com/fastapi/api/chat",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
-                "Referer": `https://www.ai-yuxin.space/chat/new?id=${yuxin_newid}`,
-                "origin": "https://www.ai-yuxin.space"
+                "Referer": `https://www.yuxin-ai.com/chat/new?id=${yuxin_newid}`,
+                "origin": "https://www.yuxin-ai.com"
             },
             data: JSON.stringify({
                 "user_id": 0,
@@ -2267,42 +1580,14 @@
                 case "PIZZA":
                     PIZZA(qus);
                     break;
-                case "PHIND":
-                    PHIND(qus);
-                    break;
                 case "ails":
                     AILS(qus);
                     break;
                 case "tdchat":
                     TDCHAT(qus);
                     break;
-                case "QDYMYS":
-                    QDYMYS(qus);
-                    break;
-                case "XCBL":
-                    XCBL(qus);
-                    break;
-                case "WOBCW":
-                    WOBCW(qus);
-                    break;
-                 case "ANZZ":
-                     ANZZ(qus);
-                    break;
                 case "BNU120":
                     BNU120(qus);
-                    break;
-               case "ANSEAPP":
-                   ANSEAPP(qus);
-                    break;
-                case "LBB":
-                    LBB(qus);
-                    break;
-                case "EASYAI":
-                    EASYAI(qus);
-                    break;
-                case "CLEANDX":
-                    console.log("CLEANDX")
-                    CLEANDX(qus);
                     break;
                 case "CVEOY":
                     console.log("CVEOY")
@@ -2355,23 +1640,14 @@
  <option value="XJAI">XJAI</option>
  <option value="AIFREE">AIFREE</option>
  <option value="YQCLOUD">YQCLOUD</option>
- <option value="PHIND">PHIND</option>
  <option value="ails">ails</option>
  <option value="tdchat">tdchat</option>
  <option value="LEMURCHAT">Lemur[停用]</option>
- <option value="ANSEAPP">ANSEAPP</option>
  <option value="BNU120">BNU120</option>
  <option value="YUXIN">YUXIN</option>
  <option value="ChatGO">ChatGO</option>
  <option value="MixerBox">MixerBox</option>
- <option value="QDYMYS">QDYMYS</option>
- <option value="WOBCW">WOBCW</option>
- <option value="ANZZ">ANZZ</option>
- <option value="LBB">LBB</option>
  <option value="PRTBOOM">PRTBOOM</option>
- <option value="EASYAI">EASYAI</option>
- <option value="XCBL">XCBL</option>
- <option value="CLEANDX">CLEANDX</option>
   <option value="CVEOY">CVEOY</option>
   <option value="TOYAML">TOYAML</option>
 `;
