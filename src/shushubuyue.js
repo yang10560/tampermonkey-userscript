@@ -2,7 +2,7 @@
 // @name         叔叔不约只配女
 // @namespace    yeyu
 // @version      0.5
-// @description  叔叔不约只配女
+// @description  叔叔不约只配女，你懂我的意思吧
 // @author       夜雨
 // @match        *://*.shushubuyue.net/*
 // @match        *://*.shushubuyue.com/*
