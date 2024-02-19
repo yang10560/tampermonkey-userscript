@@ -2,7 +2,7 @@
 // @name         网页中英双显互译
 // @name:en      Translation between Chinese and English
 // @namespace    http://yeyu1024.xyz
-// @version      1.7.7
+// @version      1.7.8
 // @description  中-英-外互转，双语显示。支持谷歌，微软等API，为用户提供了快速准确的中英文翻译服务。无论是在工作中处理文件、学习外语、还是在日常生活中与国际友人交流，这个脚本都能够帮助用户轻松应对语言障碍。通过简单的操作，用户只需点击就会立即把网页翻译，节省了用户手动查词或使用在线翻译工具的时间，提高工作效率。
 // @description:en  Web pages translated into Chinese, English and foreign languages
 // @description:de  Webseite in Chinesisch, Englisch, Fremdsprachen
@@ -1416,7 +1416,7 @@
             } else if (currentAPI.name === APIConst.SogouWeb) {
                 yiwen = JSON.parse(res.responseText).data.translate.dit
             } else if (currentAPI.name === APIConst.ICIBAWeb) {
-                yiwen = JSON.parse(res.responseText).content.out
+                yiwen = JSON.parse(decodeICIBA(JSON.parse(res.responseText).content)).out
             } else if (currentAPI.name === APIConst.HujiangWeb) {
                 yiwen = JSON.parse(res.responseText).data.content;
             } else if (currentAPI.name === APIConst.Youdao) {
@@ -1800,13 +1800,16 @@
             "origin": "https://ifanyi.iciba.com"
         }
 
-        const v = "6key_web_fanyi".concat("ifanyiweb8hc9s98e").concat(text.replace(/(^\s*)|(\s*$)/g, ""))
+        const v = "6key_web_new_fanyi".concat("6dVjYLFyzfkFkk").concat(text.replace(/(^\s*)|(\s*$)/g, ""))
 
         let sign = CryptoJS.MD5(v).toString().substring(0, 16);
 
+        sign = AES_ECB.encrypt(sign,"L4fBtD5fLC9FQw22")
+        //debugger
+
         GM_fetch({
             method: "POST",
-            url: `https://ifanyi.iciba.com/index.php?c=trans&m=fy&client=6&auth_user=key_web_fanyi&sign=${sign}`,
+            url: `https://ifanyi.iciba.com/index.php?c=trans&m=fy&client=6&auth_user=key_web_new_fanyi&sign=${sign}`,
             headers: header,
             data: `from=${from}&to=${lang}&q=${encodeURIComponent(text)}`,
             responseType: "text",
@@ -2557,6 +2560,29 @@
             console.error(`出错了`, reason)
         });
 
+    }
+
+    //爱词霸
+
+
+    const AES_ECB = {
+
+        encrypt: function(e, t) {
+            return CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(e), CryptoJS.enc.Utf8.parse(t), {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            }).toString()
+        },
+        decrypt: function(e, t) {
+            return CryptoJS.AES.decrypt(e, CryptoJS.enc.Utf8.parse(t), {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            }).toString(CryptoJS.enc.Utf8)
+        }
+    };
+
+    function decodeICIBA(content) {
+      return  AES_ECB.decrypt(content,"aahc3TfyfCEmER33")
     }
 
     //讯飞
