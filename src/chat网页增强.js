@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.88
+// @version      4.89
 // @description  网页增强，使你在网页中可以用GPT, 网址将于2024.2月初更新 https://yeyu2048.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -84,7 +84,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.88"
+    const JSVer = "v4.89"
     //将于2024.2月初更新域名，请到：https://yeyu2048.xyz/gpt.html中使用
 
     try {
@@ -1123,9 +1123,16 @@
                 let result = []
                 reader.read().then(function processText({done, value}) {
                     if (done) {
+                        GM_fillBotResponse(result.join("").replace(/x-code.fun/gi,"")
+                            .replace(/bilibili/gi,"").replace(/xjai/gi,"")
+                            .replace(/ymiai/gi,"").replace(/aiflarepro/gi,"")
+                            .split(/\.*?\&/gi)[2]
+                        )
+
                         GM_saveHistory(your_qus, result.join("").replace(/x-code.fun/gi,"")
-                            .replace(/bilibili/gi,"")
-                            .replace(/xjai/gi,"").split(/\.*?\&/gi)[2]
+                            .replace(/bilibili/gi,"").replace(/xjai/gi,"")
+                            .replace(/ymiai/gi,"").replace(/aiflarepro/gi,"")
+                            .split(/\.*?\&/gi)[2]
                         )
                         return;
                     }
