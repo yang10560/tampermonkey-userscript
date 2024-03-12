@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.3.1
+// @version      3.3.2
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -168,7 +168,7 @@
     'use strict';
 
 
-    const JSver = '3.3.1';
+    const JSver = '3.3.2';
 
 
     function getGPTMode() {
@@ -2832,7 +2832,7 @@
         return uuid
     }
 
-    //OPENAI fix 2023年6月16
+    //OPENAI update wss 2024.3.12
    //let messageChain_openai = [];
    let openai_conversation_id ;
    let openai_parent_message_id ;
@@ -2912,9 +2912,45 @@
            data: sendData
        }).then((stream)=> {
            let reader = stream.response.getReader()
-           let answer;
+           let reqJsonStr;
            reader.read().then(function processText({done, value}) {
                if (done) {
+
+                   //连接openai websocket
+                   let reqJson = JSON.parse(reqJsonStr)
+                   openai_conversation_id = reqJson.openai_conversation_id
+                   let wssurl = reqJson.wss_url
+
+                   let socket = new WebSocket(wssurl);
+                   socket.addEventListener('open', (event) => {
+                       console.log('OpenAI wss 连接成功');
+                   });
+                   socket.addEventListener('message', (event) => {
+                       console.log('OpenAISocket 接收到消息：', event.data);
+                       let revData = event.data;
+                       try{
+                           let revJSON = JSON.parse(revData);
+                           if(revJSON.type == 'http.response.body'){
+                               openai_parent_message_id = revJSON.message_id
+                               if(revJSON.body !== 'ZGF0YTogW0RPTkVdCgo='){
+                                   //处理结果
+                                   try{
+                                       let responseItem = atob(revJSON.body)
+                                       console.log(responseItem)
+                                       showAnserAndHighlightCodeStr(JSON.parse(responseItem.slice(6)).message.content.parts[0])
+                                   }catch (ex) {
+                                       console.error(ex)
+                                   }
+                               }
+
+                           }
+
+                       }catch (ex) { }
+
+                   });
+
+
+
                    console.log("===done==")
                    // addMessageChain(messageChain_openai,{
                    //     "role": "assistant",
@@ -2929,7 +2965,9 @@
                    // }, 20)
                    return
                }
-               try{
+               reqJsonStr = String.fromCharCode(...Array.from(value))
+
+               /*try{
                    let responseItem = String.fromCharCode(...Array.from(value))
                    console.log(responseItem)
                    let items = responseItem.split('\n\n')
@@ -2955,7 +2993,7 @@
                    }
                }catch (e) {
                    console.error(e)
-               }
+               }*/
 
                return reader.read().then(processText)
            },function (reason) {
