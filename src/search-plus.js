@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.3.0
+// @version      3.3.1
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -105,7 +105,7 @@
 // @connect   gpt.esojourn.org
 // @connect   free-api.cveoy.top
 // @connect   chatcleand.xyz
-// @connect   154.40.59.105
+// @connect   gptforlove.com
 // @connect   gptplus.one
 // @connect   xcbl.cc
 // @connect   hz-it-dev.com
@@ -168,7 +168,7 @@
     'use strict';
 
 
-    const JSver = '3.3.0';
+    const JSver = '3.3.1';
 
 
     function getGPTMode() {
@@ -1250,11 +1250,14 @@
         <a target="_blank"  href="https://claude.ai/">Claude</a>
         <a target="_blank"  href="https://chatglm.cn/chat">GLM</a>
         <a target="_blank"  href="https://www.baichuan-ai.com/">百川</a>
-        <a target="_blank"  href="https://kimi.moonshot.cn/">Kimi</a>
         <hr>
+        <a target="_blank"  href="https://kimi.moonshot.cn/">Kimi</a>
         <a target="_blank"  href="https://chat.360.cn/">360智脑</a>
         <a target="_blank"  href="https://chat.sensetime.com/">商量</a>
         <a target="_blank"  href="https://poe.com/">Poe</a>
+        <a target="_blank"  href="https://taichu-web.ia.ac.cn/#/chat">紫东</a>
+        <a target="_blank"  href="https://chat.deepseek.com/">DeepSeek</a>
+        <hr>
         <a target="_blank"  href="https://greasyfork.org/scripts/459997">更新</a>
         <a target="_blank"  href="https://yeyu2048.xyz/zhichi.png?id=yeyu">爱发电</a>
         <a target="_blank"  href="https://yeyu2048.xyz/zfb.html?from=js&ver=${JSver}">领红包</a>
@@ -2069,7 +2072,7 @@
         let nn = Math.floor(new Date().getTime() / 1e3);
         const fD = e=>{
             let t = CryptoJS.enc.Utf8.parse(e)
-                , o = CryptoJS.AES.encrypt(t, 'fjfsdwiuhfwf', {
+                , o = CryptoJS.AES.encrypt(t, "fjfsd我w4真3dd服iuhf了wf", {
                 mode: CryptoJS.mode.ECB,
                 padding: CryptoJS.pad.Pkcs7
             });
@@ -2087,7 +2090,7 @@
 
         GM_fetch({
             method: "POST",
-            url: "https://api1.gptplus.one/chat-process",
+            url: "https://api11.gptforlove.com/chat-process",
             headers: {
                 "Content-Type": "application/json",
                 "Referer": "https://ai27.gptforlove.com/",
@@ -2460,8 +2463,9 @@
                 reader.read().then(function processText({done, value}) {
                     if (done) {
                         showAnserAndHighlightCodeStr(result.join("").replace(/x-code.fun/gi,"")
-                            .replace(/bilibili/gi,"")
-                            .replace(/xjai/gi,"").split(/\.*?\&/gi)[2])
+                            .replace(/bilibili/gi,"").replace(/xjai/gi,"")
+                            .replace(/ymiai/gi,"").replace(/aiflarepro/gi,"")
+                            .split(/\.*?\&/gi)[2])
 
                         return;
                     }
@@ -2479,7 +2483,8 @@
                         result.push(d)
                         showAnserAndHighlightCodeStr(result.join("").replace(/x-code.fun/gi,"")
                             .replace(/bilibili/gi,"")
-                            .replace(/xjai/gi,""))
+                            .replace(/xjai/gi,"")
+                            .replace(/ymiai/gi,"").replace(/aiflarepro/gi,""))
 
 
                     } catch (e) {
