@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.2.9
+// @version      3.3.0
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -98,6 +98,7 @@
 // @connect   chatgpt.qdymys.cn
 // @connect   pp2pdf.com
 // @connect   api.aichatos.cloud
+// @connect   binjie.fun
 // @connect   ai.fakeopen.com
 // @connect   chat2.wuguokai.cn
 // @connect   www.gtpcleandx.xyz
@@ -167,7 +168,7 @@
     'use strict';
 
 
-    const JSver = '3.2.9';
+    const JSver = '3.3.0';
 
 
     function getGPTMode() {
@@ -1245,7 +1246,7 @@
         <hr>
         <a target="_blank"  href="https://chat.openai.com/chat">OpenAI</a>
         <a target="_blank"  href="https://www.bing.com/search?q=Bing+AI&showconv=1">Bing</a>
-        <a target="_blank"  href="https://bard.google.com/">Bard</a>
+        <a target="_blank"  href="https://gemini.google.com/app">Gemini</a>
         <a target="_blank"  href="https://claude.ai/">Claude</a>
         <a target="_blank"  href="https://chatglm.cn/chat">GLM</a>
         <a target="_blank"  href="https://www.baichuan-ai.com/">百川</a>
@@ -2379,17 +2380,17 @@
 
 
     let userId_yqcloud = "#/chat/" + Date.now();
-
+    //fix 24.3.12 https://chat18.aichatos.xyz
     function YQCLOUD() {
         console.log(userId_yqcloud)
         abortXml = GM_xmlhttpRequest({
             method: "POST",
             //url: "https://cbjtestapi.binjie.site:7777/api/generateStream",
-            url: "https://api.aichatos.cloud/api/generateStream",
+            url:  "https://api.binjie.fun/api/generateStream",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat6.aichatos.com/",
-                "origin": "https://chat6.aichatos.com",
+                "Referer": "https://chat18.aichatos.xyz",
+                "origin":  "https://chat18.aichatos.xyz",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -2458,6 +2459,9 @@
                 let result = []
                 reader.read().then(function processText({done, value}) {
                     if (done) {
+                        showAnserAndHighlightCodeStr(result.join("").replace(/x-code.fun/gi,"")
+                            .replace(/bilibili/gi,"")
+                            .replace(/xjai/gi,"").split(/\.*?\&/gi)[2])
 
                         return;
                     }
@@ -2963,10 +2967,10 @@
    async function setCsrfToken(){
        let req1 = await GM_fetch({
            method: "GET",
-           url: "https://qianwen.aliyun.com/chat",
+           url: "https://tongyi.aliyun.com/qianwen/",
            headers: {
                "origin":"https://qianwen.aliyun.com",
-               "referer":"https://qianwen.aliyun.com/chat"
+               "referer":"https://tongyi.aliyun.com/qianwen/"
            }
        })
        let r = req1.responseText;
@@ -3012,7 +3016,7 @@
                tongyi_first = false;
            }catch (e) {
                tongyi_first = true;
-               showAnserAndHighlightCodeStr("出错,请确认已登录通义官网[通义](https://qianwen.aliyun.com/chat)")
+               showAnserAndHighlightCodeStr("出错,请确认已登录通义官网[通义](https://tongyi.aliyun.com/qianwen/)")
                setTimeout(setCsrfToken)
            }
        }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat网页增强
 // @namespace    http://blog.yeyusmile.top/
-// @version      4.87
+// @version      4.88
 // @description  网页增强，使你在网页中可以用GPT, 网址将于2024.2月初更新 https://yeyu2048.xyz/gpt.html
 // @author       夜雨
 // @match        *://yeyu1024.xyz/gpt.html*
@@ -54,6 +54,7 @@
 // @connect   toyaml.com
 // @connect   38.47.97.76
 // @connect   api.aichatos.cloud
+// @connect   binjie.fun
 // @connect   gamejx.cn
 // @connect   ai001.live
 // @connect   ai003.live
@@ -83,7 +84,7 @@
     'use strict';
     console.log("======AI增强=====")
 
-    const JSVer = "v4.87"
+    const JSVer = "v4.88"
     //将于2024.2月初更新域名，请到：https://yeyu2048.xyz/gpt.html中使用
 
     try {
@@ -1124,7 +1125,7 @@
                     if (done) {
                         GM_saveHistory(your_qus, result.join("").replace(/x-code.fun/gi,"")
                             .replace(/bilibili/gi,"")
-                            .replace(/xjai/gi,"")
+                            .replace(/xjai/gi,"").split(/\.*?\&/gi)[2]
                         )
                         return;
                     }
@@ -1308,11 +1309,11 @@
         console.log(userId_yqcloud)
         GM_fetch({
             method: "POST",
-            url: "https://api.aichatos.cloud/api/generateStream",
+            url: "https://api.binjie.fun/api/generateStream",
             headers: {
                 "Content-Type": "application/json",
-                "Referer": "https://chat6.aichatos.com/",
-                "origin": "https://chat6.aichatos.com",
+                "Referer": "https://chat18.aichatos.xyz",
+                "origin": "https://chat18.aichatos.xyz",
                 "accept": "application/json, text/plain, */*"
             },
             data: JSON.stringify({
@@ -1622,7 +1623,7 @@
                     MixerBox(qus);
                     break;
            case "XJAI":
-                    console.log("MixerBox")
+                    console.log("XJAI")
                     XJAI(qus);
                     break;
             case "AIFREE":
