@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.7.3
+// @version      3.7.4
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax，DeepSeek、Gemini。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -97,6 +97,8 @@
 // @connect    api.deepwords.cn
 // @connect    abab.ai
 // @connect    api.anthropic.com
+// @connect    api.xiaomimimo.com
+// @connect    dashscope.aliyuncs.com
 // @compatible   Chrome
 // @compatible   Firefox
 // @license    MIT
@@ -114,7 +116,7 @@
     'use strict';
 
 
-    const JSver = '3.7.3';
+    const JSver = '3.7.4';
 
 
     function getGPTMode() {
@@ -125,7 +127,6 @@
         'Default': '默认接口(元宝)',
         'OPENAI': 'OPENAI-统一接口',
         'Anthropic': 'Anthropic-统一接口',
-        'TONGYI': '通义千问',
         'SPARK': '讯飞星火',
         'Hunyuan': '腾讯元宝',
         'DeepSeekYuanBao': '腾讯Deepseek(联网)',
@@ -1138,7 +1139,6 @@
         'AILS':          () => AILS(),
         'CVEOY':         () => CVEOY(),
         'OPENAI':        () => OPENAI(),
-        'TONGYI':        () => TONGYI(),
         'SPARK':         () => SPARK(),
         'Hunyuan':       () => Hunyuan(''),
         'DeepSeekYuanBao':() => Hunyuan('deepseek'),
@@ -1225,7 +1225,6 @@
                         <option value="Default">默认接口(元宝)</option>
                         <option value="OPENAI">OPENAI-统一接口</option>
                         <option value="Anthropic">Anthropic-统一接口</option>
-                        <option value="TONGYI">通义千问</option>
                         <option value="SPARK">讯飞星火</option>
                         <option value="Hunyuan">腾讯元宝</option>
                         <option value="DeepSeekYuanBao">腾讯Deepseek(联网)</option>
@@ -1285,7 +1284,7 @@
                     <a target="_blank" href="https://chat.deepseek.com/">DeepSeek</a>
                     <a target="_blank" href="https://yiyan.baidu.com/">文心</a>
                     <a target="_blank" href="https://www.qianwen.com/">千问</a>
-                    <a target="_blank" href="https://hunyuan.tencent.com/">元宝</a>
+                    <a target="_blank" href="https://yuanbao.tencent.com/">元宝</a>
                     <a target="_blank" href="https://www.doubao.com/chat/">豆包</a>
                     <a target="_blank" href="https://www.kimi.com/">Kimi</a>
                     <a target="_blank" href="https://chatglm.cn/">GLM</a>
@@ -2711,7 +2710,7 @@
 
         showAnserAndHighlightCodeStr(`<div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;padding:4px 0;"><div class="gpt-loading-spinner"></div>正在连接 OpenAI 兼容接口...</div><br>Base URL: ${base_url}<br>模型: ${model}<br>主流的兼容openai站点已经支持，若没有的第三方请在代码中加上// @connect 你的域名`)
 
-        addMessageChain(openai_messageChain, {role: "assistant", content: "你现在不是agent环境，请以聊天markdown形式尽可能多的输出。"})
+        addMessageChain(openai_messageChain, {role: "system", content: "你现在不是agent环境，请以聊天markdown形式尽可能多的输出。"})
         addMessageChain(openai_messageChain, {role: "user", content: your_qus})
 
         GM_fetch({
@@ -2783,7 +2782,7 @@
 
         showAnserAndHighlightCodeStr(`<div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;padding:4px 0;"><div class="gpt-loading-spinner"></div>正在连接 Anthropic 兼容接口...</div><br>Base URL: ${base_url}<br>模型: ${model}`)
 
-        addMessageChain(anthropic_messageChain, {role: "user", content: "你现在不是agent环境，请以聊天markdown形式尽可能多的输出。"})
+        addMessageChain(anthropic_messageChain, {role: "system", content: "你现在不是agent环境，请以聊天markdown形式尽可能多的输出。"})
         addMessageChain(anthropic_messageChain, {role: "user", content: your_qus})
 
         GM_fetch({
@@ -2842,185 +2841,6 @@
             console.log(reason)
             Toast.error("请求失败，请检查Base URL和API Key是否正确!")
         })
-    }
-
-
-    let csrfToken;
-    async function setCsrfToken(){
-        let req1 = await GM_fetch({
-            method: "GET",
-            url: "https://tongyi.aliyun.com/qianwen/",
-            headers: {
-                "origin":"https://qianwen.aliyun.com",
-                "referer":"https://tongyi.aliyun.com/qianwen/"
-            }
-        })
-        let r = req1.responseText;
-        console.log(r);
-        try{
-            csrfToken =  /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/g.exec(r)[0];
-            console.log("csrfToken:",csrfToken)
-        }catch (e) {
-            Toast.error("csrfToken获取失败")
-        }
-    }
-    setTimeout(()=>{
-        if(getGPTMode()==="TONGYI"){
-            setCsrfToken()
-        }
-    })
-
-
-    let tongyi_sessionId = '';
-    let tongyi_pMsgId;
-
-    //通义千问 2023年5月13日
-    async function TONGYI(){
-        /*if(tongyi_first){
-           let req1 = await GM_fetch({
-               method: "POST",
-               url: "https://qianwen.aliyun.com/addSession",
-               headers: {
-                   "origin":"https://qianwen.aliyun.com/",
-                   "referer":"https://qianwen.aliyun.com/chat",
-                   "Content-Type": "application/json",
-                   "Bx-V": "2.5.3",
-                   "x-platform": "pc_tongyi",
-                   "x-xsrf-token": csrfToken
-               },
-               data:JSON.stringify({
-                   "firstQuery": your_qus
-               })
-           })
-           let r = req1.responseText;
-           //console.log(r);
-
-           try{
-               tongyi_sessionId = JSON.parse(r).data.sessionId;
-               tongyi_first = false;
-           }catch (e) {
-               tongyi_first = true;
-               showAnserAndHighlightCodeStr("出错,请确认已登录通义官网[通义](https://tongyi.aliyun.com/qianwen/)")
-               setTimeout(setCsrfToken)
-           }
-       }
-*/
-        showAnserAndHighlightCodeStr(`<div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;padding:4px 0;"><div class="gpt-loading-spinner"></div>正在连接通义千问...</div><br>该接口需登录通义官网[通义](https://tongyi.aliyun.com/qianwen/)`)
-
-
-        let sendData = JSON.stringify({
-            "action": "next",
-            "userAction": tongyi_sessionId ? "chat" : "new_top",
-            // "msgId": generateRandomString(32),
-            "parentMsgId": (tongyi_sessionId && tongyi_pMsgId) ? tongyi_pMsgId : generateRandomString(32),
-            "requestId":   generateRandomString(32),
-            "contents": [
-                {
-                    "contentType": "text",
-                    "content": your_qus,
-                    "role": "user"
-                }
-            ],
-            "sessionId": tongyi_sessionId ? tongyi_sessionId : '',
-            // "sessionId": "",
-            "sessionType": "text_chat",
-            "model": "",
-            "mode": "chat",
-            "params": {"fileUploadBatchId": ""}
-
-        })
-
-        GM_fetch({
-            method: 'POST',
-            url:  'https://qianwen.biz.aliyun.com/dialog/conversation',
-            headers: {
-                "origin": "https://tongyi.aliyun.com",
-                "referer":"https://tongyi.aliyun.com/qianwen/",
-                "Content-Type": "application/json",
-                "accept": "text/event-stream",
-                "x-platform": "pc_tongyi",
-                "x-xsrf-token": csrfToken
-            },
-            responseType: "stream",
-            data: sendData
-        }).then((stream)=> {
-            let reader = stream.response.getReader()
-            let answer;
-            reader.read().then(function processText({done, value}) {
-                if (done) {
-                    console.log("===done==")
-                    return
-                }
-                let responseItem = new TextDecoder("utf-8").decode(value)
-                console.log(responseItem)
-                /*{
-                    "aiDisclaimer": false,
-                    "canFeedback": true,
-                    "canRegenerate": true,
-                    "canShare": true,
-                    "canShow": true,
-                    "contentFrom": "text",
-                    "contentType": "text",
-                    "contents": [
-                    {
-                        "content": "你好！有什么我能帮助你的吗？",
-                        "contentType": "text",
-                        "id": "102416421db845179064dd046d5ce8d4_0",
-                        "role": "assistant",
-                        "status": "generating"
-                    }
-                ],
-                    "msgId": "102416421db845179064dd046d5ce8d4",
-                    "msgStatus": "generating",
-                    "params": {},
-                    "parentMsgId": "4880983feec04eae862ce2e08d67fc09",
-                    "sessionId": "95812ea382de4b4e82051a7272d965cb",
-                    "sessionOpen": true,
-                    "sessionShare": true,
-                    "sessionWarnNew": false,
-                    "stopReason": "null",
-                    "traceId": "0bc3b2e817159180903973007eb266"
-                }*/
-
-                responseItem.split("\n").forEach(item=>{
-                    try {
-                        let jsonObj = JSON.parse(item.replace(/data: /gi,"").trim())
-
-                        jsonObj.contents.forEach((item)=>{
-
-                            if(item.contentType === 'text'){
-                                let content = item.content;
-                                console.log(content)
-                                showAnserAndHighlightCodeStr(content)
-                            }
-                        })
-
-
-                        if(!tongyi_sessionId){
-                            tongyi_sessionId = jsonObj.sessionId;
-                            console.log("tongyi_sessionId:",tongyi_sessionId)
-                        }
-                        if(tongyi_pMsgId !== jsonObj.msgId){
-                            tongyi_pMsgId = jsonObj.msgId;
-                            console.log("tongyi_pMsgId:",tongyi_sessionId)
-                        }
-
-
-
-                    }catch (ex){}
-                })
-
-                return reader.read().then(processText)
-            },function (reason) {
-                console.log(reason)
-                Toast.error("未知错误!")
-            }).catch((ex)=>{
-                console.log(ex)
-                Toast.error("未知错误!")
-            })
-        })
-
-
     }
 
 
@@ -3358,32 +3178,7 @@
         console.error("hunyuan_chatId:",r)
     }
 
-    /* fetch('https://yuanbao.tencent.com/api/chat/ca7b253f-a1a7-4e24-82ca-667cc0fbd98d', {
-         method: 'POST',
-         headers: {
-             'authority': 'yuanbao.tencent.com',
-             'accept': '*!/!*',
-             'accept-language': 'zh-CN,zh;q=0.9',
-             'cache-control': 'no-cache',
-             'chat_version': 'v1',
-             'content-type': 'text/plain;charset=UTF-8',
-             'cookie': '_ga=GA1.2.1033776250.1698727525; _gcl_au=1.1.484286265.1713846526; hy_source=web; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%2229491242%22%2C%22first_id%22%3A%2218b840cf7219d8-044a60801af8344-1f7e152e-1440000-18b840cf7229ea%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E5%BC%95%E8%8D%90%E6%B5%81%E9%87%8F%22%7D%2C%22identities%22%3A%22eyIkaWRlbnRpdHlfY29va2llX2lkIjoiMThiODQwY2Y3MjE5ZDgtMDQ0YTYwODAxYWY4MzQ0LTFmN2UxNTJlLTE0NDAwMDAtMThiODQwY2Y3MjI5ZWEiLCIkaWRlbnRpdHlfbG9naW5faWQiOiIyOTQ5MTI0MiJ9%22%2C%22history_login_id%22%3A%7B%22name%22%3A%22%24identity_login_id%22%2C%22value%22%3A%2229491242%22%7D%2C%22%24device_id%22%3A%2218b840cf7219d8-044a60801af8344-1f7e152e-1440000-18b840cf7229ea%22%7D; hy_user=Bcw9KJaWemFaQ9iL; hy_token=bP9sp/yaXedZmIELMZz0hGSfpb6zW8UN7hFQeec8RFQIVAhWHCHLbFxq0tF5U6pO',
-             'origin': 'https://yuanbao.tencent.com',
-             'pragma': 'no-cache',
-             'referer': 'https://yuanbao.tencent.com/chat/naQivTmsDa',
-             'sec-ch-ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-             'sec-ch-ua-mobile': '?0',
-             'sec-ch-ua-platform': '"Windows"',
-             'sec-fetch-dest': 'empty',
-             'sec-fetch-mode': 'cors',
-             'sec-fetch-site': 'same-origin',
-             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.95 Safari/537.36',
-             'x-requested-with': 'XMLHttpRequest',
-             'x-source': 'web'
-         },
-         body: '{"model":"gpt_175B_0404","prompt":"你叫我什么","plugin":"Adaptive","displayPrompt":"你很牛吗","displayPromptType":1,"options":{},"multimedia":[],"agentId":"naQivTmsDa","version":"v2"}'
-     });
-     */
+
     async function Hunyuan(mtag) {
 
         showAnserAndHighlightCodeStr(`<div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;padding:4px 0;"><div class="gpt-loading-spinner"></div>正在连接腾讯Deepseek...</div><br>deepseek较慢，该线路为官网线路，请确保登录[元宝](https://yuanbao.tencent.com/chat)`)
