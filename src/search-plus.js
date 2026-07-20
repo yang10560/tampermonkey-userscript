@@ -451,7 +451,8 @@
         'OPENAI': [
             { key: 'openai_base_url', label: 'Base URL', placeholder: 'https://api.openai.com' },
             { key: 'openai_api_key', label: 'API Key', placeholder: '请输入API Key' },
-            { key: 'openai_model', label: '模型', placeholder: 'gpt-5.5' }
+            { key: 'openai_model', label: '模型', placeholder: 'gpt-5.5' },
+            { key: 'openai_web_search', label: '联网搜索', type: 'toggle', placeholder: '' }
         ],
         'miniMax': [
             { key: 'minimax_group_id', label: 'Group ID', placeholder: '请输入minimax_group_id' },
@@ -495,6 +496,16 @@
                     <input class="api-config-input" data-route-key="${f.key}" type="text" value="${f.value || ''}">
                 </div>`;
             });
+            if (route.type === 'OPENAI') {
+                const checked = localStorage.getItem('openai_web_search') === 'true';
+                html += `<div class="api-config-row">
+                    <span class="api-config-label">联网搜索</span>
+                    <label class="api-config-toggle">
+                        <input type="checkbox" data-key="openai_web_search" ${checked ? 'checked' : ''}>
+                        <span class="api-config-toggle-slider"></span>
+                    </label>
+                </div>`;
+            }
             html += `<div class="api-config-save-row">
                 <button id="deleteCustomRouteBtn" class="api-config-delete-btn">🗑️ 删除线路</button>
             </div>`;
@@ -510,6 +521,12 @@
                     setCustomRoutes(getCustomRoutes().map(r => r.id === route.id ? route : r));
                     // 同步到 localStorage 供当前会话立即生效
                     loadCustomRouteConfig(route);
+                });
+            });
+            // 绑定toggle开关事件
+            panel.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => {
+                cb.addEventListener('change', function () {
+                    localStorage.setItem(this.dataset.key, this.checked ? 'true' : 'false');
                 });
             });
             // 删除按钮
@@ -530,17 +547,29 @@
         panel.style.display = 'block';
         let html = '';
         schema.forEach(item => {
-            const val = localStorage.getItem(item.key) || '';
-            html += `<div class="api-config-row">
-                <span class="api-config-label">${item.label}</span>
-                <input class="api-config-input" data-key="${item.key}" type="text" placeholder="${item.placeholder}" value="${val}">
-            </div>`;
+            if (item.type === 'toggle') {
+                const checked = localStorage.getItem(item.key) === 'true';
+                html += `<div class="api-config-row">
+                    <span class="api-config-label">${item.label}</span>
+                    <label class="api-config-toggle">
+                        <input type="checkbox" data-key="${item.key}" ${checked ? 'checked' : ''}>
+                        <span class="api-config-toggle-slider"></span>
+                    </label>
+                </div>`;
+            } else {
+                const val = localStorage.getItem(item.key) || '';
+                html += `<div class="api-config-row">
+                    <span class="api-config-label">${item.label}</span>
+                    <input class="api-config-input" data-key="${item.key}" type="text" placeholder="${item.placeholder}" value="${val}">
+                </div>`;
+            }
         });
         // OPENAI/Anthropic模式下提示添加@connect
         if (GPTMODE === 'OPENAI' || GPTMODE === 'Anthropic') {
             html += `<div class="api-config-warn">
                 ⚠️ 若使用第三方接口，请在脚本头部添加：<code>// @connect &nbsp;你的域名</code><br>
                 例如：<code>// @connect api.deepseek.com</code>
+                方法二：<code>到tampermonkey脚本管理器-高级-安全-@connect模式-禁用-保存</code>
             </div>`;
             html += `<div class="api-config-save-row"><button id="saveCustomRouteBtn" class="api-config-save-btn">📌 保存为线路</button></div>`;
         }
@@ -564,6 +593,12 @@
                 if (key === 'ZhipuapiKey') zhipu_apiKey = val;
                 if (key === 'minimax_group_id') minimax_group_id = val;
                 if (key === 'minimax_api_key') minimax_api_key = val;
+            });
+        });
+        //绑定toggle开关事件
+        panel.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => {
+            cb.addEventListener('change', function () {
+                localStorage.setItem(this.dataset.key, this.checked ? 'true' : 'false');
             });
         });
 
@@ -2147,6 +2182,43 @@
         margin-top: 6px;
         text-align: right;
     }
+    .api-config-toggle{
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+    .api-config-toggle input{
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .api-config-toggle-slider{
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: 0.3s;
+        border-radius: 20px;
+    }
+    .api-config-toggle-slider:before{
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: #fff;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+    .api-config-toggle input:checked + .api-config-toggle-slider{
+        background-color: #4e6ef2;
+    }
+    .api-config-toggle input:checked + .api-config-toggle-slider:before{
+        transform: translateX(16px);
+    }
     .api-config-warn{
         margin-top: 8px;
         padding: 8px 10px;
@@ -2708,10 +2780,32 @@
             return
         }
 
-        showAnserAndHighlightCodeStr(`<div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;padding:4px 0;"><div class="gpt-loading-spinner"></div>正在连接 OpenAI 兼容接口...</div><br>Base URL: ${base_url}<br>模型: ${model}<br>主流的兼容openai站点已经支持，若没有的第三方请在代码中加上// @connect 你的域名`)
+        const webSearchOn = localStorage.getItem('openai_web_search') === 'true' && /xiaomimimo\.com/i.test(base_url);
+        showAnserAndHighlightCodeStr(`<div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;padding:4px 0;"><div class="gpt-loading-spinner"></div>正在连接 OpenAI 兼容接口...</div><br>Base URL: ${base_url}<br>模型: ${model}${webSearchOn ? '<br>🌐 联网搜索: 已开启' : ''}<br>主流的兼容openai站点已经支持，若没有的第三方请在代码中加上// @connect 你的域名`)
 
         addMessageChain(openai_messageChain, {role: "system", content: "你现在不是agent环境，请以聊天markdown形式尽可能多的输出。"})
         addMessageChain(openai_messageChain, {role: "user", content: your_qus})
+
+        const requestBody = {
+            model: model,
+            messages: openai_messageChain,
+            stream: true
+        };
+        // 联网搜索：仅在开启且域名是 xiaomimimo.com 时生效
+        if (localStorage.getItem('openai_web_search') === 'true' && /xiaomimimo\.com/i.test(base_url)) {
+            requestBody.tools = [{
+                type: "web_search",
+                max_keyword: 3,
+                force_search: true,
+                limit: 1,
+                user_location: {
+                    type: "approximate",
+                    country: "China",
+                    region: "Hubei",
+                    city: "Wuhan"
+                }
+            }];
+        }
 
         GM_fetch({
             method: "POST",
@@ -2722,11 +2816,7 @@
                 "accept": "text/event-stream"
             },
             responseType: "stream",
-            data: JSON.stringify({
-                model: model,
-                messages: openai_messageChain,
-                stream: true
-            })
+            data: JSON.stringify(requestBody)
         }).then((stream) => {
             let result = [];
             const reader = stream.response.getReader();
@@ -2763,7 +2853,7 @@
             })
         }, (reason) => {
             console.log(reason)
-            Toast.error("请求失败，请检查Base URL和API Key是否正确!")
+            Toast.error("请求失败，请检查Base URL和API Key是否正确! 注意代码否加了@connect 字段")
         })
     }
 
@@ -2839,7 +2929,7 @@
             })
         }, (reason) => {
             console.log(reason)
-            Toast.error("请求失败，请检查Base URL和API Key是否正确!")
+            Toast.error("请求失败，请检查Base URL和API Key是否正确! 注意代码否加了@connect 字段")
         })
     }
 
