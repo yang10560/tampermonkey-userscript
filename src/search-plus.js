@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.7.5
+// @version      3.7.6
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax，DeepSeek、Gemini。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -75,7 +75,6 @@
 // @connect    chat.360.cn
 // @connect    api.deepseek.com
 // @connect    api.moonshot.cn
-// @connect    dashscope.aliyuncs.com
 // @connect    api.groq.com
 // @connect    api.together.xyz
 // @connect    api.mistral.ai
@@ -86,7 +85,6 @@
 // @connect    spark-api-open.xf-yun.com
 // @connect    api.cohere.com
 // @connect    api.baichuan-ai.com
-// @connect    qianfan.baidubce.com
 // @connect    ark.cn-beijing.volces.com
 // @connect    api.sensenova.cn
 // @connect    api.kunlun.com
@@ -99,6 +97,24 @@
 // @connect    api.anthropic.com
 // @connect    api.xiaomimimo.com
 // @connect    dashscope.aliyuncs.com
+// @connect    volces.com
+// @connect    api.baichuan‑ai.com
+// @connect    api.hunyuan.cloud.tencent.com
+// @connect    spark‑api‑open.xf‑yun.com
+// @connect    api.lingyiwanwu.com
+// @connect    api.stepfun.com
+// @connect    api.sensenova.cn
+// @connect    model‑api.tiangong.cn
+// @connect    qianfan.baidubce.com
+// @connect    api.siliconflow.cn
+// @connect    internlm.intern‑ai.org.cn
+// @connect    api.360.cn
+// @connect    api.openai.com
+// @connect    api.x.ai
+// @connect    generativelanguage.googleapis.com
+// @connect    api.cohere.ai
+// @connect    api.mistral.ai
+// @connect    openrouter.ai
 // @compatible   Chrome
 // @compatible   Firefox
 // @license    MIT
@@ -116,7 +132,7 @@
     'use strict';
 
 
-    const JSver = '3.7.4';
+    const JSver = '3.7.6';
 
 
     function getGPTMode() {
@@ -2792,23 +2808,31 @@
             stream: true
         };
         // 联网搜索：仅在开启且域名是 xiaomimimo.com 时生效
-        if (localStorage.getItem('openai_web_search') === 'true' && /xiaomimimo\.com/i.test(base_url)) {
-            requestBody.tools = [{
-                type: "web_search",
-                max_keyword: 3,
-                force_search: true,
-                limit: 1,
-                user_location: {
-                    type: "approximate",
-                    country: "China",
-                    region: "Hubei",
-                    city: "Wuhan"
-                }
-            }];
-        }else if(localStorage.getItem('openai_web_search') === 'true'){
-            requestBody.tools = [{type: "web_search" }]
-        }
+        if (localStorage.getItem('openai_web_search') === 'true' ) {
 
+            if(/xiaomimimo\.com/i.test(base_url)){
+                requestBody.tools = [{
+                    type: "web_search",
+                    max_keyword: 3,
+                    force_search: true,
+                    limit: 1,
+                    user_location: {
+                        type: "approximate",
+                        country: "China",
+                        region: "Hubei",
+                        city: "Wuhan"
+                    }
+                }];
+            }else if(/moonshot\.cn/i.test(base_url)){
+                requestBody.tools = [{
+                    type: "builtin_function",
+                     function: { name: "$web_search"},
+                }];
+            }else{
+                requestBody.tools = [{type: "web_search" }]
+            }
+
+        }
         GM_fetch({
             method: "POST",
             url: `${base_url}/v1/chat/completions`,
