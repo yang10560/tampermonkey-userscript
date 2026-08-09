@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         chatGPT tools Plus（修改版）
 // @namespace    http://tampermonkey.net/
-// @version      3.7.6
+// @version      3.7.7
 // @description  Google、必应、百度、Yandex、360搜索、谷歌镜像、搜狗、b站、F搜、duckduckgo、CSDN侧边栏Chat搜索，集成国内一言，星火，天工，混元，通义AI，ChatGLM，360智脑,miniMax，DeepSeek、Gemini。即刻体验AI，无需翻墙，无需注册，无需等待！
 // @description:en  Google, Bing, Baidu, Yandex, 360 Search, Google Mirror, Sogou, B Station, F Search, DuckDuckgo, CSDN sidebar CHAT search, integrate domestic words, star fire, sky work, righteous AI, Chatglm, 360 wisdom, 360 wisdom brain. Experience AI immediately, no need to turn over the wall, no registration, no need to wait!
 // @description:zh-TW     Google、必應、百度、Yandex、360搜索、谷歌鏡像、搜狗、b站、F搜、duckduckgo、CSDN側邊欄Chat搜索，集成國內一言，星火，天工，通義AI，ChatGLM，360智腦。即刻體驗AI，無需翻墻，無需註冊，無需等待！
@@ -132,11 +132,59 @@
     'use strict';
 
 
-    const JSver = '3.7.6';
+    const JSver = '3.7.7';
 
+    // ===== 跨站点存储辅助函数 =====
+    // 使用 GM_setValue/GM_getValue 实现配置跨网站同步
+    // 需要同步的配置项列表
+    const SYNC_KEYS = [
+        'GPTMODE',
+        'openai_base_url', 'openai_api_key', 'openai_model', 'openai_web_search',
+        'anthropic_base_url', 'anthropic_api_key', 'anthropic_model',
+        'custom_routes'
+    ];
+
+    /**
+     * 获取存储的配置值（优先从 GM_getValue 读取，兼容旧版 localStorage）
+     */
+    function getStorageItem(key) {
+        try {
+            const gmVal = GM_getValue(key);
+            if (gmVal !== undefined && gmVal !== null) return gmVal;
+        } catch (e) {}
+        // 回退到 localStorage（兼容旧数据）
+        return localStorage.getItem(key);
+    }
+
+    /**
+     * 保存配置值（同时写入 GM_setValue 和 localStorage）
+     */
+    function setStorageItem(key, value) {
+        try {
+            if (value === null || value === undefined || value === '') {
+                GM_setValue(key, null);
+            } else {
+                GM_setValue(key, value);
+            }
+        } catch (e) {}
+        // 同时写入 localStorage 保持兼容
+        if (value === null || value === undefined || value === '') {
+            localStorage.removeItem(key);
+        } else {
+            localStorage.setItem(key, value);
+        }
+    }
+
+    /**
+     * 删除配置值
+     */
+    function removeStorageItem(key) {
+        try { GM_setValue(key, null); } catch (e) {}
+        localStorage.removeItem(key);
+    }
 
     function getGPTMode() {
-        return localStorage.getItem("GPTMODE");
+        return getStorageItem("GPTMODE");
     }
 
     const GPT_MODE_NAMES = {
@@ -513,7 +561,7 @@
                 </div>`;
             });
             if (route.type === 'OPENAI') {
-                const checked = localStorage.getItem('openai_web_search') === 'true';
+                const checked = getStorageItem('openai_web_search') === 'true';
                 html += `<div class="api-config-row">
                     <span class="api-config-label">联网搜索</span>
                     <label class="api-config-toggle">
@@ -542,7 +590,7 @@
             // 绑定toggle开关事件
             panel.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => {
                 cb.addEventListener('change', function () {
-                    localStorage.setItem(this.dataset.key, this.checked ? 'true' : 'false');
+                    setStorageItem(this.dataset.key, this.checked ? 'true' : 'false');
                 });
             });
             // 删除按钮
@@ -564,7 +612,7 @@
         let html = '';
         schema.forEach(item => {
             if (item.type === 'toggle') {
-                const checked = localStorage.getItem(item.key) === 'true';
+                const checked = getStorageItem(item.key) === 'true';
                 html += `<div class="api-config-row">
                     <span class="api-config-label">${item.label}</span>
                     <label class="api-config-toggle">
@@ -573,7 +621,7 @@
                     </label>
                 </div>`;
             } else {
-                const val = localStorage.getItem(item.key) || '';
+                const val = getStorageItem(item.key) || '';
                 html += `<div class="api-config-row">
                     <span class="api-config-label">${item.label}</span>
                     <input class="api-config-input" data-key="${item.key}" type="text" placeholder="${item.placeholder}" value="${val}">
@@ -601,9 +649,9 @@
                     val = val.replace(/\/+$/, '');
                 }
                 if (val) {
-                    localStorage.setItem(key, val);
+                    setStorageItem(key, val);
                 } else {
-                    localStorage.removeItem(key);
+                    removeStorageItem(key);
                 }
                 //同步全局变量
                 if (key === 'ZhipuapiKey') zhipu_apiKey = val;
@@ -614,7 +662,7 @@
         //绑定toggle开关事件
         panel.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => {
             cb.addEventListener('change', function () {
-                localStorage.setItem(this.dataset.key, this.checked ? 'true' : 'false');
+                setStorageItem(this.dataset.key, this.checked ? 'true' : 'false');
             });
         });
 
@@ -628,24 +676,24 @@
     const CUSTOM_ROUTES_KEY = 'custom_routes';
 
     function getCustomRoutes() {
-        try { return JSON.parse(localStorage.getItem(CUSTOM_ROUTES_KEY)) || []; }
+        try { return JSON.parse(getStorageItem(CUSTOM_ROUTES_KEY)) || []; }
         catch { return []; }
     }
     function setCustomRoutes(routes) {
-        localStorage.setItem(CUSTOM_ROUTES_KEY, JSON.stringify(routes));
+        setStorageItem(CUSTOM_ROUTES_KEY, JSON.stringify(routes));
     }
     function getCustomRouteById(id) {
         return getCustomRoutes().find(r => r.id === id);
     }
     function loadCustomRouteConfig(route) {
         if (route.type === 'OPENAI') {
-            localStorage.setItem('openai_base_url', route.base_url);
-            localStorage.setItem('openai_api_key', route.api_key);
-            if (route.model) localStorage.setItem('openai_model', route.model);
+            setStorageItem('openai_base_url', route.base_url);
+            setStorageItem('openai_api_key', route.api_key);
+            if (route.model) setStorageItem('openai_model', route.model);
         } else if (route.type === 'Anthropic') {
-            localStorage.setItem('anthropic_base_url', route.base_url);
-            localStorage.setItem('anthropic_api_key', route.api_key);
-            if (route.model) localStorage.setItem('anthropic_model', route.model);
+            setStorageItem('anthropic_base_url', route.base_url);
+            setStorageItem('anthropic_api_key', route.api_key);
+            if (route.model) setStorageItem('anthropic_model', route.model);
         }
     }
     function saveCustomRoute() {
@@ -660,9 +708,9 @@
             id: CUSTOM_ROUTE_PREFIX + Date.now(),
             name: name.trim(),
             type: GPTMODE,
-            base_url: localStorage.getItem(GPTMODE === 'OPENAI' ? 'openai_base_url' : 'anthropic_base_url') || '',
-            api_key: localStorage.getItem(GPTMODE === 'OPENAI' ? 'openai_api_key' : 'anthropic_api_key') || '',
-            model: localStorage.getItem(GPTMODE === 'OPENAI' ? 'openai_model' : 'anthropic_model') || ''
+            base_url: getStorageItem(GPTMODE === 'OPENAI' ? 'openai_base_url' : 'anthropic_base_url') || '',
+            api_key: getStorageItem(GPTMODE === 'OPENAI' ? 'openai_api_key' : 'anthropic_api_key') || '',
+            model: getStorageItem(GPTMODE === 'OPENAI' ? 'openai_model' : 'anthropic_model') || ''
         };
         if (!route.api_key) {
             Toast.error('请先填写 API Key 再保存');
@@ -680,7 +728,7 @@
         const selectEl = document.getElementById('modeSelect');
         if (selectEl && selectEl.value === id) {
             selectEl.value = 'OPENAI';
-            localStorage.setItem('GPTMODE', 'OPENAI');
+            setStorageItem('GPTMODE', 'OPENAI');
             renderApiConfigPanel();
         }
         refreshModeSelectOptions();
@@ -1714,7 +1762,7 @@
         document.getElementById('modeSelect').addEventListener('change', () => {
             const selectEl = document.getElementById('modeSelect');
             const selectedValue = selectEl.options[selectEl.selectedIndex].value;
-            localStorage.setItem('GPTMODE', selectedValue);
+            setStorageItem('GPTMODE', selectedValue);
             renderApiConfigPanel();
             let displayName = GPT_MODE_NAMES[selectedValue];
             if (!displayName) {
@@ -2787,16 +2835,16 @@
 
     let openai_messageChain = [];
     async function OPENAI(){
-        let base_url = localStorage.getItem("openai_base_url") || "https://api.openai.com";
-        let api_key = localStorage.getItem("openai_api_key");
-        let model = localStorage.getItem("openai_model") || "gpt-5.5";
+        let base_url = getStorageItem("openai_base_url") || "https://api.openai.com";
+        let api_key = getStorageItem("openai_api_key");
+        let model = getStorageItem("openai_model") || "gpt-5.5";
 
         if(!api_key){
             showAnserAndHighlightCodeStr(`api_key为空，请点击设置-更新key，输入您的API Key`)
             return
         }
 
-        const webSearchOn = localStorage.getItem('openai_web_search') === 'true' && /xiaomimimo\.com/i.test(base_url);
+        const webSearchOn = getStorageItem('openai_web_search') === 'true' && /xiaomimimo\.com/i.test(base_url);
         showAnserAndHighlightCodeStr(`<div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;padding:4px 0;"><div class="gpt-loading-spinner"></div>正在连接 OpenAI 兼容接口...</div><br>Base URL: ${base_url}<br>模型: ${model}${webSearchOn ? '<br>🌐 联网搜索: 已开启' : ''}<br>主流的兼容openai站点已经支持，若没有的第三方请在代码中加上// @connect 你的域名`)
 
         addMessageChain(openai_messageChain, {role: "system", content: "你现在不是agent环境，请以聊天markdown形式尽可能多的输出。"})
@@ -2808,7 +2856,7 @@
             stream: true
         };
         // 联网搜索：仅在开启且域名是 xiaomimimo.com 时生效
-        if (localStorage.getItem('openai_web_search') === 'true' ) {
+        if (getStorageItem('openai_web_search') === 'true' ) {
 
             if(/xiaomimimo\.com/i.test(base_url)){
                 requestBody.tools = [{
@@ -2887,9 +2935,9 @@
     //Anthropic 统一接口（兼容 Claude API 格式）
     let anthropic_messageChain = [];
     async function Anthropic(){
-        let base_url = localStorage.getItem("anthropic_base_url") || "https://api.anthropic.com";
-        let api_key = localStorage.getItem("anthropic_api_key");
-        let model = localStorage.getItem("anthropic_model") || "claude-sonnet-4-20250514";
+        let base_url = getStorageItem("anthropic_base_url") || "https://api.anthropic.com";
+        let api_key = getStorageItem("anthropic_api_key");
+        let model = getStorageItem("anthropic_model") || "claude-sonnet-4-20250514";
 
         if(!api_key){
             showAnserAndHighlightCodeStr(`api_key为空，请点击设置-更新key，输入您的Anthropic API Key`)
@@ -3743,11 +3791,11 @@
         // 加载自定义线路到下拉框
         refreshModeSelectOptions();
 
-        if(localStorage.getItem('GPTMODE')){
+        if(getStorageItem('GPTMODE')){
             const selectEl = document.getElementById('modeSelect');
             let optionElements = selectEl.querySelectorAll("option");
             for (let op in optionElements) {
-                if(optionElements[op].value === localStorage.getItem('GPTMODE')){
+                if(optionElements[op].value === getStorageItem('GPTMODE')){
                     optionElements[op].setAttribute("selected", "selected");
                     break;
                 }
