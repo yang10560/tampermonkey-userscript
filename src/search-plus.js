@@ -560,6 +560,13 @@
                     <input class="api-config-input" data-route-key="${f.key}" type="text" value="${f.value || ''}">
                 </div>`;
             });
+            // URL预览
+            const endpoint = route.type === 'OPENAI' ? '/v1/chat/completions' : '/v1/messages';
+            const fullUrl = (route.base_url || '').replace(/\/+$/, '') + endpoint;
+            html += `<div class="api-config-url-preview" id="apiUrlPreview">
+                <span class="api-config-url-label">📡 请求地址：</span>
+                <code class="api-config-url-value">${fullUrl}</code>
+            </div>`;
             if (route.type === 'OPENAI') {
                 const checked = getStorageItem('openai_web_search') === 'true';
                 html += `<div class="api-config-row">
@@ -570,9 +577,16 @@
                     </label>
                 </div>`;
             }
+            html += `<div class="api-config-warn">
+                ⚠️ 若使用第三方接口，请在脚本头部添加：<code>// @connect &nbsp;你的域名</code><br>
+                例如：<code>// @connect api.deepseek.com</code>
+                方法二：<code>到tampermonkey脚本管理器-高级-安全-@connect模式-禁用-保存</code>
+            </div>`;
             html += `<div class="api-config-save-row">
+                <button id="testCustomRouteBtn" class="api-config-test-btn">🧪 测试连接</button>
                 <button id="deleteCustomRouteBtn" class="api-config-delete-btn">🗑️ 删除线路</button>
             </div>`;
+            html += `<div id="testResult" class="api-config-test-result" style="display:none;"></div>`;
             html += '<div class="api-config-hint">修改后自动保存 ✓</div>';
             panel.innerHTML = html;
             // 自动保存编辑
@@ -580,7 +594,15 @@
                 input.addEventListener('input', function () {
                     const key = this.dataset.routeKey;
                     let val = this.value.trim();
-                    if (key === 'base_url') val = val.replace(/\/+$/, '');
+                    if (key === 'base_url') {
+                        val = val.replace(/\/+$/, '');
+                        // 更新URL预览
+                        const urlPreview = document.getElementById('apiUrlPreview');
+                        if (urlPreview) {
+                            const endpoint = route.type === 'OPENAI' ? '/v1/chat/completions' : '/v1/messages';
+                            urlPreview.querySelector('.api-config-url-value').textContent = val + endpoint;
+                        }
+                    }
                     route[key] = val;
                     setCustomRoutes(getCustomRoutes().map(r => r.id === route.id ? route : r));
                     // 同步到 localStorage 供当前会话立即生效
@@ -592,6 +614,10 @@
                 cb.addEventListener('change', function () {
                     setStorageItem(this.dataset.key, this.checked ? 'true' : 'false');
                 });
+            });
+            // 测试按钮
+            document.getElementById('testCustomRouteBtn').addEventListener('click', () => {
+                testCustomRouteApi(route);
             });
             // 删除按钮
             document.getElementById('deleteCustomRouteBtn').addEventListener('click', () => {
@@ -628,14 +654,26 @@
                 </div>`;
             }
         });
-        // OPENAI/Anthropic模式下提示添加@connect
+        // OPENAI/Anthropic模式下显示完整请求URL和测试按钮
         if (GPTMODE === 'OPENAI' || GPTMODE === 'Anthropic') {
+            const baseUrlKey = GPTMODE === 'OPENAI' ? 'openai_base_url' : 'anthropic_base_url';
+            const baseUrl = getStorageItem(baseUrlKey) || (GPTMODE === 'OPENAI' ? 'https://api.openai.com' : 'https://api.anthropic.com');
+            const endpoint = GPTMODE === 'OPENAI' ? '/v1/chat/completions' : '/v1/messages';
+            const fullUrl = baseUrl.replace(/\/+$/, '') + endpoint;
+            html += `<div class="api-config-url-preview" id="apiUrlPreview">
+                <span class="api-config-url-label">📡 请求地址：</span>
+                <code class="api-config-url-value">${fullUrl}</code>
+            </div>`;
             html += `<div class="api-config-warn">
                 ⚠️ 若使用第三方接口，请在脚本头部添加：<code>// @connect &nbsp;你的域名</code><br>
                 例如：<code>// @connect api.deepseek.com</code>
                 方法二：<code>到tampermonkey脚本管理器-高级-安全-@connect模式-禁用-保存</code>
             </div>`;
-            html += `<div class="api-config-save-row"><button id="saveCustomRouteBtn" class="api-config-save-btn">📌 保存为线路</button></div>`;
+            html += `<div class="api-config-save-row">
+                <button id="testApiBtn" class="api-config-test-btn">🧪 测试连接</button>
+                <button id="saveCustomRouteBtn" class="api-config-save-btn">📌 保存为线路</button>
+            </div>`;
+            html += `<div id="testResult" class="api-config-test-result" style="display:none;"></div>`;
         }
         html += '<div class="api-config-hint">修改后自动保存 ✓</div>';
         panel.innerHTML = html;
@@ -647,6 +685,8 @@
                 let val = this.value.trim();
                 if (key === 'openai_base_url' || key === 'anthropic_base_url') {
                     val = val.replace(/\/+$/, '');
+                    // 更新URL预览
+                    updateUrlPreview(GPTMODE);
                 }
                 if (val) {
                     setStorageItem(key, val);
@@ -666,9 +706,241 @@
             });
         });
 
+        //绑定测试按钮
+        const testBtn = document.getElementById('testApiBtn');
+        if (testBtn) testBtn.addEventListener('click', () => testApiConnection(GPTMODE));
+
         //绑定保存线路按钮
         const saveBtn = document.getElementById('saveCustomRouteBtn');
         if (saveBtn) saveBtn.addEventListener('click', saveCustomRoute);
+    }
+
+    // 更新URL预览
+    function updateUrlPreview(GPTMODE) {
+        const urlPreview = document.getElementById('apiUrlPreview');
+        if (!urlPreview) return;
+        const baseUrlKey = GPTMODE === 'OPENAI' ? 'openai_base_url' : 'anthropic_base_url';
+        const baseUrl = getStorageItem(baseUrlKey) || (GPTMODE === 'OPENAI' ? 'https://api.openai.com' : 'https://api.anthropic.com');
+        const endpoint = GPTMODE === 'OPENAI' ? '/v1/chat/completions' : '/v1/messages';
+        const fullUrl = baseUrl.replace(/\/+$/, '') + endpoint;
+        urlPreview.querySelector('.api-config-url-value').textContent = fullUrl;
+    }
+
+    // 测试API连接
+    async function testApiConnection(GPTMODE) {
+        const testResult = document.getElementById('testResult');
+        const testBtn = document.getElementById('testApiBtn');
+        if (!testResult || !testBtn) return;
+
+        const apiKeyKey = GPTMODE === 'OPENAI' ? 'openai_api_key' : 'anthropic_api_key';
+        const apiKey = getStorageItem(apiKeyKey);
+        const baseUrlKey = GPTMODE === 'OPENAI' ? 'openai_base_url' : 'anthropic_base_url';
+        const baseUrl = getStorageItem(baseUrlKey) || (GPTMODE === 'OPENAI' ? 'https://api.openai.com' : 'https://api.anthropic.com');
+        const modelKey = GPTMODE === 'OPENAI' ? 'openai_model' : 'anthropic_model';
+        const model = getStorageItem(modelKey) || (GPTMODE === 'OPENAI' ? 'gpt-5.5' : 'claude-sonnet-4-20250514');
+        const endpoint = GPTMODE === 'OPENAI' ? '/v1/chat/completions' : '/v1/messages';
+        const fullUrl = baseUrl.replace(/\/+$/, '') + endpoint;
+
+        // 验证必填项
+        if (!apiKey) {
+            testResult.style.display = 'block';
+            testResult.className = 'api-config-test-result api-config-test-error';
+            testResult.innerHTML = '❌ 请先填写 API Key';
+            return;
+        }
+
+        // 显示测试中状态
+        testBtn.disabled = true;
+        testBtn.textContent = '⏳ 测试中...';
+        testResult.style.display = 'block';
+        testResult.className = 'api-config-test-result api-config-test-loading';
+        testResult.innerHTML = '<div class="gpt-loading-spinner"></div> 正在测试连接...';
+
+        const startTime = Date.now();
+
+        try {
+            let requestData, headers;
+            if (GPTMODE === 'OPENAI') {
+                requestData = {
+                    model: model,
+                    messages: [{ role: 'user', content: 'Hi' }],
+                    max_tokens: 5,
+                    stream: false
+                };
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                };
+            } else {
+                requestData = {
+                    model: model,
+                    max_tokens: 5,
+                    messages: [{ role: 'user', content: 'Hi' }]
+                };
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
+                };
+            }
+
+            const response = await GM_fetch({
+                method: 'POST',
+                url: fullUrl,
+                headers: headers,
+                data: JSON.stringify(requestData),
+                timeout: 30000
+            });
+
+            const elapsed = Date.now() - startTime;
+
+            if (response.status >= 200 && response.status < 300) {
+                let responseData;
+                try {
+                    responseData = JSON.parse(response.responseText);
+                } catch (e) {
+                    responseData = null;
+                }
+
+                testResult.className = 'api-config-test-result api-config-test-success';
+                testResult.innerHTML = `✅ 连接成功！<br>
+                    <span class="api-config-test-detail">状态码: ${response.status} | 耗时: ${elapsed}ms</span><br>
+                    <span class="api-config-test-detail">模型: ${responseData?.model || model}</span>`;
+            } else {
+                let errorMsg = `HTTP ${response.status}`;
+                try {
+                    const errorData = JSON.parse(response.responseText);
+                    errorMsg += `: ${errorData.error?.message || errorData.message || JSON.stringify(errorData)}`;
+                } catch (e) {
+                    errorMsg += `: ${response.responseText.substring(0, 200)}`;
+                }
+
+                testResult.className = 'api-config-test-result api-config-test-error';
+                testResult.innerHTML = `❌ 连接失败！<br>
+                    <span class="api-config-test-detail">${errorMsg}</span><br>
+                    <span class="api-config-test-detail">请求地址: ${fullUrl}</span>`;
+            }
+        } catch (error) {
+            const elapsed = Date.now() - startTime;
+            let errorMsg = error?.error || error?.message || '未知错误';
+            if (error?.status) errorMsg = `HTTP ${error.status}: ${errorMsg}`;
+
+            testResult.className = 'api-config-test-result api-config-test-error';
+            testResult.innerHTML = `❌ 连接失败！<br>
+                <span class="api-config-test-detail">${errorMsg}</span><br>
+                <span class="api-config-test-detail">请求地址: ${fullUrl}</span><br>
+                <span class="api-config-test-detail">耗时: ${elapsed}ms</span>`;
+        } finally {
+            testBtn.disabled = false;
+            testBtn.textContent = '🧪 测试连接';
+        }
+    }
+
+    // 测试自定义线路API连接
+    async function testCustomRouteApi(route) {
+        const testResult = document.getElementById('testResult');
+        const testBtn = document.getElementById('testCustomRouteBtn');
+        if (!testResult || !testBtn) return;
+
+        const apiKey = route.api_key;
+        const baseUrl = route.base_url || '';
+        const model = route.model || (route.type === 'OPENAI' ? 'gpt-5.5' : 'claude-sonnet-4-20250514');
+        const endpoint = route.type === 'OPENAI' ? '/v1/chat/completions' : '/v1/messages';
+        const fullUrl = baseUrl.replace(/\/+$/, '') + endpoint;
+
+        // 验证必填项
+        if (!apiKey) {
+            testResult.style.display = 'block';
+            testResult.className = 'api-config-test-result api-config-test-error';
+            testResult.innerHTML = '❌ 请先填写 API Key';
+            return;
+        }
+
+        // 显示测试中状态
+        testBtn.disabled = true;
+        testBtn.textContent = '⏳ 测试中...';
+        testResult.style.display = 'block';
+        testResult.className = 'api-config-test-result api-config-test-loading';
+        testResult.innerHTML = '<div class="gpt-loading-spinner"></div> 正在测试连接...';
+
+        const startTime = Date.now();
+
+        try {
+            let requestData, headers;
+            if (route.type === 'OPENAI') {
+                requestData = {
+                    model: model,
+                    messages: [{ role: 'user', content: 'Hi' }],
+                    max_tokens: 5,
+                    stream: false
+                };
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                };
+            } else {
+                requestData = {
+                    model: model,
+                    max_tokens: 5,
+                    messages: [{ role: 'user', content: 'Hi' }]
+                };
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
+                };
+            }
+
+            const response = await GM_fetch({
+                method: 'POST',
+                url: fullUrl,
+                headers: headers,
+                data: JSON.stringify(requestData),
+                timeout: 30000
+            });
+
+            const elapsed = Date.now() - startTime;
+
+            if (response.status >= 200 && response.status < 300) {
+                let responseData;
+                try {
+                    responseData = JSON.parse(response.responseText);
+                } catch (e) {
+                    responseData = null;
+                }
+
+                testResult.className = 'api-config-test-result api-config-test-success';
+                testResult.innerHTML = `✅ 连接成功！<br>
+                    <span class="api-config-test-detail">状态码: ${response.status} | 耗时: ${elapsed}ms</span><br>
+                    <span class="api-config-test-detail">模型: ${responseData?.model || model}</span>`;
+            } else {
+                let errorMsg = `HTTP ${response.status}`;
+                try {
+                    const errorData = JSON.parse(response.responseText);
+                    errorMsg += `: ${errorData.error?.message || errorData.message || JSON.stringify(errorData)}`;
+                } catch (e) {
+                    errorMsg += `: ${response.responseText.substring(0, 200)}`;
+                }
+
+                testResult.className = 'api-config-test-result api-config-test-error';
+                testResult.innerHTML = `❌ 连接失败！<br>
+                    <span class="api-config-test-detail">${errorMsg}</span><br>
+                    <span class="api-config-test-detail">请求地址: ${fullUrl}</span>`;
+            }
+        } catch (error) {
+            const elapsed = Date.now() - startTime;
+            let errorMsg = error?.error || error?.message || '未知错误';
+            if (error?.status) errorMsg = `HTTP ${error.status}: ${errorMsg}`;
+
+            testResult.className = 'api-config-test-result api-config-test-error';
+            testResult.innerHTML = `❌ 连接失败！<br>
+                <span class="api-config-test-detail">${errorMsg}</span><br>
+                <span class="api-config-test-detail">请求地址: ${fullUrl}</span><br>
+                <span class="api-config-test-detail">耗时: ${elapsed}ms</span>`;
+        } finally {
+            testBtn.disabled = false;
+            testBtn.textContent = '🧪 测试连接';
+        }
     }
 
     // ===== 自定义线路管理 =====
@@ -2332,6 +2604,87 @@
     .api-config-delete-btn:hover{
         background: #e53935;
         color: #fff;
+    }
+    /* URL预览 */
+    .api-config-url-preview{
+        margin-top: 8px;
+        padding: 8px 10px;
+        background: #f0f5ff;
+        border: 1px solid #d6e4ff;
+        border-radius: 6px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .api-config-url-label{
+        color: #666;
+        white-space: nowrap;
+    }
+    .api-config-url-value{
+        background: #fff;
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid #e8e8e8;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 11px;
+        color: #4e6ef2;
+        word-break: break-all;
+        flex: 1;
+        user-select: all;
+    }
+    /* 测试按钮 */
+    .api-config-test-btn{
+        padding: 5px 14px;
+        border: 1px solid #52c41a;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #52c41a, #73d13d);
+        color: #fff;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 8px;
+    }
+    .api-config-test-btn:hover{
+        box-shadow: 0 2px 8px rgba(82,196,26,0.35);
+        transform: translateY(-1px);
+    }
+    .api-config-test-btn:disabled{
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    /* 测试结果 */
+    .api-config-test-result{
+        margin-top: 8px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+    .api-config-test-loading{
+        background: #f0f5ff;
+        border: 1px solid #d6e4ff;
+        color: #4e6ef2;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .api-config-test-success{
+        background: #f6ffed;
+        border: 1px solid #b7eb8f;
+        color: #389e0d;
+    }
+    .api-config-test-error{
+        background: #fff2f0;
+        border: 1px solid #ffccc7;
+        color: #cf1322;
+    }
+    .api-config-test-detail{
+        font-size: 11px;
+        color: #666;
+        word-break: break-all;
     }
     /* 自定义线路选项 */
     option[data-custom]{
